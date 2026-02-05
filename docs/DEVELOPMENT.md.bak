@@ -1,0 +1,833 @@
+# 🛠️ Development Guide - Sanctuary Stream
+
+## Overview
+
+This guide covers local development, testing, schema management, and environment consistency.
+
+---
+
+## 🏗️ Initial Setup
+
+### 1. Prerequisites
+
+```bash
+# Check versions
+node --version   # Should be 18+
+npm --version    # Should be 9+
+rust --version   # Should be 1.70+ (for Tauri)
+
+# Install PocketBase CLI (for local development)
+# macOS
+brew install pocketbase
+
+# Linux
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip
+unzip pocketbase_0.22.0_linux_amd64.zip
+sudo mv pocketbase /usr/local/bin/
+
+# Windows (using Scoop)
+scoop install pocketbase
+```
+
+### 2. Clone and Install
+
+```bash
+# Clone repository
+git clone https://github.com/your-org/sanctuary-stream.git
+cd sanctuary-stream
+
+# Install root dependencies
+npm install
+
+# Install workspace dependencies
+npm install --workspaces
+```
+
+### 3. Environment Configuration
+
+```bash
+# Create environment files for each component
+cp .env.example .env
+cp sanctuary-app/.env.example sanctuary-app/.env
+cp sanctuary-bridge/.env.example sanctuary-bridge/.env
+```
+
+---
+
+## 🗄️ PocketBase Schema Management
+
+### Local Development Schema
+
+#### Step 1: Run Local PocketBase
+
+```bash
+# Create local PocketBase directory
+mkdir -p pocketbase/local
+cd pocketbase/local
+
+# Start PocketBase (creates pb_data/ directory)
+pocketbase serve --http=127.0.0.1:8090
+
+# Access Admin UI: http://127.0.0.1:8090/_/
+# Create admin account on first run
+```
+
+#### Step 2: Create Schema Script
+
+Create `pocketbase/schema-init.js`:
+
+```javascript
+#!/usr/bin/env node
+/**
+ * PocketBase Schema Initialization
+ * Ensures consistent schema across local/staging/production
+ * Run with: node pocketbase/schema-init.js <environment>
+ */
+
+const PocketBase = require('pocketbase/cjs');
+const fs = require('fs');
+const path = require('path');
+
+const ENVIRONMENTS = {
+  local: { url: 'http://127.0.0.1:8090', admin: 'admin@local.dev' },
+  staging: { url: 'https://staging.pockethost.io', admin: 'admin@sanctuary.dev' },
+  production: { url: 'https://production.pockethost.io', admin: 'admin@sanctuary.church' }
+};
+
+async function initSchema(env = 'local') {
+  const config = ENVIRONMENTS[env];
+  if (!config) {
+    console.error(`Invalid environment: ${env}`);
+    process.exit(1);
+  }
+
+  const pb = new PocketBase(config.url);
+  
+  // Authenticate as admin
+  const password = process.env[`PB_SANCTUARY_STREAM_PASSWORD_${env.toUpperCase()}`];
+  if (!password) {
+    console.error(`Missing PB_SANCTUARY_STREAM_PASSWORD_${env.toUpperCase()} environment variable`);
+    process.exit(1);
+  }
+
+  await pb.admins.authWithPassword(config.admin, password);
+
+  console.log(`✅ Connected to ${env} PocketBase at ${config.url}`);
+
+  // Create/Update Collections
+  await ensureUsersCollection(pb);
+  await ensureCommandsCollection(pb);
+  await ensureStreamsCollection(pb);
+  await createTestUsers(pb, env);
+  await createDefaultStreamRecord(pb);
+
+  console.log(`✅ Schema initialization complete for ${env}`);
+}
+
+async function ensureUsersCollection(pb) {
+  try {
+    await pb.collections.getOne('users');
+    console.log('✓ Users collection exists');
+  } catch (e) {
+    console.log('Creating users collection...');
+    // Users collection is auto-created by PocketBase
+    // Just need to add custom 'role' field
+    const collection = await pb.collections.getOne('users');
+    await pb.collections.update(collection.id, {
+      schema: [
+        ...collection.schema,
+        {
+          name: 'role',
+          type: 'select',
+          required: true,
+          options: {
+            maxSelect: 1,
+            values: ['admin', 'pastor', 'tech']
+          }
+        }
+      ]
+    });
+    console.log('✅ Users collection configured');
+  }
+}
+
+async function ensureCommandsCollection(pb) {
+  const schema = [
+    {
+      name: 'action',
+      type: 'select',
+      required: true,
+      options: {
+        maxSelect: 1,
+        values: ['START', 'STOP']
+      }
+    },
+    {
+      name: 'executed',
+      type: 'bool',
+      required: true
+    },
+    {
+      name: 'correlation_id',
+      type: 'text',
+      required: true,
+      options: {
+        min: 36,
+        max: 36,
+        pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$'
+      }
+    },
+    {
+      name: 'payload',
+      type: 'json',
+      required: false
+    },
+    {
+      name: 'created_by',
+      type: 'relation',
+      required: true,
+      options: {
+        collectionId: 'users',
+        cascadeDelete: false,
+        maxSelect: 1
+      }
+    }
+  ];
+
+  const indexes = [
+    'CREATE UNIQUE INDEX idx_correlation_id ON commands (correlation_id)',
+    'CREATE INDEX idx_executed ON commands (executed)',
+    'CREATE INDEX idx_created ON commands (created)'
+  ];
+
+  const listRule = '@request.auth.id != ""';
+  const createRule = '@request.auth.role = "admin" || @request.auth.role = "pastor"';
+  const updateRule = '@request.auth.role = "tech"';
+
+  try {
+    const collection = await pb.collections.getOne('commands');
+    await pb.collections.update(collection.id, {
+      schema,
+      indexes,
+      listRule,
+      createRule,
+      updateRule,
+      deleteRule: null
+    });
+    console.log('✓ Commands collection updated');
+  } catch (e) {
+    console.log('Creating commands collection...');
+    await pb.collections.create({
+      name: 'commands',
+      type: 'base',
+      schema,
+      indexes,
+      listRule,
+      createRule,
+      updateRule,
+      deleteRule: null
+    });
+    console.log('✅ Commands collection created');
+  }
+}
+
+async function ensureStreamsCollection(pb) {
+  const schema = [
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      options: {
+        maxSelect: 1,
+        values: ['live', 'idle']
+      }
+    },
+    {
+      name: 'heartbeat',
+      type: 'date',
+      required: true
+    },
+    {
+      name: 'youtube_url',
+      type: 'url',
+      required: false
+    },
+    {
+      name: 'metadata',
+      type: 'json',
+      required: false
+    }
+  ];
+
+  const indexes = [
+    'CREATE INDEX idx_status ON streams (status)'
+  ];
+
+  const listRule = '@request.auth.id != ""';
+  const updateRule = '@request.auth.role = "tech"';
+
+  try {
+    const collection = await pb.collections.getOne('streams');
+    await pb.collections.update(collection.id, {
+      schema,
+      indexes,
+      listRule,
+      createRule: null,
+      updateRule,
+      deleteRule: null
+    });
+    console.log('✓ Streams collection updated');
+  } catch (e) {
+    console.log('Creating streams collection...');
+    await pb.collections.create({
+      name: 'streams',
+      type: 'base',
+      schema,
+      indexes,
+      listRule,
+      createRule: null,
+      updateRule,
+      deleteRule: null
+    });
+    console.log('✅ Streams collection created');
+  }
+}
+
+async function createTestUsers(pb, env) {
+  if (env !== 'local') {
+    console.log('⚠ Skipping test user creation (not local environment)');
+    return;
+  }
+
+  const testUsers = [
+    { email: 'admin@local.dev', password: 'admin123456', role: 'admin', name: 'Admin User' },
+    { email: 'pastor@local.dev', password: 'pastor123456', role: 'pastor', name: 'Pastor John' },
+    { email: 'bridge@local.dev', password: 'bridge123456', role: 'tech', name: 'Bridge Service' }
+  ];
+
+  for (const user of testUsers) {
+    try {
+      await pb.collection('users').create(user);
+      console.log(`✅ Created test user: ${user.email}`);
+    } catch (e) {
+      if (e.status === 400 && e.data?.data?.email) {
+        console.log(`✓ Test user exists: ${user.email}`);
+      } else {
+        console.error(`❌ Failed to create ${user.email}:`, e.message);
+      }
+    }
+  }
+}
+
+async function createDefaultStreamRecord(pb) {
+  try {
+    const existing = await pb.collection('streams').getFullList();
+    if (existing.length > 0) {
+      console.log('✓ Default stream record exists');
+      return;
+    }
+
+    const record = await pb.collection('streams').create({
+      status: 'idle',
+      heartbeat: new Date().toISOString(),
+      metadata: {}
+    });
+    
+    console.log(`✅ Created default stream record: ${record.id}`);
+    console.log(`   Add this to your .env files: STREAM_ID=${record.id}`);
+  } catch (e) {
+    console.error('❌ Failed to create stream record:', e.message);
+  }
+}
+
+// Run
+const env = process.argv[2] || 'local';
+initSchema(env).catch(console.error);
+```
+
+#### Step 3: Initialize Schema
+
+```bash
+# Add to package.json scripts
+npm pkg set scripts.schema:init:local="node pocketbase/schema-init.js local"
+npm pkg set scripts.schema:init:staging="node pocketbase/schema-init.js staging"
+npm pkg set scripts.schema:init:production="node pocketbase/schema-init.js production"
+
+# Set admin password for local
+export PB_SANCTUARY_STREAM_PASSWORD_LOCAL=your-admin-password
+
+# Run schema initialization
+npm run schema:init:local
+```
+
+### Schema Export/Import
+
+```bash
+# Export schema from local PocketBase
+cd pocketbase/local
+pocketbase admin backup
+
+# This creates pb_data/backups/*.zip
+# Extract schema only:
+unzip -p pb_data/backups/latest.zip pb_schema.json > ../schema.json
+
+# Import to another environment
+# Via PocketBase Admin UI: Settings → Import collections → Upload schema.json
+```
+
+---
+
+## 🔄 Idempotency Strategy
+
+### Database Level (PocketBase)
+
+```javascript
+// commands collection has UNIQUE constraint on correlation_id
+// Duplicate inserts will fail with 400 error - this is EXPECTED behavior
+
+// Frontend: Handle gracefully
+try {
+  await pb.collection('commands').create({
+    action: 'START',
+    correlation_id: crypto.randomUUID(),
+    executed: false,
+    created_by: pb.authStore.model.id
+  });
+  toast.success('Stream starting...');
+} catch (error) {
+  if (error.status === 400 && error.data?.data?.correlation_id) {
+    toast.info('Request already in progress');
+  } else {
+    toast.error('Failed to start stream');
+    console.error(error);
+  }
+}
+```
+
+### Bridge Service Level
+
+```typescript
+// sanctuary-bridge/src/services/command-processor.ts
+import PocketBase from 'pocketbase';
+import { logger } from '../utils/logger';
+
+export class CommandProcessor {
+  private processedIds = new Set<string>();
+
+  async processCommand(command: Command) {
+    // Double-check idempotency (defense in depth)
+    if (this.processedIds.has(command.correlation_id)) {
+      logger.warn('Command already processed', { correlation_id: command.correlation_id });
+      return;
+    }
+
+    // Check database state
+    if (command.executed) {
+      logger.info('Command already executed', { id: command.id });
+      return;
+    }
+
+    try {
+      // Execute OBS action
+      if (command.action === 'START') {
+        await this.obs.call('StartStream');
+      } else if (command.action === 'STOP') {
+        await this.obs.call('StopStream');
+      }
+
+      // Mark as executed in database (atomic update)
+      await this.pb.collection('commands').update(command.id, {
+        executed: true
+      });
+
+      // Track in memory (for session)
+      this.processedIds.add(command.correlation_id);
+
+      logger.info('Command executed successfully', { 
+        id: command.id, 
+        action: command.action 
+      });
+    } catch (error) {
+      logger.error('Command execution failed', { 
+        id: command.id, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+}
+```
+
+### Testing Idempotency
+
+```typescript
+// sanctuary-bridge/tests/idempotency.test.ts
+import { describe, it, expect, vi } from 'vitest';
+import { CommandProcessor } from '../src/services/command-processor';
+import { createMockOBS, createMockPocketBase } from './mocks';
+
+describe('Command Idempotency', () => {
+  it('should only execute command once even if received twice', async () => {
+    const mockOBS = createMockOBS();
+    const mockPB = createMockPocketBase();
+    const processor = new CommandProcessor(mockOBS, mockPB);
+
+    const command = {
+      id: 'cmd1',
+      action: 'START',
+      correlation_id: 'unique-uuid-123',
+      executed: false
+    };
+
+    // Process same command twice
+    await processor.processCommand(command);
+    await processor.processCommand({ ...command, executed: true });
+
+    // OBS should only be called once
+    expect(mockOBS.call).toHaveBeenCalledTimes(1);
+    expect(mockOBS.call).toHaveBeenCalledWith('StartStream');
+  });
+
+  it('should handle database unique constraint violation', async () => {
+    const mockPB = createMockPocketBase();
+    
+    // First create succeeds
+    await mockPB.collection('commands').create({
+      action: 'START',
+      correlation_id: 'uuid-123'
+    });
+
+    // Second create with same correlation_id fails
+    await expect(
+      mockPB.collection('commands').create({
+        action: 'START',
+        correlation_id: 'uuid-123' // Duplicate!
+      })
+    ).rejects.toThrow('correlation_id must be unique');
+  });
+});
+```
+
+---
+
+## 🧪 Local Testing Workflow
+
+### 1. Start All Services
+
+```bash
+# Terminal 1: PocketBase (Database/API)
+cd pocketbase/local
+pocketbase serve
+
+# Terminal 2: Bridge Service (OBS Controller)
+cd sanctuary-bridge
+npm run dev
+
+# Terminal 3: Tauri App (Frontend)
+cd sanctuary-app
+npm run tauri dev
+
+# Terminal 4: OBS Studio
+# Start OBS manually with WebSocket enabled
+# Tools → WebSocket Server Settings → Enable
+```
+
+### 2. Environment Files
+
+**`sanctuary-bridge/.env`** (Local):
+```bash
+PB_URL=http://127.0.0.1:8090
+BRIDGE_EMAIL=bridge@local.dev
+BRIDGE_PASS=bridge123
+OBS_URL=ws://127.0.0.1:4455
+OBS_PASS=your-obs-password
+STREAM_ID=<from schema init output>
+LOG_LEVEL=debug
+NODE_ENV=development
+```
+
+**`sanctuary-app/.env`** (Local):
+```bash
+VITE_PB_URL=http://127.0.0.1:8090
+```
+
+### 3. Mock OBS (No OBS Required)
+
+For testing without OBS, create a mock server:
+
+```bash
+# sanctuary-bridge/scripts/mock-obs.js
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 4455 });
+
+wss.on('connection', (ws) => {
+  console.log('Mock OBS: Client connected');
+
+  ws.on('message', (data) => {
+    const msg = JSON.parse(data);
+    console.log('Mock OBS: Received', msg);
+
+    // Respond with success
+    ws.send(JSON.stringify({
+      op: 7,
+      d: {
+        requestType: msg.d.requestType,
+        requestId: msg.d.requestId,
+        requestStatus: { result: true, code: 100 }
+      }
+    }));
+  });
+
+  // Send Identified message
+  ws.send(JSON.stringify({
+    op: 2,
+    d: { negotiatedRpcVersion: 1 }
+  }));
+});
+
+console.log('Mock OBS WebSocket server running on ws://127.0.0.1:4455');
+```
+
+```bash
+# Run mock OBS
+node sanctuary-bridge/scripts/mock-obs.js
+
+# Update .env
+OBS_URL=ws://127.0.0.1:4455
+OBS_PASS=any-password
+```
+
+### 4. Test Full Flow
+
+```bash
+# 1. Open Tauri app (http://localhost:1420 or native window)
+# 2. Login as pastor@local.dev / pastor123
+# 3. Click "Begin Mass" button
+# 4. Check Bridge logs:
+cd sanctuary-bridge
+npm run dev
+# Should see: "✅ Command executed: START"
+
+# 5. Verify in PocketBase Admin UI:
+# http://127.0.0.1:8090/_/
+# Collections → commands → Last record should have executed=true
+```
+
+---
+
+## 🌍 Environment Management
+
+### Configuration Files
+
+```
+.env.example           # Template (committed to Git)
+.env                   # Local dev (gitignored)
+.env.local            # Local overrides (gitignored)
+.env.staging          # Staging config (gitignored)
+.env.production       # Production config (gitignored, stored in secrets manager)
+```
+
+### Environment-Specific Values
+
+```bash
+# .env (Local)
+PB_URL=http://127.0.0.1:8090
+NODE_ENV=development
+LOG_LEVEL=debug
+
+# .env.staging
+PB_URL=https://staging-sanctuary.pockethost.io
+NODE_ENV=staging
+LOG_LEVEL=info
+
+# .env.production
+PB_URL=https://sanctuary-stream.pockethost.io
+NODE_ENV=production
+LOG_LEVEL=warn
+```
+
+### Loading Environments
+
+```typescript
+// sanctuary-bridge/src/config.ts
+import dotenv from 'dotenv';
+import { z } from 'zod';
+
+// Load environment-specific file
+const env = process.env.NODE_ENV || 'development';
+const envFile = env === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: envFile });
+
+// Validate with Zod
+const ConfigSchema = z.object({
+  PB_URL: z.string().url(),
+  BRIDGE_EMAIL: z.string().email(),
+  BRIDGE_PASS: z.string().min(8),
+  OBS_URL: z.string().url(),
+  OBS_PASS: z.string(),
+  STREAM_ID: z.string(),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']),
+  NODE_ENV: z.enum(['development', 'staging', 'production'])
+});
+
+export const config = ConfigSchema.parse(process.env);
+```
+
+---
+
+## 🔧 Schema Migration Workflow
+
+### 1. Make Schema Changes Locally
+
+```bash
+# Start local PocketBase
+cd pocketbase/local
+pocketbase serve
+
+# Make changes via Admin UI
+# http://127.0.0.1:8090/_/
+
+# Export updated schema
+pocketbase admin backup
+unzip -p pb_data/backups/latest.zip pb_schema.json > ../schema-v2.json
+```
+
+### 2. Create Migration Script
+
+```javascript
+// pocketbase/migrations/001_add_recording_url.js
+module.exports = {
+  up: async (pb) => {
+    const collection = await pb.collections.getOne('streams');
+    await pb.collections.update(collection.id, {
+      schema: [
+        ...collection.schema,
+        {
+          name: 'recording_url',
+          type: 'url',
+          required: false
+        }
+      ]
+    });
+    console.log('✅ Added recording_url field to streams');
+  },
+
+  down: async (pb) => {
+    const collection = await pb.collections.getOne('streams');
+    const schema = collection.schema.filter(f => f.name !== 'recording_url');
+    await pb.collections.update(collection.id, { schema });
+    console.log('✅ Removed recording_url field from streams');
+  }
+};
+```
+
+### 3. Run Migrations
+
+```bash
+# pocketbase/migrate.js
+const PocketBase = require('pocketbase/cjs');
+const fs = require('fs');
+const path = require('path');
+
+async function runMigrations(env) {
+  const config = require('./environments')[env];
+  const pb = new PocketBase(config.url);
+  
+  await pb.admins.authWithPassword(config.admin, process.env.PB_SANCTUARY_STREAM_PASSWORD);
+
+  const migrations = fs.readdirSync('./migrations')
+    .filter(f => f.endsWith('.js'))
+    .sort();
+
+  for (const file of migrations) {
+    console.log(`Running migration: ${file}`);
+    const migration = require(`./migrations/${file}`);
+    await migration.up(pb);
+  }
+
+  console.log('✅ All migrations complete');
+}
+
+const env = process.argv[2] || 'local';
+runMigrations(env).catch(console.error);
+```
+
+```bash
+# Run migrations
+export PB_SANCTUARY_STREAM_PASSWORD=your-password
+node pocketbase/migrate.js staging
+node pocketbase/migrate.js production
+```
+
+---
+
+## 🎯 Schema Consistency Checklist
+
+- [ ] Schema defined in `pocketbase/schema-init.js`
+- [ ] Unique constraints on idempotency keys
+- [ ] RBAC rules tested locally
+- [ ] Test data created for local dev
+- [ ] Schema export script in `package.json`
+- [ ] Migration scripts for changes
+- [ ] Zod schemas match database schema
+- [ ] TypeScript types generated from Zod
+- [ ] Integration tests verify schema
+- [ ] Staging matches production schema
+
+---
+
+## 🐛 Debugging Tips
+
+### PocketBase Issues
+
+```bash
+# Check PocketBase logs
+tail -f pocketbase/local/pb_data/logs/*.log
+
+# Test API directly
+curl http://127.0.0.1:8090/api/health
+curl -X POST http://127.0.0.1:8090/api/collections/users/auth-with-password \
+  -H "Content-Type: application/json" \
+  -d '{"identity":"pastor@local.dev","password":"pastor123456"}'
+```
+
+### Bridge Service Issues
+
+```bash
+# Enable debug logging
+LOG_LEVEL=debug npm run dev
+
+# Test OBS connection
+node -e "const OBS = require('obs-websocket-js').default; const obs = new OBS(); obs.connect('ws://127.0.0.1:4455', 'password').then(() => console.log('Connected')).catch(console.error);"
+```
+
+### Schema Validation
+
+```typescript
+// sanctuary-app/src/lib/validate-schema.ts
+import { z } from 'zod';
+
+export const CommandSchema = z.object({
+  id: z.string(),
+  action: z.enum(['START', 'STOP']),
+  executed: z.boolean(),
+  correlation_id: z.string().uuid(),
+  payload: z.record(z.unknown()).optional(),
+  created_by: z.string(),
+  created: z.string().datetime(),
+  updated: z.string().datetime()
+});
+
+// Use in components
+const command = CommandSchema.parse(unknownData); // Throws if invalid
+```
+
+---
+
+**Next Steps**:
+1. Set up local PocketBase
+2. Run schema initialization
+3. Start all services
+4. Test full flow
+5. Export schema for staging/production

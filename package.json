@@ -1,0 +1,90 @@
+{
+  "name": "sanctuary-stream",
+  "version": "0.1.0",
+  "description": "Zero-trust church streaming control system with real-time remote management",
+  "author": "Sanctuary Stream Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/sanctuary-stream.git"
+  },
+  "workspaces": [
+    "sanctuary-app",
+    "sanctuary-bridge"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:pocketbase\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:all": "concurrently -n \"obs,bridge,app\" -c \"yellow,cyan,green\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:app": "npm run dev --workspace=sanctuary-app",
+    "dev:bridge": "npm run dev --workspace=sanctuary-bridge",
+    "dev:pocketbase": "cd pocketbase/local && pocketbase serve --http=127.0.0.1:8090",
+    "build": "npm run build --workspaces",
+    "build:app": "npm run build --workspace=sanctuary-app",
+    "build:bridge": "npm run build --workspace=sanctuary-bridge",
+    "test": "npm run test --workspaces",
+    "test:app": "npm run test --workspace=sanctuary-app",
+    "test:bridge": "npm run test --workspace=sanctuary-bridge",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:app": "npm run lint --workspace=sanctuary-app",
+    "lint:bridge": "npm run lint --workspace=sanctuary-bridge",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "typecheck": "npm run typecheck --workspaces",
+    "typecheck:app": "npm run typecheck --workspace=sanctuary-app",
+    "typecheck:bridge": "npm run typecheck --workspace=sanctuary-bridge",
+    "validate": "./scripts/validate.sh",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "prepare": "husky install",
+    "setup": "./scripts/setup.sh",
+    "setup:local": "./scripts/setup.sh",
+    "setup:staging": "ENV=staging ./scripts/setup.sh",
+    "setup:production": "ENV=production ./scripts/setup.sh",
+    "schema:init:local": "tsx pocketbase/schema-init.ts local",
+    "schema:init:staging": "tsx pocketbase/schema-init.ts staging",
+    "schema:init:production": "tsx pocketbase/schema-init.ts production",
+    "mock:obs": "node scripts/mock-obs.js",
+    "clean": "rm -rf sanctuary-app/dist sanctuary-bridge/dist pocketbase/local/pb_data",
+    "clean:all": "npm run clean && rm -rf node_modules sanctuary-app/node_modules sanctuary-bridge/node_modules"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "church",
+    "streaming",
+    "obs",
+    "remote-control",
+    "tauri",
+    "pocketbase",
+    "typescript"
+  ],
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "pocketbase": "^0.26.8",
+    "vite": "7.3.1"
+  }
+}

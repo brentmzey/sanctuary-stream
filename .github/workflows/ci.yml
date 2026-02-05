@@ -1,0 +1,187 @@
+name: CI - Pull Request Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Validate TypeScript code
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd sanctuary-app && npm install
+          cd ../sanctuary-bridge && npm install
+
+      - name: Type check
+        run: npm run typecheck
+
+  # Lint all code
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd sanctuary-app && npm install
+          cd ../sanctuary-bridge && npm install
+
+      - name: Lint TypeScript
+        run: npm run lint
+
+      - name: Lint Rust
+        run: |
+          cd sanctuary-app/src-tauri
+          cargo clippy -- -D warnings
+
+  # Run tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd sanctuary-app && npm install
+          cd ../sanctuary-bridge && npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run Rust tests
+        run: |
+          cd sanctuary-app/src-tauri
+          cargo test
+
+  # Security audit
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+
+      - name: Run Rust cargo-audit
+        run: |
+          cargo install cargo-audit
+          cd sanctuary-app/src-tauri
+          cargo audit
+
+  # Build validation (faster than full build)
+  build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd sanctuary-app && npm install
+          cd ../sanctuary-bridge && npm install
+
+      - name: Build frontend
+        run: cd sanctuary-app && npm run build
+
+      - name: Build bridge
+        run: cd sanctuary-bridge && npm run build
+
+      - name: Check Rust compilation
+        run: |
+          cd sanctuary-app/src-tauri
+          cargo check --all-targets
+
+  # Code coverage
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd sanctuary-app && npm install
+          cd ../sanctuary-bridge && npm install
+
+      - name: Run coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella

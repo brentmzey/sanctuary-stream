@@ -1,0 +1,164 @@
+/**
+ * Migration: Initial Schema
+ * Creates users, commands, and streams collections with proper indexes and rules
+ * Idempotent: Safe to run multiple times
+ */
+
+/// <reference path="../local/types.d.ts" />
+
+migrate((db) => {
+  // Users collection - extends auth collection
+  const usersCollection = $app.dao().findCollectionByNameOrId('users');
+  if (!usersCollection) {
+    const users = new Collection({
+      name: 'users',
+      type: 'auth',
+      system: false,
+      schema: [
+        {
+          name: 'role',
+          type: 'select',
+          required: true,
+          options: {
+            maxSelect: 1,
+            values: ['admin', 'pastor', 'tech']
+          }
+        },
+        {
+          name: 'name',
+          type: 'text',
+          required: true
+        }
+      ],
+      indexes: [
+        'CREATE INDEX idx_users_role ON users (role)'
+      ],
+      listRule: '@request.auth.id != ""',
+      viewRule: '@request.auth.id != ""',
+      createRule: '@request.auth.role = "admin"',
+      updateRule: '@request.auth.id = id || @request.auth.role = "admin"',
+      deleteRule: '@request.auth.role = "admin"',
+      options: {
+        allowEmailAuth: true,
+        allowUsernameAuth: false,
+        requireEmail: true,
+        minPasswordLength: 8
+      }
+    });
+
+    $app.dao().saveCollection(users);
+    console.log('✅ Users collection created');
+  }
+
+  // Commands collection
+  const commandsCollection = $app.dao().findCollectionByNameOrId('commands');
+  if (!commandsCollection) {
+    const commands = new Collection({
+      name: 'commands',
+      type: 'base',
+      system: false,
+      schema: [
+        {
+          name: 'action',
+          type: 'select',
+          required: true,
+          options: {
+            maxSelect: 1,
+            values: ['START', 'STOP', 'RECORD_START', 'RECORD_STOP']
+          }
+        },
+        {
+          name: 'executed',
+          type: 'bool',
+          required: true
+        },
+        {
+          name: 'correlation_id',
+          type: 'text',
+          required: true
+        },
+        {
+          name: 'payload',
+          type: 'json',
+          required: false
+        },
+        {
+          name: 'created_by',
+          type: 'relation',
+          required: true,
+          options: {
+            collectionId: usersCollection.id,
+            cascadeDelete: false,
+            maxSelect: 1
+          }
+        },
+        {
+          name: 'error_message',
+          type: 'text',
+          required: false
+        }
+      ],
+      indexes: [
+        'CREATE UNIQUE INDEX idx_correlation_id ON commands (correlation_id)',
+        'CREATE INDEX idx_executed ON commands (executed)',
+        'CREATE INDEX idx_created ON commands (created)'
+      ],
+      listRule: '@request.auth.id != ""',
+      viewRule: '@request.auth.id != ""',
+      createRule: '@request.auth.role = "admin" || @request.auth.role = "pastor"',
+      updateRule: '@request.auth.role = "tech"',
+      deleteRule: null
+    });
+
+    $app.dao().saveCollection(commands);
+    console.log('✅ Commands collection created');
+  }
+
+  // Streams collection
+  const streamsCollection = $app.dao().findCollectionByNameOrId('streams');
+  if (!streamsCollection) {
+    const streams = new Collection({
+      name: 'streams',
+      type: 'base',
+      system: false,
+      schema: [
+        {
+          name: 'status',
+          type: 'select',
+          required: true,
+          options: {
+            maxSelect: 1,
+            values: ['live', 'idle', 'recording', 'error']
+          }
+        },
+        {
+          name: 'heartbeat',
+          type: 'date',
+          required: true
+        },
+        {
+          name: 'youtube_url',
+          type: 'url',
+          required: false
+        },
+        {
+          name: 'metadata',
+          type: 'json',
+          required: false
+        }
+      ],
+      indexes: [
+        'CREATE INDEX idx_status ON streams (status)',
+        'CREATE INDEX idx_heartbeat ON streams (heartbeat)'
+      ],
+      listRule: '@request.auth.id != ""',
+      viewRule: '@request.auth.id != ""',
+      createRule: '@request.auth.role = "admin"',
+      updateRule: '@request.auth.role = "tech" || @request.auth.role = "admin"',
+      deleteRule: '@request.auth.role = "admin"'
+    });
+
+    $app.dao().saveCollection(streams);
+    console.log('✅ Streams collection created');
+  }
+});

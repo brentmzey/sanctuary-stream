@@ -1,0 +1,7 @@
+node_modules/
+dist/
+build/
+pocketbase/
+*.min.js
+*.d.ts
+.husky/

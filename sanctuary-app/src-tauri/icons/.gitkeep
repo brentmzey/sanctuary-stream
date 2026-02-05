@@ -1,0 +1,11 @@
+# Place your app icons here
+# Required icons:
+# - 32x32.png
+# - 128x128.png
+# - icon.icns (macOS)
+# - icon.ico (Windows)
+# - icon.png (Linux/system tray)
+
+# Generate icons using:
+# npm install -g @tauri-apps/cli
+# tauri icon path/to/icon.png

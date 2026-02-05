@@ -1,0 +1,377 @@
+#!/usr/bin/env node
+/**
+ * PocketBase Schema Initialization
+ * Ensures consistent schema across local/staging/production
+ * 
+ * Usage:
+ *   npm run schema:init:local
+ *   npm run schema:init:staging
+ *   npm run schema:init:production
+ * 
+ * Environment variables required:
+ *   PB_SANCTUARY_STREAM_PASSWORD_LOCAL (or _STAGING, _PRODUCTION)
+ */
+
+const PocketBase = require('pocketbase').default || require('pocketbase');
+
+const ENVIRONMENTS = {
+  local: { 
+    url: 'http://127.0.0.1:8090', 
+    admin: 'admin@local.dev' 
+  },
+  staging: { 
+    url: process.env.PB_URL_STAGING || 'https://staging.pockethost.io', 
+    admin: process.env.PB_ADMIN_EMAIL_STAGING || 'admin@sanctuary.dev' 
+  },
+  production: { 
+    url: process.env.PB_URL_PRODUCTION || 'https://production.pockethost.io', 
+    admin: process.env.PB_ADMIN_EMAIL_PRODUCTION || 'admin@sanctuary.church' 
+  }
+};
+
+async function initSchema(env = 'local') {
+  const config = ENVIRONMENTS[env];
+  if (!config) {
+    console.error(`❌ Invalid environment: ${env}`);
+    console.error(`   Valid options: local, staging, production`);
+    process.exit(1);
+  }
+
+  const pb = new PocketBase(config.url);
+  
+  // Authenticate as admin
+  const passwordEnvVar = `PB_SANCTUARY_STREAM_PASSWORD_${env.toUpperCase()}`;
+  const password = process.env[passwordEnvVar];
+  
+  if (!password) {
+    console.error(`❌ Missing ${passwordEnvVar} environment variable`);
+    console.error(`   Set it with: export ${passwordEnvVar}=your-password`);
+    process.exit(1);
+  }
+
+  try {
+    // Try to authenticate with the admin account
+    await pb.admins.authWithPassword(config.admin, password);
+    console.log(`✅ Connected to ${env} PocketBase at ${config.url}`);
+  } catch (error) {
+    console.error(`❌ Failed to authenticate:`, error.message);
+    console.error(`   Make sure you created the admin account at ${config.url}/_`);
+    console.error(`   Email: ${config.admin}`);
+    console.error(`   Password: <value of ${passwordEnvVar}>`);
+    process.exit(1);
+  }
+
+  // Create/Update Collections
+  try {
+    await ensureUsersCollection(pb);
+    await ensureCommandsCollection(pb);
+    await ensureStreamsCollection(pb);
+    
+    if (env === 'local') {
+      await createTestUsers(pb);
+    }
+    
+    await createDefaultStreamRecord(pb);
+
+    console.log(`\n✅ Schema initialization complete for ${env}`);
+    console.log(`   View admin UI: ${config.url}/_/`);
+  } catch (error) {
+    console.error(`❌ Schema initialization failed:`, error.message);
+    if (error.data) {
+      console.error('   Error details:', JSON.stringify(error.data, null, 2));
+    }
+    process.exit(1);
+  }
+}
+
+async function ensureUsersCollection(pb) {
+  try {
+    const collection = await pb.collections.getOne('users');
+    
+    // Check if role field exists - safely handle undefined schema
+    const schema = collection.schema || [];
+    const hasRoleField = schema.some(field => field.name === 'role');
+    
+    if (!hasRoleField) {
+      console.log('Adding role field to users collection...');
+      await pb.collections.update(collection.id, {
+        schema: [
+          ...schema,
+          {
+            name: 'role',
+            type: 'select',
+            required: true,
+            options: {
+              maxSelect: 1,
+              values: ['admin', 'pastor', 'tech']
+            }
+          }
+        ]
+      });
+      console.log('✅ Users collection configured');
+    } else {
+      console.log('✓ Users collection exists with role field');
+    }
+  } catch (error) {
+    if (error.status === 404) {
+      // Users collection doesn't exist, create it
+      console.log('Creating users collection...');
+      await pb.collections.create({
+        name: 'users',
+        type: 'auth',
+        schema: [
+          {
+            name: 'name',
+            type: 'text',
+            required: true
+          },
+          {
+            name: 'role',
+            type: 'select',
+            required: true,
+            options: {
+              maxSelect: 1,
+              values: ['admin', 'pastor', 'tech']
+            }
+          }
+        ],
+        listRule: '@request.auth.id != ""',
+        viewRule: '@request.auth.id != ""',
+        createRule: '@request.auth.role = "admin"',
+        updateRule: '@request.auth.id = id || @request.auth.role = "admin"',
+        deleteRule: '@request.auth.role = "admin"',
+        options: {
+          allowEmailAuth: true,
+          allowUsernameAuth: false,
+          requireEmail: true,
+          minPasswordLength: 10
+        }
+      });
+      console.log('✅ Users collection created');
+    } else {
+      console.error('❌ Failed to configure users collection:', error.message);
+      throw error;
+    }
+  }
+}
+
+async function ensureCommandsCollection(pb) {
+  const schema = [
+    {
+      name: 'action',
+      type: 'select',
+      required: true,
+      options: {
+        maxSelect: 1,
+        values: ['START', 'STOP', 'RECORD_START', 'RECORD_STOP']
+      }
+    },
+    {
+      name: 'executed',
+      type: 'bool',
+      required: true
+    },
+    {
+      name: 'correlation_id',
+      type: 'text',
+      required: true,
+      options: {
+        min: 36,
+        max: 36,
+        pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$'
+      }
+    },
+    {
+      name: 'payload',
+      type: 'json',
+      required: false
+    },
+    {
+      name: 'created_by',
+      type: 'relation',
+      required: true,
+      options: {
+        collectionId: 'users',
+        cascadeDelete: false,
+        maxSelect: 1
+      }
+    }
+  ];
+
+  const listRule = '@request.auth.id != ""';
+  const createRule = '@request.auth.role = "admin" || @request.auth.role = "pastor"';
+  const updateRule = '@request.auth.role = "tech"';
+
+  try {
+    const collection = await pb.collections.getOne('commands');
+    await pb.collections.update(collection.id, {
+      schema,
+      listRule,
+      createRule,
+      updateRule,
+      deleteRule: null
+    });
+    console.log('✓ Commands collection updated');
+  } catch (error) {
+    if (error.status === 404) {
+      console.log('Creating commands collection...');
+      await pb.collections.create({
+        name: 'commands',
+        type: 'base',
+        schema,
+        listRule,
+        createRule,
+        updateRule,
+        deleteRule: null
+      });
+      console.log('✅ Commands collection created');
+    } else {
+      throw error;
+    }
+  }
+}
+
+async function ensureStreamsCollection(pb) {
+  const schema = [
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      options: {
+        maxSelect: 1,
+        values: ['live', 'idle']
+      }
+    },
+    {
+      name: 'heartbeat',
+      type: 'date',
+      required: true
+    },
+    {
+      name: 'youtube_url',
+      type: 'url',
+      required: false
+    },
+    {
+      name: 'metadata',
+      type: 'json',
+      required: false
+    }
+  ];
+
+
+  const listRule = '@request.auth.id != ""';
+  const updateRule = '@request.auth.role = "tech"';
+
+  try {
+    const collection = await pb.collections.getOne('streams');
+    await pb.collections.update(collection.id, {
+      schema,
+      listRule,
+      createRule: null,
+      updateRule,
+      deleteRule: null
+    });
+    console.log('✓ Streams collection updated');
+  } catch (error) {
+    if (error.status === 404) {
+      console.log('Creating streams collection...');
+      await pb.collections.create({
+        name: 'streams',
+        type: 'base',
+        schema,
+        listRule,
+        createRule: null,
+        updateRule,
+        deleteRule: null
+      });
+      console.log('✅ Streams collection created');
+    } else {
+      throw error;
+    }
+  }
+}
+
+async function createTestUsers(pb) {
+  console.log('\nCreating test users (local environment only)...');
+  
+  const testUsers = [
+    { 
+      email: 'admin@local.dev', 
+      password: 'admin123456', 
+      role: 'admin', 
+      name: 'Admin User',
+      passwordConfirm: 'admin123456'
+    },
+    { 
+      email: 'pastor@local.dev', 
+      password: 'pastor123456', 
+      role: 'pastor', 
+      name: 'Pastor John',
+      passwordConfirm: 'pastor123456'
+    },
+    { 
+      email: 'bridge@local.dev', 
+      password: 'bridge123456', 
+      role: 'tech', 
+      name: 'Bridge Service',
+      passwordConfirm: 'bridge123456'
+    }
+  ];
+
+  for (const user of testUsers) {
+    try {
+      await pb.collection('users').create(user);
+      console.log(`  ✅ Created test user: ${user.email} (password: ${user.password})`);
+    } catch (error) {
+      if (error.status === 400 && error.data?.data?.email) {
+        console.log(`  ✓ Test user exists: ${user.email}`);
+      } else {
+        console.error(`  ❌ Failed to create ${user.email}:`, error.message);
+      }
+    }
+  }
+}
+
+async function createDefaultStreamRecord(pb) {
+  try {
+    const existing = await pb.collection('streams').getFullList();
+    
+    if (existing.length > 0) {
+      console.log(`✓ Stream record exists (ID: ${existing[0].id})`);
+      console.log(`\n📝 Add this to your .env files:`);
+      console.log(`   STREAM_ID=${existing[0].id}`);
+      return;
+    }
+
+    const record = await pb.collection('streams').create({
+      status: 'idle',
+      heartbeat: new Date().toISOString(),
+      metadata: {}
+    });
+    
+    console.log(`✅ Created default stream record: ${record.id}`);
+    console.log(`\n📝 Add this to your .env files:`);
+    console.log(`   STREAM_ID=${record.id}`);
+  } catch (error) {
+    console.error('❌ Failed to create stream record:', error.message);
+    throw error;
+  }
+}
+
+// Run initialization
+const env = process.argv[2] || 'local';
+
+console.log(`\n🚀 Initializing PocketBase schema for: ${env.toUpperCase()}`);
+console.log(`${'='.repeat(60)}\n`);
+
+initSchema(env)
+  .then(() => {
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`✅ Success! Schema is ready for ${env}`);
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error(`\n❌ Fatal error:`, error);
+    process.exit(1);
+  });
