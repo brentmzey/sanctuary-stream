@@ -45,9 +45,6 @@
         "show": true,
         "maximize": true,
         "minimize": true
-      },
-      "systemTray": {
-        "all": true
       }
     },
     "bundle": {
@@ -66,12 +63,6 @@
       "longDescription": "Zero-trust church streaming control system",
       "macOS": {
         "minimumSystemVersion": "10.13"
-      },
-      "iOS": {
-        "minimumSystemVersion": "13.0"
-      },
-      "android": {
-        "minSdkVersion": 24
       },
       "windows": {
         "certificateThumbprint": null,
@@ -92,9 +83,6 @@
         "resizable": true,
         "fullscreen": false
       }
-    ],
-    "systemTray": {
-      "iconPath": "icons/icon.png"
-    }
+    ]
   }
 }

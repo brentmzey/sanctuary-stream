@@ -280,14 +280,14 @@ jobs:
     needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android]
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required for creating releases
+      contents: write  # Required for creating public releases from private repo
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
 
-      - name: Create Release
+      - name: Create Public Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
@@ -296,6 +296,53 @@ jobs:
           prerelease: false
           generate_release_notes: true
           make_latest: true
+          body: |
+            ## Sanctuary Stream ${{ github.ref_name }}
+            
+            **Universal church streaming control system**
+            
+            ### Downloads (Public - No GitHub Account Required)
+            
+            Choose your platform:
+            
+            #### Desktop
+            - 🍎 **macOS** (Universal - Intel + Apple Silicon): [Download DMG](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/Sanctuary-Stream-universal.dmg)
+            - 🪟 **Windows** (10/11): [Download MSI](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/Sanctuary-Stream-x64.msi)
+            - 🐧 **Linux** (Ubuntu/Debian): [Download DEB](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/sanctuary-stream_amd64.deb)
+            - 🐧 **Linux** (Any distro): [Download AppImage](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/sanctuary-stream_amd64.AppImage)
+            
+            #### Mobile
+            - 📱 **iOS**: Coming to App Store
+            - 🤖 **Android**: Coming to Google Play
+            
+            #### Web
+            - 🌐 **Web App**: [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app)
+            
+            ### What's New
+            
+            See [CHANGELOG.md](https://github.com/brentmzey/sanctuary-stream/blob/main/CHANGELOG.md) for details.
+            
+            ### Installation & Setup
+            
+            📚 Complete guide: [docs/USER_GUIDE.md](https://github.com/brentmzey/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
+            
+            **Quick Start:**
+            1. Download for your platform above
+            2. Install the application
+            3. Install OBS Studio (if not already installed)
+            4. Configure OBS WebSocket (Tools → WebSocket Server Settings)
+            5. Launch Sanctuary Stream
+            6. Login and start streaming!
+            
+            ### Support
+            
+            - 📖 [User Guide](https://github.com/brentmzey/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
+            - ❓ [Issues](https://github.com/brentmzey/sanctuary-stream/issues)
+            - 💬 [Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
+            
+            ---
+            
+            **Built with ❤️ for churches worldwide**
           files: |
             artifacts/**/*.dmg
             artifacts/**/*.msi

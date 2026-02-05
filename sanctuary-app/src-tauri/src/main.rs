@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, Window};
+use tauri::Manager;
 use tracing::info;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -140,17 +140,6 @@ async fn publish_to_rabbitmq(url: String, exchange: String, routing_key: String,
     Ok("Published to RabbitMQ successfully".to_string())
 }
 
-fn create_system_tray() -> SystemTray {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let show = CustomMenuItem::new("show".to_string(), "Show");
-    
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(show)
-        .add_item(quit);
-    
-    SystemTray::new().with_menu(tray_menu)
-}
-
 fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
@@ -158,53 +147,12 @@ fn main() {
     
     info!("Starting Sanctuary Stream");
     
-    let tray = create_system_tray();
-    
-    let mut builder = tauri::Builder::default()
-        .system_tray(tray)
-        .on_system_tray_event(|app, event| match event {
-            SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
-                "quit" => std::process::exit(0),
-                "show" => {
-                    let window = app.get_window("main").unwrap();
-                    window.show().unwrap();
-                }
-                _ => {}
-            },
-            _ => {}
-        });
-    
-    // Register base commands
-    builder = builder.invoke_handler(tauri::generate_handler![
-        get_stream_status,
-        send_command,
-        show_notification,
-    ]);
-    
-    // Register AWS commands if feature enabled
-    #[cfg(feature = "cloud-aws")]
-    {
-        builder = builder.invoke_handler(tauri::generate_handler![
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![
             get_stream_status,
             send_command,
             show_notification,
-            upload_to_s3,
-            send_to_sqs,
-        ]);
-    }
-    
-    // Register RabbitMQ commands if feature enabled
-    #[cfg(feature = "cloud-rabbitmq")]
-    {
-        builder = builder.invoke_handler(tauri::generate_handler![
-            get_stream_status,
-            send_command,
-            show_notification,
-            publish_to_rabbitmq,
-        ]);
-    }
-    
-    builder
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

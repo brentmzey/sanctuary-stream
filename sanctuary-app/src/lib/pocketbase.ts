@@ -1,6 +1,45 @@
 import PocketBase from 'pocketbase';
 
-export const pb = new PocketBase(import.meta.env.VITE_PB_URL || 'http://127.0.0.1:8090');
+// Get PocketBase URL from multiple sources (priority order)
+const getPocketBaseUrl = (): string => {
+  // 1. Runtime configuration (user settings in localStorage)
+  const stored = localStorage.getItem('pb_url');
+  if (stored) return stored;
+
+  // 2. URL parameter (e.g., ?pb=https://church.pockethost.io)
+  const params = new URLSearchParams(window.location.search);
+  const urlParam = params.get('pb');
+  if (urlParam) {
+    localStorage.setItem('pb_url', urlParam);
+    return urlParam;
+  }
+
+  // 3. Environment variable (build-time configuration)
+  if (import.meta.env.VITE_PB_URL) {
+    return import.meta.env.VITE_PB_URL;
+  }
+
+  // 4. Default (local development)
+  return 'http://127.0.0.1:8090';
+};
+
+// Validate PocketBase URL
+const validatePocketBaseUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
+
+// Initialize PocketBase client
+const initialUrl = getPocketBaseUrl();
+if (!validatePocketBaseUrl(initialUrl)) {
+  console.error('Invalid PocketBase URL:', initialUrl);
+}
+
+export const pb = new PocketBase(initialUrl);
 
 export interface CommandRecord {
   id: string;
@@ -59,4 +98,31 @@ export function subscribeToStream(streamId: string, callback: (record: StreamRec
 
 export function unsubscribeFromStream(streamId: string) {
   pb.collection('streams').unsubscribe(streamId);
+}
+
+// Allow runtime URL changes (for multi-backend support)
+export function setPocketBaseUrl(url: string): void {
+  if (!validatePocketBaseUrl(url)) {
+    throw new Error('Invalid PocketBase URL');
+  }
+  localStorage.setItem('pb_url', url);
+  pb.baseUrl = url;
+  // Clear auth when switching backends
+  pb.authStore.clear();
+}
+
+// Get current PocketBase URL
+export function getCurrentPocketBaseUrl(): string {
+  return pb.baseUrl;
+}
+
+// Test connection to PocketBase
+export async function testConnection(url?: string): Promise<boolean> {
+  const testUrl = url || pb.baseUrl;
+  try {
+    const response = await fetch(`${testUrl}/api/health`);
+    return response.ok;
+  } catch {
+    return false;
+  }
 }

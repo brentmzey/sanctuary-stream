@@ -5,11 +5,11 @@
 [![Build Status](https://github.com/brentmzey/sanctuary-stream/workflows/Build%20and%20Release/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Universal Multi-Platform Application** built with Tauri + Rust for maximum performance, security, and functional programming excellence.
+> Remote control for OBS Studio. Built with Tauri + Rust. Runs everywhere.
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start
 
 ```bash
 # 1. Clone and install
@@ -20,220 +20,213 @@ npm install
 # 2. Configure
 export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL="admin123456"
 
-# 3. Setup database
+# 3. Setup
 npm run setup
 
-# 4. Run everything
+# 4. Run
 npm run dev
 ```
 
 **Access:** http://localhost:5173  
 **Login:** `pastor@local.dev` / `pastor123456`
 
-**📘 Full guide:** [docs/QUICKSTART.md](./docs/QUICKSTART.md)
+**📖 Full guide:** [docs/QUICKSTART.md](./docs/QUICKSTART.md)
 
 ---
 
-## 📱 Runs Everywhere
+## 🎥 Video & Audio Quality
 
-| Platform | Status | Download |
-|----------|--------|----------|
-| **macOS** (Universal) | ✅ Ready | [.dmg](https://github.com/brentmzey/sanctuary-stream/releases/latest) |
-| **Windows** (x64) | ✅ Ready | [.msi](https://github.com/brentmzey/sanctuary-stream/releases/latest) |
-| **Linux** (DEB/AppImage) | ✅ Ready | [.deb](https://github.com/brentmzey/sanctuary-stream/releases/latest) |
-| **iOS** (13.0+) | ✅ Ready | [App Store](https://apps.apple.com) |
-| **Android** (API 24+) | ✅ Ready | [Google Play](https://play.google.com) |
-| **Web** (PWA) | ✅ Ready | [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app) |
+**Professional streaming with free, open-source software:**
+
+### Video
+- ✅ **1080p @ 30fps** - Recommended for churches
+- ✅ **720p @ 30fps** - Lower bandwidth option
+- ✅ **4K @ 60fps** - Ultra HD (if bandwidth permits)
+- ✅ **Hardware encoding** - GPU-accelerated (NVENC, AMD, QuickSync)
+
+### Audio
+- ✅ **48 kHz sample rate** - Broadcast standard
+- ✅ **AAC codec** - Best compatibility
+- ✅ **Stereo/Mono** - Your choice
+- ✅ **160-320 kbps** - Professional quality
+
+### Integration
+- ✅ **OBS Studio** - Industry-standard free software
+- ✅ **All platforms** - YouTube, Facebook, custom RTMP
+- ✅ **Multi-streaming** - Broadcast to multiple platforms simultaneously
+- ✅ **100% Free** - No subscriptions, no hidden costs
+
+**📖 Complete guide:** [docs/OBS_INTEGRATION.md](./docs/OBS_INTEGRATION.md)
 
 ---
 
-## 📚 Documentation
+## 📥 Installation (For End Users)
 
-**Location:** [`./docs`](./docs)
+**Download pre-built apps:**
 
-### Essential Guides
-- 📘 [**Quickstart**](./docs/QUICKSTART.md) - Get running in 5 minutes
-- 🏗️ [**Build & Run**](./docs/BUILD_AND_RUN.md) - Complete setup guide
-- 🧪 [**Functional Style**](./docs/FUNCTIONAL_STYLE.md) - Code standards (**REQUIRED**)
+### Desktop
+- 🍎 [macOS (Universal)](https://github.com/brentmzey/sanctuary-stream/releases/latest) - Intel & Apple Silicon
+- 🪟 [Windows 10/11](https://github.com/brentmzey/sanctuary-stream/releases/latest) - MSI Installer
+- 🐧 [Linux](https://github.com/brentmzey/sanctuary-stream/releases/latest) - DEB & AppImage
 
-### Advanced Topics
-- 🌍 [**Multi-Platform Cloud**](./docs/MULTI_PLATFORM_CLOUD.md) - Deploy anywhere
-- 📦 [**Distribution**](./docs/DISTRIBUTION_GUIDE.md) - App store submission
-- 🤖 [**CI/CD**](./docs/CI_CD_SUMMARY.md) - Automated builds
-- ✅ [**UAT Guide**](./docs/USER_ACCEPTANCE_TESTING.md) - Testing scenarios
-- 🚀 [**Production Ready**](./docs/PRODUCTION_READY.md) - Launch checklist
-- 🔧 [**GitHub Setup**](./docs/GITHUB_SETUP.md) - Repository config
+### Mobile
+- 📱 **iOS** - Coming to App Store
+- 🤖 **Android** - Coming to Google Play
+
+### Web
+- 🌐 **Progressive Web App** - [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app)
+
+**📖 Complete guide:** [docs/USER_GUIDE.md](./docs/USER_GUIDE.md)
+
+---
+
+## 📱 Platforms Supported
+
+| Platform | Status | Type |
+|----------|--------|------|
+| macOS (Universal) | ✅ | Desktop |
+| Windows (10/11) | ✅ | Desktop |
+| Linux (Ubuntu/Debian/etc) | ✅ | Desktop |
+| iOS (13.0+) | ✅ | Mobile |
+| Android (7.0+) | ✅ | Mobile |
+| Web (All browsers) | ✅ | PWA |
+
+**One codebase. Six platforms.**
+
+---
+
+## ✨ Features
+
+### 🎥 Professional Streaming
+- ✅ **HD/4K Video** - 1080p @ 30fps (or 4K with bandwidth)
+- ✅ **Broadcast Audio** - 48 kHz, AAC codec, professional quality
+- ✅ **OBS Studio Integration** - Industry-standard free software
+- ✅ **Multi-platform** - YouTube, Facebook, anywhere
+- ✅ **Free Forever** - Open source, no subscriptions
+
+### 🎛️ Remote Control
+- ✅ **Remote OBS Control** - Start/stop streaming from anywhere
+- ✅ **Real-Time Sync** - All devices stay synchronized
+- ✅ **Multi-User** - Admin, pastor, tech roles
+- ✅ **Multi-Device** - Desktop, mobile, web
+
+### 🔒 Technical Excellence
+- ✅ **Secure** - Memory-safe Rust backend
+- ✅ **Fast** - 50-80 MB RAM, 5-10 MB binary
+- ✅ **Functional** - Pure functions, immutable data
+- ✅ **Type-Safe** - Strict TypeScript + Rust
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-React/TypeScript (Functional)
+React + TypeScript (Frontend)
          ↓
-  Tauri/Rust Backend (Pure Functions)
+  Tauri + Rust (Backend)
          ↓
-   PocketBase (SQLite)
+  PocketBase (Database)
          ↓
-  OBS WebSocket Bridge
+OBS WebSocket (Bridge)
 ```
 
-**Core Values:**
-- ✅ Pure functions (no side effects)
-- ✅ Immutable data (no mutations)
-- ✅ Explicit errors (Result<T, E>)
-- ✅ Type safety (strict TypeScript + Rust)
+**Principles:**
+- Pure functions
+- Immutable data
+- Type safety
+- Zero side effects
 
 ---
 
-## 🚀 Automated Release (CI/CD)
+## 📚 Documentation
 
-**Just push a tag:**
+**Essential Guides:** (in [`./docs`](./docs))
+
+### For Users
+- [QUICKSTART.md](./docs/QUICKSTART.md) - 5-minute setup
+- [USER_GUIDE.md](./docs/USER_GUIDE.md) - Complete installation & OBS setup
+
+### For Developers
+- [FUNCTIONAL_STYLE.md](./docs/FUNCTIONAL_STYLE.md) - ⚠️ **REQUIRED READING**
+- [BUILD_AND_RUN.md](./docs/BUILD_AND_RUN.md) - Development guide
+
+### For DevOps
+- [CI_CD_SUMMARY.md](./docs/CI_CD_SUMMARY.md) - Automated builds
+- [GITHUB_SETUP.md](./docs/GITHUB_SETUP.md) - Repository setup
+
+**See [docs/README.md](./docs/README.md) for complete index**
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React 18 + TypeScript 5 + Vite 7 + Tailwind CSS
+- **Backend:** Rust + Tauri 1.6 + Tokio
+- **Database:** PocketBase (SQLite + Realtime)
+- **Bridge:** Node.js + OBS WebSocket
+
+---
+
+## 🚀 Build & Deploy
 
 ```bash
+# Development
+npm run dev              # All services
+npm run tauri:dev        # Desktop app
+
+# Build
+npm run build            # Web
+npm run tauri:build:mac  # macOS
+npm run tauri:build:win  # Windows
+npm run tauri:build:linux # Linux
+
+# CI/CD (Automated)
 git tag v1.0.0
 git push origin v1.0.0
+# → Builds all platforms automatically
 ```
 
-**GitHub Actions automatically:**
-1. ✅ Builds for ALL 6 platforms (parallel)
-2. ✅ Signs all applications
-3. ✅ Creates **public** GitHub Release
-4. ✅ Uploads **public** binaries
-5. ✅ Deploys web to Vercel
-6. ✅ Submits to app stores
-
-**Time:** ~20 minutes  
-**Result:** Public downloads at [Releases](https://github.com/brentmzey/sanctuary-stream/releases)
-
----
-
-## 🛠️ Build Commands
-
-```bash
-# Desktop
-npm run tauri:build:mac       # macOS Universal (Intel + ARM)
-npm run tauri:build:win       # Windows MSI/EXE
-npm run tauri:build:linux     # Linux DEB/AppImage
-
-# Mobile
-npm run tauri:ios:build       # iOS IPA
-npm run tauri:android:build   # Android APK/AAB
-
-# Web
-npm run build                 # Static site
-
-# Development
-npm run dev                   # All services
-npm run tauri:dev             # Desktop app
-```
-
----
-
-## 🧑‍💻 Development
-
-### Prerequisites
-- Node.js >= 18
-- Rust (auto-installed)
-- Xcode (iOS) or Android Studio (Android) for mobile
-
-### Setup
-```bash
-npm install
-npm run setup
-npm run dev
-```
-
-### Quality Checks
-```bash
-npm run typecheck    # TypeScript + Rust
-npm run lint         # ESLint + Clippy
-npm test             # Vitest
-npm run validate     # Full CI/CD validation
-```
-
----
-
-## 🎯 Functional Style (REQUIRED)
-
-**Every function must be:**
-1. ✅ **Pure** - No side effects
-2. ✅ **Immutable** - No data mutations
-3. ✅ **Typed** - No `any` in TypeScript
-4. ✅ **Explicit** - Result<T, E> for errors
-5. ✅ **Composable** - Higher-order functions
-
-**Example:**
-```typescript
-// ✅ Good - Pure & immutable
-const incrementAge = (user: User): User => ({
-  ...user,
-  age: user.age + 1
-});
-
-// ❌ Bad - Mutation
-function incrementAge(user: User) {
-  user.age++;
-  return user;
-}
-```
-
-**📖 Complete guide:** [docs/FUNCTIONAL_STYLE.md](./docs/FUNCTIONAL_STYLE.md)
+**📖 CI/CD Guide:** [docs/CI_CD_SUMMARY.md](./docs/CI_CD_SUMMARY.md)
 
 ---
 
 ## 🤝 Contributing
 
-1. Read [FUNCTIONAL_STYLE.md](./docs/FUNCTIONAL_STYLE.md) - **REQUIRED**
+1. Read [docs/FUNCTIONAL_STYLE.md](./docs/FUNCTIONAL_STYLE.md) - **REQUIRED**
 2. Fork repository
 3. Create feature branch
 4. Write pure functional code
-5. Run `npm run validate` (must pass)
+5. Run `npm run validate`
 6. Submit PR
 
----
-
-## 📊 Stats
-
-- **Lines:** ~5,000
-- **Docs:** 10,000+ words
-- **Platforms:** 6
-- **Build:** ~20 min (all)
-- **Size:** 5-10 MB
-- **Memory:** 50-80 MB
-
----
-
-## 🔒 Security
-
-- ✅ **Private repo** / **Public releases**
-- ✅ Memory-safe Rust
-- ✅ Sandboxed runtime
-- ✅ Code-signed binaries
-- ✅ Encrypted communications
+**See [CONTRIBUTING.md](./CONTRIBUTING.md) for details**
 
 ---
 
 ## 📄 License
 
-MIT - Free for any purpose
+MIT License - Free for any purpose
+
+See [LICENSE](./LICENSE) for details
+
+---
+
+## 🆘 Support
+
+- 📖 [Documentation](./docs)
+- 🐛 [Issues](https://github.com/brentmzey/sanctuary-stream/issues)
+- 💬 [Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
 
 ---
 
 ## 🙏 Credits
 
-[Tauri](https://tauri.app/) • [Rust](https://rust-lang.org/) • [React](https://react.dev/) • [PocketBase](https://pocketbase.io/)
+Built with ❤️ for churches worldwide
 
----
-
-## 📞 Support
-
-- [Issues](https://github.com/brentmzey/sanctuary-stream/issues)
-- [Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
-- [Documentation](./docs)
+**Technologies:** [Tauri](https://tauri.app/) • [Rust](https://rust-lang.org/) • [React](https://react.dev/) • [PocketBase](https://pocketbase.io/)
 
 ---
 
 **⭐ Star this repo if you find it useful!**
 
-**🚀 Private code. Public releases. Universal platforms.**
+**🚀 Built for churches. Universal platforms. Functional programming.**
