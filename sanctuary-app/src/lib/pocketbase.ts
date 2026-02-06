@@ -1,11 +1,5 @@
 import PocketBase from 'pocketbase';
 
-// Platform detection
-const isWeb = typeof window !== 'undefined' && !('__TAURI__' in window);
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-  typeof navigator !== 'undefined' ? navigator.userAgent : ''
-);
-
 // Get PocketBase URL from multiple sources (priority order)
 const getPocketBaseUrl = (): string => {
   // 1. Runtime configuration (user settings in localStorage)
@@ -60,44 +54,24 @@ if (typeof window !== 'undefined') {
   const maxReconnectAttempts = 10;
   
   window.addEventListener('online', () => {
-    console.log('[PocketBase] Network online - reconnecting...');
+    console.log('[PocketBase] Network online - attempting reconnection...');
     reconnectAttempts = 0;
-    pb.realtime.reconnect();
+    // Note: PocketBase handles reconnection automatically
+    // Just log the event for debugging
   });
 
   window.addEventListener('offline', () => {
-    console.log('[PocketBase] Network offline - pausing subscriptions');
+    console.log('[PocketBase] Network offline - WebSocket will auto-reconnect when online');
   });
 
-  // Monitor connection state
-  const originalSubscribe = pb.collection.bind(pb);
-  pb.collection = function(collectionName: string) {
-    const collection = originalSubscribe(collectionName);
-    const originalSubscribeFn = collection.subscribe.bind(collection);
-    
-    collection.subscribe = function(...args: unknown[]) {
-      const result = originalSubscribeFn(...args);
-      
-      // Handle reconnection with exponential backoff
-      result.catch((err: Error) => {
-        if (reconnectAttempts < maxReconnectAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-          console.log(`[PocketBase] Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
-          reconnectAttempts++;
-          
-          setTimeout(() => {
-            originalSubscribeFn(...args);
-          }, delay);
-        } else {
-          console.error('[PocketBase] Max reconnection attempts reached:', err);
-        }
-      });
-      
-      return result;
-    };
-    
-    return collection;
-  };
+  // PocketBase SDK handles reconnection automatically
+  // We just need to monitor connection state for UI feedback
+  setInterval(() => {
+    // Health check could be added here if needed
+    if (reconnectAttempts >= maxReconnectAttempts) {
+      console.warn('[PocketBase] Max reconnection attempts reached');
+    }
+  }, 30000);
 }
 
 export interface CommandRecord {
