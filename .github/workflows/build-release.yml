@@ -2,8 +2,13 @@ name: Build and Release - All Platforms
 
 on:
   push:
+    branches:
+      - main        # Auto-build on every push to main
     tags:
-      - 'v*'
+      - 'v*'        # Also build on version tags
+  pull_request:
+    branches:
+      - main        # Test builds on PRs (no release)
   workflow_dispatch:
     inputs:
       version:
@@ -175,6 +180,26 @@ jobs:
           name: web-dist
           path: sanctuary-app/dist/
 
+      - name: Deploy to Vercel
+        if: github.ref == 'refs/heads/main' || github.ref_type == 'tag'
+        run: |
+          npm install -g vercel
+          cd sanctuary-app
+          
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            # Production deployment for tags
+            vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+            echo "✅ Deployed to production: https://sanctuary-stream.vercel.app"
+          else
+            # Preview deployment for main branch
+            vercel --token=${{ secrets.VERCEL_TOKEN }} --yes
+            echo "✅ Deployed to preview: https://sanctuary-stream-git-main.vercel.app"
+          fi
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        continue-on-error: true  # Don't fail if Vercel already auto-deployed
+
   # Build iOS App
   build-ios:
     runs-on: macos-latest
@@ -236,6 +261,40 @@ jobs:
             sanctuary-app/gen/apple/**/*.ipa
             sanctuary-app/ios/App/build/Sanctuary*.ipa
             sanctuary-app/ios/App/build/Sanctuary*.app
+
+      - name: Deploy to App Store (TestFlight)
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
+        run: |
+          # Install fastlane
+          gem install fastlane
+          
+          cd sanctuary-app
+          
+          # Check if IPA exists (Tauri build)
+          if [ -f "gen/apple/release/Sanctuary-Stream.ipa" ]; then
+            IPA_PATH="gen/apple/release/Sanctuary-Stream.ipa"
+          elif [ -f "ios/App/build/Sanctuary-Stream.ipa" ]; then
+            IPA_PATH="ios/App/build/Sanctuary-Stream.ipa"
+          else
+            echo "No IPA found, skipping App Store deployment"
+            exit 0
+          fi
+          
+          # Upload to TestFlight using fastlane
+          fastlane pilot upload \
+            --ipa "$IPA_PATH" \
+            --skip_submission \
+            --skip_waiting_for_build_processing \
+            --apple_id "${{ secrets.APPLE_ID }}" \
+            --username "${{ secrets.APPLE_ID }}" \
+            --team_id "${{ secrets.APPLE_TEAM_ID }}" \
+            --app_identifier "com.sanctuary.stream"
+          
+          echo "✅ Uploaded to TestFlight successfully"
+        env:
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+        continue-on-error: true  # Don't fail build if TestFlight upload fails
 
   # Build Android App
   build-android:
@@ -312,52 +371,104 @@ jobs:
             sanctuary-app/android/app/build/outputs/**/*.apk
             sanctuary-app/android/app/build/outputs/**/*.aab
 
+      - name: Deploy to Google Play (Internal Track)
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
+        run: |
+          cd sanctuary-app
+          
+          # Check if AAB exists (required for Play Store)
+          if [ -f "gen/android/app/build/outputs/bundle/release/sanctuary-stream-release.aab" ]; then
+            AAB_PATH="gen/android/app/build/outputs/bundle/release/sanctuary-stream-release.aab"
+          elif [ -f "android/app/build/outputs/bundle/release/app-release.aab" ]; then
+            AAB_PATH="android/app/build/outputs/bundle/release/app-release.aab"
+          else
+            echo "No AAB found, skipping Google Play deployment"
+            exit 0
+          fi
+          
+          # Install fastlane
+          gem install fastlane
+          
+          # Upload to Google Play Internal Track using fastlane
+          fastlane supply \
+            --track internal \
+            --aab "$AAB_PATH" \
+            --skip_upload_metadata \
+            --skip_upload_images \
+            --skip_upload_screenshots \
+            --json_key_data "${{ secrets.GOOGLE_PLAY_JSON_KEY }}" \
+            --package_name "com.sanctuary.stream"
+          
+          echo "✅ Uploaded to Google Play Internal Track successfully"
+        continue-on-error: true  # Don't fail build if Play Store upload fails
+
   # Create GitHub Release
   create-release:
-    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android]
+    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android, deploy-backend]
     runs-on: ubuntu-latest
+    # Only create release on tags or main branch
+    if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
     permissions:
       contents: write  # Required for creating public releases from private repo
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
 
+      - name: Generate version number
+        id: version
+        run: |
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "release_name=Release ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            VERSION="dev-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "release_name=Development Build $VERSION" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Public Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.release_name }}
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
           generate_release_notes: true
-          make_latest: true
+          make_latest: ${{ github.ref_type == 'tag' }}
           body: |
-            ## Sanctuary Stream ${{ github.ref_name }}
+            ## Sanctuary Stream ${{ steps.version.outputs.version }}
             
             **Universal church streaming control system**
+            
+            ${{ github.ref_type == 'tag' && '### 🚀 Production Release' || '### ⚠️ Development Build (Auto-generated from main branch)' }}
             
             ### Downloads (Public - No GitHub Account Required)
             
             Choose your platform:
             
             #### Desktop
-            - 🍎 **macOS** (Universal - Intel + Apple Silicon): [Download DMG](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/Sanctuary-Stream-universal.dmg)
-            - 🪟 **Windows** (10/11): [Download MSI](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/Sanctuary-Stream-x64.msi)
-            - 🐧 **Linux** (Ubuntu/Debian): [Download DEB](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/sanctuary-stream_amd64.deb)
-            - 🐧 **Linux** (Any distro): [Download AppImage](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ github.ref_name }}/sanctuary-stream_amd64.AppImage)
+            - 🍎 **macOS** (Universal - Intel + Apple Silicon): [Download DMG](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-universal.dmg)
+            - 🪟 **Windows** (10/11): [Download MSI](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-x64.msi)
+            - 🐧 **Linux** (Ubuntu/Debian): [Download DEB](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.deb)
+            - 🐧 **Linux** (Any distro): [Download AppImage](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.AppImage)
             
             #### Mobile
-            - 📱 **iOS**: Coming to App Store
-            - 🤖 **Android**: Coming to Google Play
+            - 📱 **iOS**: ${{ github.ref_type == 'tag' && '[Download IPA](https://github.com/brentmzey/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/Sanctuary-Stream.ipa)' || 'Dev build available' }}
+            - 🤖 **Android**: ${{ github.ref_type == 'tag' && '[Download APK](https://github.com/brentmzey/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/sanctuary-stream-release.apk)' || 'Dev build available' }}
             
             #### Web
             - 🌐 **Web App**: [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app)
             
             ### What's New
             
-            See [CHANGELOG.md](https://github.com/brentmzey/sanctuary-stream/blob/main/CHANGELOG.md) for details.
+            ${{ github.ref_type == 'tag' && 'See [CHANGELOG.md](https://github.com/brentmzey/sanctuary-stream/blob/main/CHANGELOG.md) for details.' || 'Latest development changes from main branch.' }}
             
             ### Installation & Setup
             
@@ -385,6 +496,11 @@ jobs:
             artifacts/**/*.msi
             artifacts/**/*.exe
             artifacts/**/*.deb
+            artifacts/**/*.AppImage
+            artifacts/**/*.ipa
+            artifacts/**/*.apk
+            artifacts/**/*.aab
+            backend-deploy/**/*
             artifacts/**/*.AppImage
             artifacts/**/*.ipa
             artifacts/**/*.apk
@@ -455,3 +571,86 @@ jobs:
           releaseFiles: android-artifacts/**/*.aab
           track: production
           status: completed
+
+  # Deploy Backend Configuration
+  deploy-backend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref_type == 'tag'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package PocketBase Schema
+        run: |
+          echo "📦 Packaging PocketBase configuration..."
+          
+          # Create deployment package
+          mkdir -p backend-deploy
+          
+          # Copy PocketBase schema and migrations
+          if [ -d "pocketbase" ]; then
+            cp -r pocketbase backend-deploy/
+            echo "✅ PocketBase schema packaged"
+          fi
+          
+          # Copy documentation
+          cp -r docs backend-deploy/
+          
+          # Create deployment instructions
+          cat > backend-deploy/DEPLOY.md << 'DEPLOY_EOF'
+# PocketBase Backend Deployment
+
+## Quick Start
+
+1. Download PocketBase for your platform:
+   - https://pocketbase.io/docs/
+
+2. Extract and run:
+   ```bash
+   ./pocketbase serve
+   ```
+
+3. Open admin UI:
+   - http://127.0.0.1:8090/_/
+
+4. Import schema:
+   - Use the schema files in this directory
+
+## Cloud Deployment Options
+
+### PocketHost (Recommended - Easiest)
+1. Sign up: https://pockethost.io
+2. Create new instance
+3. Import schema
+4. Done! (Auto-scaling, backups included)
+
+### Self-Hosted
+1. Deploy to your server (VPS, AWS, etc.)
+2. Configure reverse proxy (nginx/caddy)
+3. Set up SSL certificate
+4. Configure backups
+
+## Configuration
+
+Users configure backend URL in clients:
+- Desktop: Settings → Backend URL
+- Mobile: Settings → Backend URL
+- Web: URL parameter ?pb=https://your-backend.com
+
+## Support
+
+See docs/ for complete documentation.
+DEPLOY_EOF
+          
+          echo "✅ Backend deployment package created"
+
+      - name: Upload Backend Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-config
+          path: backend-deploy/
+
+      - name: Create Backend Documentation Release
+        run: |
+          echo "📚 Backend configuration available in release artifacts"
+          echo "Users can deploy their own PocketBase instance using the included schema"

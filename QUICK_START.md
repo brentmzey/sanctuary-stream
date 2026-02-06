@@ -4,24 +4,53 @@ Get Sanctuary Stream running in minutes.
 
 ---
 
-## 🎯 Deploy Everything (One Command)
+## 🎯 **NEW: Auto-Deploy on Push to Main!**
+
+**Just push to `main` and everything builds automatically!**
 
 ```bash
-./scripts/build-test-deploy.sh --version v0.1.1
+git push origin main
 ```
 
-**This single command will:**
-1. ✅ Run all tests (linting, type checking, unit tests)
-2. ✅ Verify platform support (24 automated checks)
-3. ✅ Build frontend locally
-4. ✅ Commit and push changes to GitHub
-5. ✅ Create release tag
-6. ✅ Trigger GitHub Actions
-7. ✅ Build all 6 platforms in parallel (~20 minutes)
-8. ✅ Create public release with binaries
-9. ✅ Deploy web app to Vercel
+**What happens automatically (~25 minutes):**
+1. ✅ Builds all 6 platforms (macOS, Windows, Linux, iOS, Android, Web)
+2. ✅ Runs all tests
+3. ✅ Creates development release on GitHub
+4. ✅ Uploads iOS to TestFlight
+5. ✅ Uploads Android to Google Play Internal
+6. ✅ Deploys web to Vercel
+7. ✅ Packages backend configuration
 
-**Total time:** ~25-30 minutes from start to finish.
+**No manual steps required!**
+
+---
+
+## 📦 Deploy Everything (Automated)
+
+### Option 1: Push to Main (Recommended)
+```bash
+# Make your changes
+git add .
+git commit -m "Add new feature"
+git push origin main
+
+# Wait ~25 minutes - everything builds automatically!
+```
+
+### Option 2: Create Production Release
+```bash
+# For production releases (not development builds)
+git tag -a v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
+
+# Triggers production deployment
+```
+
+### Option 3: Use Helper Script (Manual Control)
+```bash
+# Full control with testing and verification
+./scripts/build-test-deploy.sh --version v0.1.1
+```
 
 ---
 
@@ -35,7 +64,7 @@ Runs all tests without building or deploying.
 
 ---
 
-## 🏗️ Build Locally
+## 🏗️ Build Locally (Optional)
 
 ```bash
 # Web frontend
@@ -52,17 +81,32 @@ cd sanctuary-app && npm run tauri:ios:build
 
 ## 📦 Download Binaries
 
-After GitHub Actions completes (~20 minutes):
+After push to `main` completes (~25 minutes):
 
-**Public downloads (no account needed):**
+**Automatic development builds:**
 https://github.com/brentmzey/sanctuary-stream/releases
+
+**Production releases (tags):**
+https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 - 🍎 macOS: `Sanctuary-Stream-universal.dmg`
 - 🪟 Windows: `Sanctuary-Stream-x64.msi`
 - 🐧 Linux: `sanctuary-stream_amd64.deb` or `.AppImage`
-- 📱 iOS: `Sanctuary-Stream.ipa`
-- 🤖 Android: `sanctuary-stream-release.apk`
+- 📱 iOS: Available on TestFlight (auto-uploaded)
+- 🤖 Android: Available on Google Play Internal (auto-uploaded)
 - 🌐 Web: https://sanctuary-stream.vercel.app
+
+---
+
+## 📱 Mobile App Stores
+
+### iOS (TestFlight)
+**Automatic:** Uploaded on every push
+**Manual:** Log into App Store Connect to promote
+
+### Android (Google Play)
+**Automatic:** Uploaded to Internal Track on every push
+**Manual:** Log into Play Console to promote
 
 ---
 
@@ -85,7 +129,8 @@ Expected output:
 
 ## 📚 More Information
 
-- **Complete Guide:** [docs/BUILD_DEPLOY_GUIDE.md](docs/BUILD_DEPLOY_GUIDE.md)
+- **Auto-Deploy Guide:** [docs/AUTO_DEPLOY_GUIDE.md](docs/AUTO_DEPLOY_GUIDE.md) ⭐ **NEW**
+- **Complete Build Guide:** [docs/BUILD_DEPLOY_GUIDE.md](docs/BUILD_DEPLOY_GUIDE.md)
 - **Platform Details:** [docs/PLATFORM_SUPPORT.md](docs/PLATFORM_SUPPORT.md)
 - **User Guide:** [docs/USER_GUIDE.md](docs/USER_GUIDE.md)
 - **Status Report:** [PLATFORM_STATUS.md](PLATFORM_STATUS.md)
@@ -100,8 +145,31 @@ Expected output:
 
 ---
 
-**Ready? Let's go! 🚀**
+## 🎯 Daily Workflow
 
 ```bash
-./scripts/build-test-deploy.sh --version v0.1.1
+# 1. Make changes
+vim sanctuary-app/src/...
+
+# 2. Commit and push
+git add .
+git commit -m "Add feature"
+git push origin main
+
+# 3. Wait ~25 minutes - everything builds automatically!
+
+# 4. Download from:
+#    https://github.com/brentmzey/sanctuary-stream/releases
+
+# 5. Test on all platforms
 ```
+
+---
+
+**Ready? Just push to main! 🚀**
+
+```bash
+git push origin main
+```
+
+**Everything deploys automatically. No manual steps required.**
