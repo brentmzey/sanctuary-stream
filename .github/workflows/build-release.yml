@@ -203,8 +203,24 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Build iOS app
-        run: cd sanctuary-app && npm run tauri ios build -- --release
+      - name: Setup Capacitor (fallback for non-Tauri iOS)
+        run: |
+          cd sanctuary-app
+          if [ ! -d "ios" ]; then
+            npx cap init --web-dir=dist
+            npx cap add ios
+          fi
+
+      - name: Build iOS app (Tauri primary, Capacitor fallback)
+        run: |
+          cd sanctuary-app
+          # Try Tauri first (native performance)
+          if command -v tauri &> /dev/null; then
+            npm run tauri:ios:build -- --release || npm run cap:build:ios
+          else
+            # Fallback to Capacitor (web-based)
+            npm run cap:build:ios
+          fi
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -216,7 +232,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: sanctuary-app/gen/apple/**/*.ipa
+          path: |
+            sanctuary-app/gen/apple/**/*.ipa
+            sanctuary-app/ios/App/build/Sanctuary*.ipa
+            sanctuary-app/ios/App/build/Sanctuary*.app
 
   # Build Android App
   build-android:
@@ -255,12 +274,28 @@ jobs:
           npm install
           cd sanctuary-app && npm install
 
+      - name: Setup Capacitor (fallback for non-Tauri Android)
+        run: |
+          cd sanctuary-app
+          if [ ! -d "android" ]; then
+            npx cap init --web-dir=dist
+            npx cap add android
+          fi
+
       - name: Decode keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android-keystore.jks
 
-      - name: Build Android app
-        run: cd sanctuary-app && npm run tauri android build -- --release
+      - name: Build Android app (Tauri primary, Capacitor fallback)
+        run: |
+          cd sanctuary-app
+          # Try Tauri first (native performance)
+          if command -v tauri &> /dev/null; then
+            npm run tauri:android:build -- --release || npm run cap:build:android
+          else
+            # Fallback to Capacitor (web-based)
+            npm run cap:build:android
+          fi
         env:
           ANDROID_KEYSTORE_PATH: ../android-keystore.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -274,6 +309,8 @@ jobs:
           path: |
             sanctuary-app/gen/android/**/release/*.apk
             sanctuary-app/gen/android/**/release/*.aab
+            sanctuary-app/android/app/build/outputs/**/*.apk
+            sanctuary-app/android/app/build/outputs/**/*.aab
 
   # Create GitHub Release
   create-release:

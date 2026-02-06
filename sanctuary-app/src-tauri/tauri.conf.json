@@ -30,9 +30,14 @@
       "http": {
         "all": true,
         "scope": [
-          "http://127.0.0.1:8090/*",
-          "http://localhost:8090/*",
-          "https://*.pockethost.io/*"
+          "http://127.0.0.1:*/*",
+          "http://localhost:*/*",
+          "https://*.pockethost.io/*",
+          "wss://*.pockethost.io/*",
+          "ws://127.0.0.1:*/*",
+          "ws://localhost:*/*",
+          "https://*:*/*",
+          "wss://*:*/*"
         ]
       },
       "notification": {
@@ -70,7 +75,7 @@
       }
     },
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://localhost:8090 http://127.0.0.1:8090 https://*.pockethost.io wss://*.pockethost.io; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+      "csp": "default-src 'self'; connect-src ipc: http://*:* https://*:* ws://*:* wss://*:*; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' https: data: blob:"
     },
     "updater": {
       "active": false
