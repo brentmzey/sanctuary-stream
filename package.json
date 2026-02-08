@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:pocketbase\" \"npm run dev:bridge\" \"npm run dev:app\"",
     "dev:all": "concurrently -n \"obs,bridge,app\" -c \"yellow,cyan,green\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:full": "concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
     "dev:app": "npm run dev --workspace=sanctuary-app",
     "dev:bridge": "npm run dev --workspace=sanctuary-bridge",
     "dev:pocketbase": "cd pocketbase/local && pocketbase serve --http=127.0.0.1:8090",
@@ -42,11 +43,12 @@
     "schema:init:local": "tsx pocketbase/schema-init.ts local",
     "schema:init:staging": "tsx pocketbase/schema-init.ts staging",
     "schema:init:production": "tsx pocketbase/schema-init.ts production",
-    "mock:obs": "node scripts/mock-obs.js",
+    "mock:obs": "tsx scripts/mock-obs.ts",
     "clean": "rm -rf sanctuary-app/dist sanctuary-bridge/dist pocketbase/local/pb_data",
     "clean:all": "npm run clean && rm -rf node_modules sanctuary-app/node_modules sanctuary-bridge/node_modules"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "concurrently": "^8.2.2",
@@ -58,7 +60,8 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.0.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.1.0"
+    "typescript": "^5.1.0",
+    "ws": "^8.19.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -1,26 +1,37 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Mock OBS WebSocket Server
  * For testing Bridge service without running OBS Studio
  * 
- * Usage: node scripts/mock-obs.js
+ * Usage: npm run mock:obs
  */
 
-const WebSocket = require('ws');
+import { WebSocket, WebSocketServer } from 'ws';
 
-const PORT = process.env.OBS_PORT || 4455;
+const PORT = parseInt(process.env.OBS_PORT || '4455', 10);
 const PASSWORD = process.env.OBS_PASS || 'test123';
 
-const wss = new WebSocket.Server({ port: PORT });
+const wss = new WebSocketServer({ port: PORT });
 
-console.log(`\n🎥 Mock OBS WebSocket Server`);
+console.log(`
+🎥 Mock OBS WebSocket Server`);
 console.log(`${'='.repeat(50)}`);
 console.log(`Port: ${PORT}`);
 console.log(`Password: ${PASSWORD}`);
 console.log(`URL: ws://127.0.0.1:${PORT}`);
-console.log(`${'='.repeat(50)}\n`);
+console.log(`${'='.repeat(50)}
+`);
 
 let isStreaming = false;
+
+interface ObsRequest {
+  op: number;
+  d: {
+    requestType: string;
+    requestId: string;
+    [key: string]: any;
+  };
+}
 
 wss.on('connection', (ws) => {
   console.log('✅ Client connected');
@@ -40,7 +51,7 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (data) => {
     try {
-      const msg = JSON.parse(data.toString());
+      const msg = JSON.parse(data.toString()) as ObsRequest;
       
       switch (msg.op) {
         case 1: // Identify
@@ -70,12 +81,12 @@ wss.on('connection', (ws) => {
   });
 });
 
-function handleRequest(ws, msg) {
+function handleRequest(ws: WebSocket, msg: ObsRequest) {
   const { requestType, requestId } = msg.d;
   
   console.log(`📡 Request: ${requestType}`);
 
-  let responseData = {};
+  let responseData: Record<string, any> = {};
   let success = true;
 
   switch (requestType) {
@@ -112,18 +123,6 @@ function handleRequest(ws, msg) {
       break;
 
     case 'GetStreamStatus':
-      responseData = {
-        outputActive: isStreaming,
-        outputReconnecting: false,
-        outputTimecode: '00:00:00.000',
-        outputDuration: 0,
-        outputCongestion: 0,
-        outputBytes: 0,
-        outputSkippedFrames: 0,
-        outputTotalFrames: 0
-      };
-      break;
-
     case 'GetOutputStatus':
       responseData = {
         outputActive: isStreaming,
@@ -131,9 +130,23 @@ function handleRequest(ws, msg) {
         outputTimecode: '00:00:00.000',
         outputDuration: 0,
         outputCongestion: 0,
-        outputBytes: 0,
+        outputBytes: isStreaming ? Math.floor(Date.now() / 1000) * 5000 : 0, // Mock bytes increasing
         outputSkippedFrames: 0,
         outputTotalFrames: 0
+      };
+      break;
+
+    case 'GetStats':
+      // Mock fluctuating stats
+      const randomVariance = (Math.random() * 2) - 1; // +/- 1
+      responseData = {
+        cpuUsage: isStreaming ? 2.5 + randomVariance : 0.1,
+        memoryUsage: 128.5,
+        availableDiskSpace: 500000,
+        activeFps: isStreaming ? 60 + (randomVariance * 0.5) : 0,
+        averageFrameTime: 16.6,
+        renderSkippedFrames: 0,
+        outputSkippedFrames: isStreaming && Math.random() > 0.9 ? 1 : 0, // 10% chance of a dropped frame
       };
       break;
 

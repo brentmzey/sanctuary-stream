@@ -14,7 +14,12 @@
    - Quick troubleshooting
    - Cost breakdown
 
-2. **[QUICKSTART.md](./QUICKSTART.md)** 🚀 (5 min read)
+2. **[USER_ONBOARDING.md](./USER_ONBOARDING.md)** 🧙 (10 min read) **NEW!**
+   - **Zero-Config Setup Wizard walkthrough**
+   - First-time user guide
+   - OBS configuration for beginners
+
+3. **[QUICKSTART.md](./QUICKSTART.md)** 🚀 (5 min read)
    - 5-minute setup guide
    - Essential commands
    - First run instructions
@@ -284,11 +289,12 @@
 **Status:** Complete & current
 
 **Recent Changes:**
+- ✅ **New Setup Wizard:** Zero-config onboarding for all users.
+- ✅ **Rust Logic Migration:** Core network calls moved to high-performance Rust.
+- ✅ **Quality Metrics:** Real-time FPS, CPU, and Dropped Frame monitoring.
+- ✅ **Functional Refactor:** safer code using Result/Option patterns in TS & Rust.
 - ✅ Added MULTI_BACKEND.md (supports 245+ distinct backends)
 - ✅ Added INDEX.md (this file)
-- ✅ Updated OBS_INTEGRATION.md (HD/4K details)
-- ✅ Added QUICK_REFERENCE.md (fast answers)
-- ✅ Enhanced all guides with latest features
 
 ---
 

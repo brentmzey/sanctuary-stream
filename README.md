@@ -5,228 +5,145 @@
 [![Build Status](https://github.com/brentmzey/sanctuary-stream/workflows/Build%20and%20Release/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Remote control for OBS Studio. Built with Tauri + Rust. Runs everywhere.
+> **Professional Remote Control for OBS Studio.**
+> Control your church stream from anywhere—iPhone, Android, Web, or Desktop. Secure, open-source, and free forever.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Automated)
+
+The fastest way to get a local development environment running is our automated setup script:
 
 ```bash
-# 1. Clone and install
-git clone git@github.com:brentmzey/sanctuary-stream.git
+# Clone the repository
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
-npm install
 
-# 2. Configure
-export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL="admin123456"
-
-# 3. Setup
+# Run the automated setup
 npm run setup
-
-# 4. Run
-npm run dev
 ```
 
-**Access:** http://localhost:5173  
-**Login:** `pastor@local.dev` / `pastor123456`
-
-**📖 Full guide:** [docs/QUICKSTART.md](./docs/QUICKSTART.md)
-
----
-
-## 🎥 Video & Audio Quality
-
-**Professional streaming with free, open-source software:**
-
-### Video
-- ✅ **1080p @ 30fps** - Recommended for churches
-- ✅ **720p @ 30fps** - Lower bandwidth option
-- ✅ **4K @ 60fps** - Ultra HD (if bandwidth permits)
-- ✅ **Hardware encoding** - GPU-accelerated (NVENC, AMD, QuickSync)
-
-### Audio
-- ✅ **48 kHz sample rate** - Broadcast standard
-- ✅ **AAC codec** - Best compatibility
-- ✅ **Stereo/Mono** - Your choice
-- ✅ **160-320 kbps** - Professional quality
-
-### Integration
-- ✅ **OBS Studio** - Industry-standard free software
-- ✅ **All platforms** - YouTube, Facebook, custom RTMP
-- ✅ **Multi-streaming** - Broadcast to multiple platforms simultaneously
-- ✅ **100% Free** - No subscriptions, no hidden costs
-
-**📖 Complete guide:** [docs/OBS_INTEGRATION.md](./docs/OBS_INTEGRATION.md)
+This script will:
+- Check for prerequisites (Node.js, PocketBase)
+- Install all dependencies
+- Start a local PocketBase server
+- Automatically create admin and test accounts
+- Configure your `.env` files with the correct Stream IDs
+- Prepare the Bridge and App for launch
 
 ---
 
-## 📥 Installation (For End Users)
+## 🗺️ High-Level Overview
 
-**Download pre-built apps:**
+Sanctuary Stream works by connecting **Remotes** (phones/laptops) to a **Station** (your streaming computer) via a secure **Cloud/Local Server**.
 
-### Desktop
-- 🍎 [macOS (Universal)](https://github.com/brentmzey/sanctuary-stream/releases/latest) - Intel & Apple Silicon
-- 🪟 [Windows 10/11](https://github.com/brentmzey/sanctuary-stream/releases/latest) - MSI Installer
-- 🐧 [Linux](https://github.com/brentmzey/sanctuary-stream/releases/latest) - DEB & AppImage
-
-### Mobile
-- 📱 **iOS** - Coming to App Store
-- 🤖 **Android** - Coming to Google Play
-
-### Web
-- 🌐 **Progressive Web App** - [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app)
-
-**📖 Complete guide:** [docs/USER_GUIDE.md](./docs/USER_GUIDE.md)
+1.  🖥️ **The Station:** The powerful PC running OBS Studio + Our Bridge software.
+2.  ☁️ **The Federation Server:** A PocketBase instance (cloud or local) that connects everyone.
+3.  📱 **The Remotes:** The App running on your device to control the Station.
 
 ---
 
-## 📱 Platforms Supported
+## 🚀 Step-by-Step Setup Guide
 
-| Platform | Status | Type |
-|----------|--------|------|
-| macOS (Universal) | ✅ | Desktop |
-| Windows (10/11) | ✅ | Desktop |
-| Linux (Ubuntu/Debian/etc) | ✅ | Desktop |
-| iOS (13.0+) | ✅ | Mobile |
-| Android (7.0+) | ✅ | Mobile |
-| Web (All browsers) | ✅ | PWA |
+Follow this path to build your complete broadcasting system.
 
-**One codebase. Six platforms.**
+### Phase 1: The "Station" (Streaming PC) Setup
+*The computer that actually sends video to YouTube.*
 
----
+1.  **Install OBS Studio:**
+    *   Download and install [OBS Studio](https://obsproject.com/).
+    *   Configure your scenes, cameras, and audio.
+    *   **👉 Deep Dive:** [See `docs/OBS_INTEGRATION.md`](./docs/OBS_INTEGRATION.md) for HD/4K settings.
 
-## ✨ Features
+2.  **Install the Sanctuary Bridge:**
+    *   This small program runs on the Station. It listens for commands from the cloud and tells OBS what to do.
+    *   **Setup:** Ensure you have Node.js installed, then run the bridge.
+    *   **Integrations:** Add your Google Drive credentials for auto-uploading.
+    *   **👉 Deep Dive:** [See `docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md) for Drive & YouTube setup.
 
-### 🎥 Professional Streaming
-- ✅ **HD/4K Video** - 1080p @ 30fps (or 4K with bandwidth)
-- ✅ **Broadcast Audio** - 48 kHz, AAC codec, professional quality
-- ✅ **OBS Studio Integration** - Industry-standard free software
-- ✅ **Multi-platform** - YouTube, Facebook, anywhere
-- ✅ **Free Forever** - Open source, no subscriptions
+### Phase 2: The Federation Server (Sign Up & Connect)
+*The secure link between your phone and the computer.*
 
-### 🎛️ Remote Control
-- ✅ **Remote OBS Control** - Start/stop streaming from anywhere
-- ✅ **Real-Time Sync** - All devices stay synchronized
-- ✅ **Multi-User** - Admin, pastor, tech roles
-- ✅ **Multi-Device** - Desktop, mobile, web
+You need a central place for devices to "meet". We use **PocketBase**. You have two options:
 
-### 🔒 Technical Excellence
-- ✅ **Secure** - Memory-safe Rust backend
-- ✅ **Fast** - 50-80 MB RAM, 5-10 MB binary
-- ✅ **Functional** - Pure functions, immutable data
-- ✅ **Type-Safe** - Strict TypeScript + Rust
+**Option A: Cloud (Easiest - "Federated")**
+1.  Go to [PocketHost.io](https://pockethost.io) (or any PocketBase hosting).
+2.  Create a new backend (e.g., `https://my-church.pockethost.io`).
+3.  **Schema Setup:** Upload the files from `pocketbase/pb_migrations/` to your cloud instance's migrations folder, or use the PocketBase Admin UI to create the `users`, `commands`, and `streams` collections.
+4.  This URL is your **"Federation Key"**. You will type this into the App and the Bridge.
 
----
+**Option B: Self-Hosted (Local Only)**
+1.  Download the `pocketbase` executable (for your OS) from [pocketbase.io](https://pocketbase.io/docs/).
+2.  Place it in the `pocketbase/` directory of this repo.
+3.  Run `./pocketbase serve`. The schema will be **automatically created** via the included migrations in `pb_migrations/`.
+4.  Your URL is `http://127.0.0.1:8090` (works only on local WiFi).
 
-## 🏗️ Architecture
+**👉 Deep Dive:** [See `docs/MULTI_BACKEND.md`](./docs/MULTI_BACKEND.md) for configuring 245+ instances.
 
-```
-React + TypeScript (Frontend)
-         ↓
-  Tauri + Rust (Backend)
-         ↓
-  PocketBase (Database)
-         ↓
-OBS WebSocket (Bridge)
-```
+### Phase 3: The "Remote" (App) Deployment
+*Get the app on everyone's devices.*
 
-**Principles:**
-- Pure functions
-- Immutable data
-- Type safety
-- Zero side effects
+Sanctuary Stream runs on **everything**.
+
+| Platform | How to Install | Guide |
+| :--- | :--- | :--- |
+| **iPhone / iPad** | Download from App Store / Build with Xcode | [iOS Guide](./docs/INSTALLATION_DISTRIBUTION.md#ios) |
+| **Android** | Download APK / Play Store | [Android Guide](./docs/INSTALLATION_DISTRIBUTION.md#android) |
+| **Web Browser** | Visit your deployed URL (e.g., Vercel) | [Web Guide](./docs/INSTALLATION_DISTRIBUTION.md#web) |
+| **Mac** | Download `.dmg` from Releases | [Desktop Guide](./docs/USER_GUIDE.md) |
+| **Windows** | Download `.msi` from Releases | [Desktop Guide](./docs/USER_GUIDE.md) |
+| **Linux** | Download `.deb` or `.AppImage` | [Desktop Guide](./docs/USER_GUIDE.md) |
+
+**👉 Deep Dive:** [See `docs/INSTALLATION_DISTRIBUTION.md`](./docs/INSTALLATION_DISTRIBUTION.md) for all app store links.
 
 ---
 
-## 📚 Documentation
+## 🔗 Connecting It All
 
-**Essential Guides:** (in [`./docs`](./docs))
+Once installed:
 
-### For Users
-- [QUICKSTART.md](./docs/QUICKSTART.md) - 5-minute setup
-- [USER_GUIDE.md](./docs/USER_GUIDE.md) - Complete installation & OBS setup
-
-### For Developers
-- [FUNCTIONAL_STYLE.md](./docs/FUNCTIONAL_STYLE.md) - ⚠️ **REQUIRED READING**
-- [BUILD_AND_RUN.md](./docs/BUILD_AND_RUN.md) - Development guide
-
-### For DevOps
-- [CI_CD_SUMMARY.md](./docs/CI_CD_SUMMARY.md) - Automated builds
-- [GITHUB_SETUP.md](./docs/GITHUB_SETUP.md) - Repository setup
-
-**See [docs/README.md](./docs/README.md) for complete index**
+1.  **Start the Bridge** on your PC:
+    ```bash
+    # Update .env with your Server URL (e.g., https://my-church.pockethost.io)
+    npm run start
+    ```
+2.  **Open the App** on your phone.
+3.  **Enter Server URL:** Type in `https://my-church.pockethost.io`.
+4.  **Login:** Use the credentials created in your PocketBase dashboard.
+5.  **Control:** You should see the "Start Streaming" button light up!
 
 ---
 
-## 🛠️ Tech Stack
+## 🆘 Support & Community
 
-- **Frontend:** React 18 + TypeScript 5 + Vite 7 + Tailwind CSS
-- **Backend:** Rust + Tauri 1.6 + Tokio
-- **Database:** PocketBase (SQLite + Realtime)
-- **Bridge:** Node.js + OBS WebSocket
+We are committed to helping your ministry succeed.
+
+**Where to get help:**
+
+1.  **Documentation:** Check the `./docs` folder first. It contains 20,000+ words of guides.
+    *   [⚡ Quick Reference](./docs/QUICK_REFERENCE.md) (Common problems solved fast)
+    *   [🧙 User Onboarding](./docs/USER_ONBOARDING.md) (First time setup)
+2.  **Issues:** File a bug report on [GitHub Issues](https://github.com/brentmzey/sanctuary-stream/issues).
+3.  **Email Support:** Contact the core maintainers at `support@sanctuarystream.org` (Replace with actual email if available, or maintainer personal email).
+
+**Contributing:**
+We welcome PRs! Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and [`docs/FUNCTIONAL_STYLE.md`](./docs/FUNCTIONAL_STYLE.md) before submitting code.
 
 ---
 
-## 🚀 Build & Deploy
+## 🏗️ Technical Architecture
 
-```bash
-# Development
-npm run dev              # All services
-npm run tauri:dev        # Desktop app
-
-# Build
-npm run build            # Web
-npm run tauri:build:mac  # macOS
-npm run tauri:build:win  # Windows
-npm run tauri:build:linux # Linux
-
-# CI/CD (Automated)
-git tag v1.0.0
-git push origin v1.0.0
-# → Builds all platforms automatically
+```mermaid
+graph TD
+    User[📱 User / Remote App] -->|HTTPS| PB[☁️ PocketBase Server]
+    PB -->|Realtime Sub| Bridge[🖥️ Sanctuary Bridge]
+    Bridge -->|WebSocket| OBS[🎥 OBS Studio]
+    Bridge -->|Upload| Drive[📂 Google Drive]
+    OBS -->|RTMP| YouTube[📺 YouTube/Twitch]
 ```
 
-**📖 CI/CD Guide:** [docs/CI_CD_SUMMARY.md](./docs/CI_CD_SUMMARY.md)
+**Philosophy:** Zero-Trust Security, Pure Functional Programming, 100% Free.
 
 ---
 
-## 🤝 Contributing
-
-1. Read [docs/FUNCTIONAL_STYLE.md](./docs/FUNCTIONAL_STYLE.md) - **REQUIRED**
-2. Fork repository
-3. Create feature branch
-4. Write pure functional code
-5. Run `npm run validate`
-6. Submit PR
-
-**See [CONTRIBUTING.md](./CONTRIBUTING.md) for details**
-
----
-
-## 📄 License
-
-MIT License - Free for any purpose
-
-See [LICENSE](./LICENSE) for details
-
----
-
-## 🆘 Support
-
-- 📖 [Documentation](./docs)
-- 🐛 [Issues](https://github.com/brentmzey/sanctuary-stream/issues)
-- 💬 [Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
-
----
-
-## 🙏 Credits
-
-Built with ❤️ for churches worldwide
-
-**Technologies:** [Tauri](https://tauri.app/) • [Rust](https://rust-lang.org/) • [React](https://react.dev/) • [PocketBase](https://pocketbase.io/)
-
----
-
-**⭐ Star this repo if you find it useful!**
-
-**🚀 Built for churches. Universal platforms. Functional programming.**
+*Copyright © 2026 Sanctuary Stream Contributors. Released under the MIT License.*

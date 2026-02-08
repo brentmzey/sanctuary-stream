@@ -3,6 +3,22 @@ import PocketBase from 'pocketbase';
 import OBSWebSocket from 'obs-websocket-js';
 import { logger } from './logger';
 import { CommandRecord } from './types';
+import { uploadFile } from './google-drive';
+
+// Functional programming faculties
+type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
+
+const ok = <T>(value: T): Result<T, any> => ({ ok: true, value });
+const fail = <E>(error: E): Result<any, E> => ({ ok: false, error });
+
+const wrapAsync = async <T>(promise: Promise<T>): Promise<Result<T>> => {
+  try {
+    const value = await promise;
+    return ok(value);
+  } catch (error) {
+    return fail(error instanceof Error ? error : new Error(String(error)));
+  }
+};
 
 class SanctuaryBridge {
   private pb: PocketBase;
@@ -24,54 +40,37 @@ class SanctuaryBridge {
   }
 
   async start() {
-    try {
-      // Authenticate with PocketBase
-      await this.authenticatePocketBase();
-      
-      // Connect to OBS
-      await this.connectOBS();
-      
-      // Subscribe to command changes
-      this.subscribeToCommands();
-      
-      // Start heartbeat
-      this.startHeartbeat();
-      
-      logger.info('🚀 Sanctuary Bridge started successfully');
-    } catch (error) {
-      logger.error('Failed to start bridge:', error);
-      process.exit(1);
+    const authResult = await wrapAsync(this.authenticatePocketBase());
+    if (!authResult.ok) {
+        logger.error('Failed to start bridge during authentication:', authResult.error);
+        process.exit(1);
     }
+
+    const obsResult = await wrapAsync(this.connectOBS());
+    // We don't exit if OBS fails, as it has its own retry logic
+    if (!obsResult.ok) {
+        logger.warn('Initial OBS connection failed, will retry...');
+    }
+      
+    this.subscribeToCommands();
+    this.startHeartbeat();
+    logger.info('🚀 Sanctuary Bridge started successfully');
   }
 
   private async authenticatePocketBase() {
     const email = process.env.BRIDGE_EMAIL || 'bridge@local.dev';
     const password = process.env.BRIDGE_PASS || 'bridge123456';
-
-    try {
-      await this.pb.collection('users').authWithPassword(email, password);
-      logger.info('✅ Authenticated with PocketBase');
-    } catch (error) {
-      logger.error('Failed to authenticate with PocketBase:', error);
-      throw error;
-    }
+    return this.pb.collection('users').authWithPassword(email, password);
   }
 
   private async connectOBS() {
     const obsUrl = process.env.OBS_URL || 'ws://127.0.0.1:4455';
     const obsPassword = process.env.OBS_PASS || '';
 
-    try {
-      await this.obs.connect(obsUrl, obsPassword);
-      logger.info('✅ Connected to OBS WebSocket');
-      this.reconnectAttempts = 0;
-
-      // Setup OBS event handlers
-      this.setupOBSHandlers();
-    } catch (error) {
-      logger.error('Failed to connect to OBS:', error);
-      await this.handleOBSReconnect();
-    }
+    await this.obs.connect(obsUrl, obsPassword);
+    logger.info('✅ Connected to OBS WebSocket');
+    this.reconnectAttempts = 0;
+    this.setupOBSHandlers();
   }
 
   private setupOBSHandlers() {
@@ -84,15 +83,22 @@ class SanctuaryBridge {
       await this.handleOBSReconnect();
     });
 
-    this.obs.on('StreamStateChanged', async (data: { outputActive?: boolean }) => {
+    this.obs.on('StreamStateChanged', async (data) => {
       logger.info('Stream state changed:', data);
       await this.updateStreamStatus(data.outputActive ? 'live' : 'idle');
     });
 
-    this.obs.on('RecordStateChanged', async (data: { outputActive?: boolean }) => {
+    this.obs.on('RecordStateChanged', async (data) => {
       logger.info('Record state changed:', data);
-      if (data.outputActive) {
-        await this.updateStreamStatus('recording');
+      await this.updateStreamStatus(data.outputActive ? 'recording' : 'idle');
+
+      // Auto-upload when recording stops
+      if (!data.outputActive && data.outputPath) {
+        logger.info(`Recording finished: ${data.outputPath}`);
+        // Run in background so we don't block the event loop
+        uploadFile(data.outputPath).catch(err => {
+            logger.error('Background upload failed:', err);
+        });
       }
     });
   }
@@ -124,74 +130,87 @@ class SanctuaryBridge {
   private async executeCommand(command: CommandRecord) {
     logger.info(`Executing command: ${command.action} (${command.correlation_id})`);
 
-    try {
-      switch (command.action) {
-        case 'START':
-          await this.obs.call('StartStream');
-          await this.updateStreamStatus('live');
-          break;
-        
-        case 'STOP':
-          await this.obs.call('StopStream');
-          await this.updateStreamStatus('idle');
-          break;
-        
-        case 'RECORD_START':
-          await this.obs.call('StartRecord');
-          await this.updateStreamStatus('recording');
-          break;
-        
-        case 'RECORD_STOP':
-          await this.obs.call('StopRecord');
-          await this.updateStreamStatus('idle');
-          break;
-        
-        default:
-          throw new Error(`Unknown command action: ${command.action}`);
-      }
+    const actionMap: Record<string, () => Promise<any>> = {
+        'START': () => this.obs.call('StartStream'),
+        'STOP': () => this.obs.call('StopStream'),
+        'RECORD_START': () => this.obs.call('StartRecord'),
+        'RECORD_STOP': () => this.obs.call('StopRecord'),
+        'SET_STREAM_SETTINGS': async () => {
+          const service = command.payload?.service as string;
+          const server = command.payload?.server as string;
+          const key = command.payload?.key as string;
 
-      // Mark command as executed
-      await this.pb.collection('commands').update(command.id, {
-        executed: true
-      });
+          if (!service || !key) {
+             throw new Error('Missing service or key in payload for SET_STREAM_SETTINGS');
+          }
+          // specific mapping for common services if needed, or pass through
+          // OBS "rtmp_common" settings usually require 'service', 'server', 'key'
+          return this.obs.call('SetStreamServiceSettings', {
+            streamServiceType: 'rtmp_common',
+            streamServiceSettings: {
+              service: service, // e.g. 'YouTube - RTMPS' or 'Twitch'
+              server: server || 'auto',
+              key: key
+            }
+          });
+        }
+    };
 
-      logger.info(`✅ Command executed: ${command.action}`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      logger.error(`Failed to execute command ${command.action}:`, error);
-      
-      // Update command with error
-      await this.pb.collection('commands').update(command.id, {
-        executed: true,
-        error_message: message
-      });
+    const action = actionMap[command.action];
+    if (!action) {
+        const error = `Unknown command action: ${command.action}`;
+        logger.error(error);
+        await this.pb.collection('commands').update(command.id, { executed: true, error_message: error });
+        return;
+    }
 
-      await this.updateStreamStatus('error');
+    const result = await wrapAsync(action());
+
+    if (result.ok) {
+        const nextStatus = command.action.includes('START') ? 
+            (command.action.startsWith('RECORD') ? 'recording' : 'live') : 'idle';
+        
+        await this.updateStreamStatus(nextStatus);
+        await this.pb.collection('commands').update(command.id, { executed: true });
+        logger.info(`✅ Command executed: ${command.action}`);
+    } else {
+        const message = result.error.message;
+        logger.error(`Failed to execute command ${command.action}:`, result.error);
+        await this.pb.collection('commands').update(command.id, { executed: true, error_message: message });
+        await this.updateStreamStatus('error');
     }
   }
 
-  private async updateStreamStatus(status: string, metadata?: Record<string, unknown>) {
+  private async updateStreamStatus(status: string) {
     try {
-      const update: Record<string, unknown> = {
+      const update: any = {
         status,
         heartbeat: new Date().toISOString()
       };
 
-      if (metadata) {
-        update.metadata = metadata;
-      }
+      // Safely fetch OBS stats using functional wrapper
+      const obsStatusResult = await wrapAsync(this.obs.call('GetStreamStatus'));
+      const obsStatsResult = await wrapAsync(this.obs.call('GetStats'));
 
-      // Get current stream info from OBS if available
-      try {
-        const streamStatus = await this.obs.call('GetStreamStatus');
-        update.metadata = {
-          ...(update.metadata || {}),
-          outputActive: streamStatus.outputActive,
-          outputDuration: streamStatus.outputDuration,
-          outputBytes: streamStatus.outputBytes
-        };
-      } catch (obsError) {
-        // OBS might not be available, continue anyway
+      if (obsStatusResult.ok) {
+          const s = obsStatusResult.value;
+          update.metadata = {
+              outputActive: s.outputActive,
+              outputDuration: s.outputDuration,
+              outputBytes: s.outputBytes,
+              quality: {
+                  dropped_frames: s.outputSkippedFrames,
+              }
+          };
+
+          if (obsStatsResult.ok) {
+              const stats = obsStatsResult.value;
+              update.metadata.quality = {
+                  ...update.metadata.quality,
+                  fps: stats.activeFps,
+                  cpu_usage: stats.cpuUsage
+              };
+          }
       }
 
       await this.pb.collection('streams').update(this.streamId, update);

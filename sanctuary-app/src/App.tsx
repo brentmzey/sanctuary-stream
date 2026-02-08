@@ -4,14 +4,22 @@ import { useStream } from './lib/hooks';
 import { LoginForm } from './components/LoginForm';
 import { StreamStatus } from './components/StreamStatus';
 import { ControlButtons } from './components/ControlButtons';
+import { StreamSettings } from './components/StreamSettings';
+import { SetupWizard } from './components/SetupWizard';
 import './App.css';
 
-const STREAM_ID = import.meta.env.VITE_STREAM_ID || '';
-
 function App() {
+  // Initialize Stream ID from LocalStorage or Environment
+  const [streamId, setStreamId] = useState<string>(() => {
+    return localStorage.getItem('stream_id') || import.meta.env.VITE_STREAM_ID || '';
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
-  const { stream, loading, error } = useStream({ streamId: STREAM_ID });
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // Only hook into stream if we have an ID
+  const { stream, loading, error } = useStream({ streamId });
 
   useEffect(() => {
     const auth = pb.authStore.isValid;
@@ -34,16 +42,25 @@ function App() {
     setUserRole('');
   };
 
-  if (!STREAM_ID) {
+  const handleSetupComplete = (newStreamId: string) => {
+      setStreamId(newStreamId);
+      // Auth state is handled inside wizard (it logs in)
+      if (pb.authStore.model) {
+          setIsAuthenticated(true);
+          setUserRole(pb.authStore.model.role);
+      }
+  };
+
+  // 1. Show Setup Wizard if no Stream ID is configured
+  if (!streamId) {
     return (
-      <div className="app-container">
-        <div className="error-banner">
-          ⚠️ STREAM_ID not configured. Please set VITE_STREAM_ID in your .env file.
-        </div>
+      <div className="app-container flex items-center justify-center h-screen">
+        <SetupWizard onComplete={handleSetupComplete} />
       </div>
     );
   }
 
+  // 2. Show Login if not authenticated
   if (!isAuthenticated) {
     return <LoginForm onSuccess={handleLoginSuccess} />;
   }
@@ -66,80 +83,91 @@ function App() {
 
       <main className="app-main">
         {loading && (
-          <div className="loading-state">
+            <div className="loading-state">
             <div className="spinner-large"></div>
             <p>Loading stream status...</p>
-          </div>
+            </div>
         )}
 
         {error && (
-          <div className="error-banner">
+            <div className="error-banner">
             ⚠️ Error: {error}
-          </div>
+            </div>
         )}
 
         {stream && (
-          <>
+            <>
             <StreamStatus stream={stream} />
 
             {canControl ? (
-              <ControlButtons
-                isLive={stream.status === 'live'}
-                isRecording={stream.status === 'recording'}
-                disabled={stream.status === 'error'}
-              />
+                <>
+                  <ControlButtons
+                    isLive={stream.status === 'live'}
+                    isRecording={stream.status === 'recording'}
+                    disabled={stream.status === 'error'}
+                  />
+                  <div className="flex justify-end mt-4">
+                    <button 
+                      onClick={() => setShowSettings(!showSettings)}
+                      className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
+                    >
+                      {showSettings ? '🔼 Hide Settings' : '⚙️ Stream Settings'}
+                    </button>
+                  </div>
+                  {showSettings && <StreamSettings />}
+                </>
             ) : (
-              <div className="permission-notice">
+                <div className="permission-notice">
                 <p>ℹ️ You don't have permission to control streaming.</p>
                 <p className="text-sm text-gray-400">Only admins and pastors can start/stop streams.</p>
-              </div>
+                </div>
             )}
 
             {stream.youtube_url && (
-              <div className="youtube-link">
+                <div className="youtube-link">
                 <a 
-                  href={stream.youtube_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300"
+                    href={stream.youtube_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300"
                 >
-                  📺 Watch Live Stream
+                    📺 Watch Live Stream
                 </a>
-              </div>
+                </div>
             )}
 
             {stream.metadata && (
-              <div className="metadata-card">
+                <div className="metadata-card">
                 <h3 className="text-lg font-semibold text-white mb-2">Stream Details</h3>
                 <div className="metadata-grid">
-                  {stream.metadata.outputActive !== undefined && (
+                    {stream.metadata.outputActive !== undefined && (
                     <div>
-                      <span className="metadata-label">Output Active:</span>
-                      <span className="metadata-value">
+                        <span className="metadata-label">Output Active:</span>
+                        <span className="metadata-value">
                         {stream.metadata.outputActive ? '✅ Yes' : '❌ No'}
-                      </span>
+                        </span>
                     </div>
-                  )}
-                  {stream.metadata?.outputDuration !== undefined && typeof stream.metadata.outputDuration === 'number' && (
+                    )}
+                    {stream.metadata?.outputDuration !== undefined && typeof stream.metadata.outputDuration === 'number' && (
                     <div>
-                      <span className="metadata-label">Duration:</span>
-                      <span className="metadata-value">
+                        <span className="metadata-label">Duration:</span>
+                        <span className="metadata-value">
                         {Math.floor(stream.metadata.outputDuration / 1000)}s
-                      </span>
+                        </span>
                     </div>
-                  )}
-                  {stream.metadata?.outputBytes !== undefined && typeof stream.metadata.outputBytes === 'number' && (
+                    )}
+                    {stream.metadata?.outputBytes !== undefined && typeof stream.metadata.outputBytes === 'number' && (
                     <div>
-                      <span className="metadata-label">Data Sent:</span>
-                      <span className="metadata-value">
+                        <span className="metadata-label">Data Sent:</span>
+                        <span className="metadata-value">
                         {(stream.metadata.outputBytes / 1024 / 1024).toFixed(2)} MB
-                      </span>
+                        </span>
                     </div>
-                  )}
+                    )}
                 </div>
-              </div>
+                </div>
             )}
-          </>
+            </>
         )}
       </main>
     </div>

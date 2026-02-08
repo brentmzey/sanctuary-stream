@@ -6,10 +6,29 @@ use tauri::Manager;
 use tracing::info;
 
 #[derive(Debug, Serialize, Deserialize)]
+struct StreamQualityMetrics {
+    fps: Option<f64>,
+    bitrate: Option<u64>,
+    dropped_frames: Option<u64>,
+    cpu_usage: Option<f64>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct StreamMetadata {
+    #[serde(rename = "outputActive")]
+    output_active: Option<bool>,
+    #[serde(rename = "outputDuration")]
+    output_duration: Option<u64>,
+    #[serde(rename = "outputBytes")]
+    output_bytes: Option<u64>,
+    quality: Option<StreamQualityMetrics>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct StreamStatus {
     status: String,
     youtube_url: Option<String>,
-    metadata: Option<serde_json::Value>,
+    metadata: Option<StreamMetadata>,
 }
 
 // Tauri commands
@@ -18,21 +37,21 @@ async fn get_stream_status(pocketbase_url: String, stream_id: String) -> Result<
     let client = reqwest::Client::new();
     let url = format!("{}/api/collections/streams/records/{}", pocketbase_url, stream_id);
     
-    let response = client
+    client
         .get(&url)
         .send()
         .await
-        .map_err(|e| format!("Request failed: {}", e))?;
-    
-    if response.status().is_success() {
-        let status: StreamStatus = response
-            .json()
-            .await
-            .map_err(|e| format!("JSON parse failed: {}", e))?;
-        Ok(status)
-    } else {
-        Err(format!("API error: {}", response.status()))
-    }
+        .map_err(|e| format!("Request failed: {}", e))
+        .and_then(|response| {
+            if response.status().is_success() {
+                Ok(response)
+            } else {
+                Err(format!("API error: {}", response.status()))
+            }
+        })?
+        .json::<StreamStatus>()
+        .await
+        .map_err(|e| format!("JSON parse failed: {}", e))
 }
 
 #[tauri::command]
@@ -54,19 +73,20 @@ async fn send_command(
         "created_by": user_id,
     });
     
-    let response = client
+    client
         .post(&url)
         .header("Authorization", auth_token)
         .json(&payload)
         .send()
         .await
-        .map_err(|e| format!("Request failed: {}", e))?;
-    
-    if response.status().is_success() {
-        Ok(correlation_id)
-    } else {
-        Err(format!("API error: {}", response.status()))
-    }
+        .map_err(|e| format!("Request failed: {}", e))
+        .and_then(|response| {
+            if response.status().is_success() {
+                Ok(correlation_id)
+            } else {
+                Err(format!("API error: {}", response.status()))
+            }
+        })
 }
 
 #[tauri::command]

@@ -1,4 +1,5 @@
 import PocketBase from 'pocketbase';
+import { invoke } from '@tauri-apps/api/tauri';
 
 // Get PocketBase URL from multiple sources (priority order)
 const getPocketBaseUrl = (): string => {
@@ -76,7 +77,7 @@ if (typeof window !== 'undefined') {
 
 export interface CommandRecord {
   id: string;
-  action: 'START' | 'STOP' | 'RECORD_START' | 'RECORD_STOP';
+  action: 'START' | 'STOP' | 'RECORD_START' | 'RECORD_STOP' | 'SET_STREAM_SETTINGS' | 'UPLOAD_TO_DRIVE';
   executed: boolean;
   correlation_id: string;
   payload?: Record<string, unknown>;
@@ -86,12 +87,26 @@ export interface CommandRecord {
   updated: string;
 }
 
+export interface StreamQualityMetrics {
+  fps?: number;
+  bitrate?: number;
+  dropped_frames?: number;
+  cpu_usage?: number;
+}
+
+export interface StreamMetadata {
+  outputActive?: boolean;
+  outputDuration?: number;
+  outputBytes?: number;
+  quality?: StreamQualityMetrics;
+}
+
 export interface StreamRecord {
   id: string;
   status: 'live' | 'idle' | 'recording' | 'error';
   heartbeat: string;
   youtube_url?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: StreamMetadata;
   created: string;
   updated: string;
 }
@@ -105,22 +120,50 @@ export interface UserRecord {
   updated: string;
 }
 
-export async function sendCommand(action: CommandRecord['action']) {
+export async function sendCommand(action: CommandRecord['action'], payload?: Record<string, unknown>) {
   const user = pb.authStore.model;
   if (!user) throw new Error('Not authenticated');
 
+  // Skip Rust optimization if payload is present (until Rust side is updated)
+  if (!payload) {
+    // Try Rust backend first
+    try {
+      // Note: Rust 'send_command' returns the correlation_id
+      await invoke('send_command', {
+        pocketbaseUrl: pb.baseUrl,
+        action,
+        authToken: pb.authStore.token,
+        userId: user.id,
+      });
+      return;
+    } catch (rustError) {
+      console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
+    }
+  }
+
+  // Fallback to JS SDK (or primary path if payload exists)
   const correlationId = crypto.randomUUID();
-  
   return await pb.collection('commands').create<CommandRecord>({
     action,
     executed: false,
     correlation_id: correlationId,
-    created_by: user.id
+    created_by: user.id,
+    payload: payload
   });
 }
 
 export async function getStreamStatus(streamId: string) {
-  return await pb.collection('streams').getOne<StreamRecord>(streamId);
+  // Try Rust backend first
+  try {
+    const status = await invoke<StreamRecord>('get_stream_status', {
+      pocketbaseUrl: pb.baseUrl,
+      streamId,
+    });
+    return status;
+  } catch (rustError) {
+    console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
+    return await pb.collection('streams').getOne<StreamRecord>(streamId);
+  }
 }
 
 export function subscribeToStream(streamId: string, callback: (record: StreamRecord) => void) {

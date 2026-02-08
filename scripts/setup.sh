@@ -108,13 +108,17 @@ cd ../..
 echo ""
 echo "🔐 Step 4: Creating admin account..."
 echo ""
-echo -e "${YELLOW}ACTION REQUIRED:${NC}"
-echo "1. Open http://127.0.0.1:8090/_ in your browser"
-echo "2. Create admin account with:"
-echo "   Email: admin@local.dev"
-echo "   Password: admin123456"
-echo ""
-read -p "Press ENTER when you've created the admin account..."
+
+# Create admin account automatically via CLI
+# We need to run it from where the pocketbase data will be
+cd pocketbase/local
+if pocketbase admin create admin@local.dev admin123456 > /dev/null 2>&1; then
+    echo -e "${GREEN}✅ Admin account created automatically${NC}"
+else
+    # Maybe it already exists?
+    echo -e "${YELLOW}⚠️  Could not create admin via CLI (it may already exist)${NC}"
+fi
+cd ../..
 
 echo ""
 echo "🏗️ Step 5: Creating test users..."
@@ -169,6 +173,10 @@ echo -e "${GREEN}✅ Created sanctuary-app/.env${NC}"
 
 # Create logs directory for bridge
 mkdir -p sanctuary-bridge/logs
+
+echo ""
+echo "🔍 Step 7: Verifying installation..."
+./scripts/verify-complete.sh
 
 echo ""
 echo "✅ Setup Complete!"

@@ -50,11 +50,26 @@ npm run dev
 - Started Frontend on port 5173
 - All running concurrently, auto-restart on changes
 
+## 🧙 Zero-Config Setup Wizard
+
+**New in v0.1.0!** You no longer need to manually edit `.env` files for the frontend.
+
+If the app starts without configuration, it will automatically launch the **Setup Wizard**:
+1. **Connect:** Point to your PocketBase backend.
+2. **Login:** Authenticate with your church credentials.
+3. **Initialize:** Create your stream record with one click.
+
+The app saves your `STREAM_ID` and settings locally, so you're ready for every future service.
+
 ---
 
 ## 🎯 Next Steps
 
-### 1. Connect Real OBS
+### 1. Read the Onboarding Guide
+For a full walkthrough of the new setup process, see:
+**[USER_ONBOARDING.md](./USER_ONBOARDING.md)** 🧙
+
+### 2. Connect Real OBS
 ```bash
 # In OBS Studio:
 # Tools > WebSocket Server Settings

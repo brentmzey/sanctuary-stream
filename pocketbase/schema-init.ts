@@ -1,23 +1,6 @@
-#!/usr/bin/env node
-/**
- * PocketBase Schema Initialization
- * 
- * NOTE: This script now primarily creates test users.
- * The schema (collections, fields, indexes) is created via PocketBase migrations
- * in pocketbase/migrations/*.js which run automatically on PocketBase startup.
- * 
- * Usage:
- *   npm run schema:init:local
- *   npm run schema:init:staging
- *   npm run schema:init:production
- * 
- * Environment variables required:
- *   PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL (or _STAGING, _PRODUCTION)
- */
+import PocketBase from 'pocketbase';
 
-const PocketBase = require('pocketbase').default || require('pocketbase');
-
-const ENVIRONMENTS = {
+const ENVIRONMENTS: Record<string, { url: string; admin: string }> = {
   local: { 
     url: 'http://127.0.0.1:8090', 
     admin: 'admin@local.dev' 
@@ -32,7 +15,7 @@ const ENVIRONMENTS = {
   }
 };
 
-async function initSchema(env = 'local') {
+async function initSchema(env: string = 'local') {
   const config = ENVIRONMENTS[env];
   if (!config) {
     console.error(`❌ Invalid environment: ${env}`);
@@ -56,7 +39,7 @@ async function initSchema(env = 'local') {
     // Try to authenticate with the admin account
     await pb.admins.authWithPassword(config.admin, password);
     console.log(`✅ Connected to ${env} PocketBase at ${config.url}`);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`❌ Failed to authenticate:`, error.message);
     console.error(`   Make sure you created the admin account at ${config.url}/_`);
     console.error(`   Email: ${config.admin}`);
@@ -75,9 +58,10 @@ async function initSchema(env = 'local') {
     
     await createDefaultStreamRecord(pb);
 
-    console.log(`\n✅ Schema initialization complete for ${env}`);
+    console.log(`
+✅ Schema initialization complete for ${env}`);
     console.log(`   View admin UI: ${config.url}/_/`);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`❌ Schema initialization failed:`, error.message);
     if (error.data) {
       console.error('   Error details:', JSON.stringify(error.data, null, 2));
@@ -86,7 +70,7 @@ async function initSchema(env = 'local') {
   }
 }
 
-async function verifyCollections(pb) {
+async function verifyCollections(pb: PocketBase) {
   const requiredCollections = ['users', 'commands', 'streams'];
   
   for (const name of requiredCollections) {
@@ -100,8 +84,9 @@ async function verifyCollections(pb) {
   }
 }
 
-async function createTestUsers(pb) {
-  console.log('\nCreating test users (local environment only)...');
+async function createTestUsers(pb: PocketBase) {
+  console.log('
+Creating test users (local environment only)...');
   
   const testUsers = [
     { 
@@ -131,7 +116,7 @@ async function createTestUsers(pb) {
     try {
       await pb.collection('users').create(user);
       console.log(`  ✅ Created test user: ${user.email} (password: ${user.password})`);
-    } catch (error) {
+    } catch (error: any) {
       if (error.status === 400 && error.data?.data?.email) {
         console.log(`  ✓ Test user exists: ${user.email}`);
       } else {
@@ -141,13 +126,14 @@ async function createTestUsers(pb) {
   }
 }
 
-async function createDefaultStreamRecord(pb) {
+async function createDefaultStreamRecord(pb: PocketBase) {
   try {
     const existing = await pb.collection('streams').getFullList();
     
     if (existing.length > 0) {
       console.log(`✓ Stream record exists (ID: ${existing[0].id})`);
-      console.log(`\n📝 Add this to your .env files:`);
+      console.log(`
+📝 Add this to your .env files:`);
       console.log(`   STREAM_ID=${existing[0].id}`);
       return;
     }
@@ -159,9 +145,10 @@ async function createDefaultStreamRecord(pb) {
     });
     
     console.log(`✅ Created default stream record: ${record.id}`);
-    console.log(`\n📝 Add this to your .env files:`);
+    console.log(`
+📝 Add this to your .env files:`);
     console.log(`   STREAM_ID=${record.id}`);
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Failed to create stream record:', error.message);
     throw error;
   }
@@ -170,16 +157,20 @@ async function createDefaultStreamRecord(pb) {
 // Run initialization
 const env = process.argv[2] || 'local';
 
-console.log(`\n🚀 Initializing PocketBase schema for: ${env.toUpperCase()}`);
-console.log(`${'='.repeat(60)}\n`);
+console.log(`
+🚀 Initializing PocketBase schema for: ${env.toUpperCase()}`);
+console.log(`${'='.repeat(60)}
+`);
 
 initSchema(env)
   .then(() => {
-    console.log(`\n${'='.repeat(60)}`);
+    console.log(`
+${'='.repeat(60)}`);
     console.log(`✅ Success! Schema is ready for ${env}`);
     process.exit(0);
   })
   .catch((error) => {
-    console.error(`\n❌ Fatal error:`, error);
+    console.error(`
+❌ Fatal error:`, error);
     process.exit(1);
   });
