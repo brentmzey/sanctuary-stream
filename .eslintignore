@@ -5,3 +5,7 @@ pocketbase/
 *.min.js
 *.d.ts
 .husky/
+integration-tests/
+scripts/
+playwright-report/
+test-results/

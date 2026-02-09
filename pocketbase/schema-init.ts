@@ -85,8 +85,7 @@ async function verifyCollections(pb: PocketBase) {
 }
 
 async function createTestUsers(pb: PocketBase) {
-  console.log('
-Creating test users (local environment only)...');
+  console.log('\nCreating test users (local environment only)...');
   
   const testUsers = [
     { 
@@ -132,8 +131,7 @@ async function createDefaultStreamRecord(pb: PocketBase) {
     
     if (existing.length > 0) {
       console.log(`✓ Stream record exists (ID: ${existing[0].id})`);
-      console.log(`
-📝 Add this to your .env files:`);
+      console.log('\n📝 Add this to your .env files:');
       console.log(`   STREAM_ID=${existing[0].id}`);
       return;
     }
@@ -145,8 +143,7 @@ async function createDefaultStreamRecord(pb: PocketBase) {
     });
     
     console.log(`✅ Created default stream record: ${record.id}`);
-    console.log(`
-📝 Add this to your .env files:`);
+    console.log('\n📝 Add this to your .env files:');
     console.log(`   STREAM_ID=${record.id}`);
   } catch (error: any) {
     console.error('❌ Failed to create stream record:', error.message);
@@ -157,20 +154,16 @@ async function createDefaultStreamRecord(pb: PocketBase) {
 // Run initialization
 const env = process.argv[2] || 'local';
 
-console.log(`
-🚀 Initializing PocketBase schema for: ${env.toUpperCase()}`);
-console.log(`${'='.repeat(60)}
-`);
+console.log(`\n🚀 Initializing PocketBase schema for: ${env.toUpperCase()}`);
+console.log(`${'='.repeat(60)}\n`);
 
 initSchema(env)
   .then(() => {
-    console.log(`
-${'='.repeat(60)}`);
+    console.log(`\n${'='.repeat(60)}`);
     console.log(`✅ Success! Schema is ready for ${env}`);
     process.exit(0);
   })
   .catch((error) => {
-    console.error(`
-❌ Fatal error:`, error);
+    console.error('\n❌ Fatal error:', error);
     process.exit(1);
   });

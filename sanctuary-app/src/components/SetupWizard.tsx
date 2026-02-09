@@ -55,8 +55,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       localStorage.setItem('stream_id', record.id);
       
       onComplete(record.id);
-    } catch (err: any) {
-      setAuthError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Authentication failed';
+      setAuthError(message);
     } finally {
       setIsConnecting(false);
     }

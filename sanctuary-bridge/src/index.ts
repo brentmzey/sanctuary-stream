@@ -8,8 +8,8 @@ import { uploadFile } from './google-drive';
 // Functional programming faculties
 type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
 
-const ok = <T>(value: T): Result<T, any> => ({ ok: true, value });
-const fail = <E>(error: E): Result<any, E> => ({ ok: false, error });
+const ok = <T>(value: T): Result<T, Error> => ({ ok: true, value });
+const fail = <E>(error: E): Result<never, E> => ({ ok: false, error });
 
 const wrapAsync = async <T>(promise: Promise<T>): Promise<Result<T>> => {
   try {
@@ -130,7 +130,7 @@ class SanctuaryBridge {
   private async executeCommand(command: CommandRecord) {
     logger.info(`Executing command: ${command.action} (${command.correlation_id})`);
 
-    const actionMap: Record<string, () => Promise<any>> = {
+    const actionMap: Record<string, () => Promise<unknown>> = {
         'START': () => this.obs.call('StartStream'),
         'STOP': () => this.obs.call('StopStream'),
         'RECORD_START': () => this.obs.call('StartRecord'),
@@ -183,7 +183,24 @@ class SanctuaryBridge {
 
   private async updateStreamStatus(status: string) {
     try {
-      const update: any = {
+      interface QualityMetrics {
+        dropped_frames?: number;
+        fps?: number;
+        cpu_usage?: number;
+      }
+
+      interface StreamMetadata {
+        outputActive?: boolean;
+        outputDuration?: number;
+        outputBytes?: number;
+        quality?: QualityMetrics;
+      }
+
+      const update: {
+        status: string;
+        heartbeat: string;
+        metadata?: StreamMetadata;
+      } = {
         status,
         heartbeat: new Date().toISOString()
       };

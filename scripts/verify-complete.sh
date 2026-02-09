@@ -22,12 +22,13 @@ FAIL=0
 WARN=0
 
 check() {
-  if [ $? -eq 0 ]; then
+  local status=$?
+  if [ $status -eq 0 ]; then
     echo -e "${GREEN}✓${NC} $1"
-    ((PASS++))
+    ((PASS++)) || true
   else
     echo -e "${RED}✗${NC} $1"
-    ((FAIL++))
+    ((FAIL++)) || true
   fi
 }
 
