@@ -1,37 +1,62 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   const collection = new Collection({
-    "createRule": "@request.auth.role = \"admin\" || @request.auth.role = \"pastor\"",
-    "deleteRule": null,
+    "id": "pbc_2867142091",
+    "name": "commands",
+    "type": "base",
+    "system": false,
     "fields": [
       {
-        "autogeneratePattern": "[a-z0-9]{15}",
-        "hidden": false,
-        "id": "text3208210256",
-        "max": 15,
-        "min": 15,
-        "name": "id",
-        "pattern": "^[a-z0-9]+$",
-        "presentable": false,
-        "primaryKey": true,
+        "name": "action",
+        "type": "select",
         "required": true,
-        "system": true,
-        "type": "text"
+        "values": ["START", "STOP", "RECORD_START", "RECORD_STOP"]
+      },
+      {
+        "name": "executed",
+        "type": "bool",
+        "required": true
+      },
+      {
+        "name": "correlation_id",
+        "type": "text",
+        "required": true,
+        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+      },
+      {
+        "name": "payload",
+        "type": "json",
+        "required": false
+      },
+      {
+        "name": "created_by",
+        "type": "relation",
+        "required": true,
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": false,
+        "maxSelect": 1
+      },
+      {
+        "name": "error_message",
+        "type": "text",
+        "required": false,
+        "max": 500
       }
     ],
-    "id": "pbc_3664792373",
-    "indexes": [],
-    "listRule": "@request.auth.id != \"\"",
-    "name": "commands",
-    "system": false,
-    "type": "base",
-    "updateRule": "@request.auth.role = \"tech\"",
-    "viewRule": null
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_correlation_id ON commands (correlation_id)",
+      "CREATE INDEX idx_executed ON commands (executed)",
+      "CREATE INDEX idx_created_by ON commands (created_by)"
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+    "updateRule": "@request.auth.role = 'tech'",
+    "deleteRule": null
   });
 
   return app.save(collection);
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_3664792373");
-
+  const collection = app.findCollectionByNameOrId("pbc_2867142091");
   return app.delete(collection);
 })

@@ -53,6 +53,15 @@ tmp/
 temp/
 *.tmp
 
+# PocketBase local runtime
+pocketbase/local/pb_data/
+pocketbase/local/auxiliary.db
+pocketbase/local/data.db
+pocketbase/local/data.db-shm
+pocketbase/local/data.db-wal
+pocketbase/local/pb.pid
+pocketbase/local/pb.log
+pocketbase/local/types.d.ts
+
 # PM2
 .pm2/
-pm2.log
