@@ -6,35 +6,38 @@ This guide answers: **"How do I actually run this project?"**
 
 ## 🎯 TL;DR (Quick Start)
 
+The fastest way to get a local development environment running is our automated setup script:
+
 ```bash
-# 1. Install PocketBase
-brew install pocketbase  # or download from pocketbase.io
+# 1. Run the automated setup
+npm run setup
+```
 
-# 2. Start PocketBase
-mkdir -p pocketbase/local && cd pocketbase/local
-pocketbase serve  # Visit http://127.0.0.1:8090/_ to create admin
+This script will:
+- Check for prerequisites (Node.js, PocketBase)
+- Install all dependencies
+- Start a local PocketBase server
+- Automatically create admin and test accounts
+- Configure your `.env` files with the correct Stream IDs
+- Verify the installation
 
-# 3. Initialize schema (in new terminal)
-cd sanctuary-stream
-export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL=your-admin-password
-npm install
-npm run schema:init:local
+Once complete, start the services in separate terminals:
 
-# 4. Start mock OBS (in new terminal)
+```bash
+# Terminal 1: Start Mock OBS
 npm run mock:obs
 
-# 5. Start bridge service (in new terminal)
-cd sanctuary-bridge
-npm install
-npm run dev  # Coming in Phase 2
+# Terminal 2: Start Bridge Service
+cd sanctuary-bridge && npm run dev
 
-# 6. Start frontend (in new terminal)
-cd sanctuary-app
-npm install
-npm run tauri dev  # Coming in Phase 3
-
-# Login: pastor@local.dev / pastor123
+# Terminal 3: Start Frontend App
+cd sanctuary-app && npm run dev
 ```
+
+**Login Credentials:**
+- Pastor: `pastor@local.dev / pastor123456`
+- Admin:  `admin@local.dev / admin123456`
+- Bridge: `bridge@local.dev / bridge123456`
 
 ---
 
@@ -46,23 +49,21 @@ Before starting, ensure you have:
 |------|---------|---------------|---------|
 | **Node.js** | 18+ | `node --version` | [nodejs.org](https://nodejs.org) |
 | **npm** | 9+ | `npm --version` | Included with Node.js |
-| **Rust** | 1.70+ | `rust --version` | [rustup.rs](https://rustup.rs) |
-| **PocketBase** | 0.20+ | `pocketbase --version` | See below |
+| **PocketBase** | 0.36+ | `pocketbase --version` | See below |
 
 ### Installing PocketBase
+
+The `npm run setup` script will attempt to install PocketBase via Homebrew on macOS. For other platforms or manual installation:
 
 ```bash
 # macOS (Homebrew)
 brew install pocketbase
 
 # Linux (Download binary)
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip
-unzip pocketbase_0.22.0_linux_amd64.zip
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.36.2/pocketbase_0.36.2_linux_amd64.zip
+unzip pocketbase_0.36.2_linux_amd64.zip
 sudo mv pocketbase /usr/local/bin/
 chmod +x /usr/local/bin/pocketbase
-
-# Windows (Scoop)
-scoop install pocketbase
 
 # Or download manually from: https://pocketbase.io/docs/
 ```
@@ -76,10 +77,11 @@ How do we ensure local, staging, and production databases have the same structur
 
 ### The Solution: Schema-as-Code
 
-**1. Single Source of Truth**: `pocketbase/schema-init.js`
+**1. Single Source of Truth**: `pocketbase/schema-init.ts`
 - Defines all collections, fields, and rules
 - Idempotent (safe to run multiple times)
 - Version controlled in Git
+- Handles test user creation for local dev
 
 **2. Environment-Specific Initialization**:
 ```bash
@@ -88,10 +90,8 @@ npm run schema:init:staging     # https://staging.pockethost.io
 npm run schema:init:production  # https://production.pockethost.io
 ```
 
-**3. Schema Validation**:
-- Zod schemas in TypeScript match database schema
-- TypeScript types generated from Zod
-- Tests verify schema consistency
+**3. Automatic Migrations**:
+PocketBase migrations in `pocketbase/local/pb_migrations` are automatically applied when the server starts.
 
 ### Schema Workflow
 

@@ -76,9 +76,10 @@ async function verifyCollections(pb: PocketBase) {
   for (const name of requiredCollections) {
     try {
       const collection = await pb.collections.getOne(name);
-      console.log(`✓ ${name} collection exists (${collection.schema.length} fields)`);
-    } catch (error) {
-      console.error(`❌ ${name} collection not found - migrations may not have run`);
+      const fieldsCount = collection.fields ? collection.fields.length : (collection as any).schema?.length || 0;
+      console.log(`✓ ${name} collection exists (${fieldsCount} fields)`);
+    } catch (error: any) {
+      console.error(`❌ ${name} collection not found:`, error.message);
       throw new Error(`Missing ${name} collection`);
     }
   }
