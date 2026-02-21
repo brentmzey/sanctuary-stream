@@ -25,19 +25,21 @@
         "readFile": true,
         "writeFile": true,
         "readDir": true,
-        "scope": ["$APPDATA/*"]
+        "scope": [
+          "$APPDATA/*"
+        ]
       },
       "http": {
         "all": true,
         "scope": [
-          "http://127.0.0.1:*/*",
-          "http://localhost:*/*",
+          "http://127.0.0.1:8090/*",
+          "http://localhost:8090/*",
           "https://*.pockethost.io/*",
           "wss://*.pockethost.io/*",
-          "ws://127.0.0.1:*/*",
-          "ws://localhost:*/*",
-          "https://*:*/*",
-          "wss://*:*/*"
+          "ws://127.0.0.1:4455/*",
+          "ws://localhost:4455/*",
+          "https://**",
+          "wss://**"
         ]
       },
       "notification": {
@@ -54,7 +56,13 @@
     },
     "bundle": {
       "active": true,
-      "targets": ["app", "dmg", "msi", "deb", "appimage"],
+      "targets": [
+        "app",
+        "dmg",
+        "msi",
+        "deb",
+        "appimage"
+      ],
       "identifier": "com.sanctuary.stream",
       "icon": [
         "icons/32x32.png",

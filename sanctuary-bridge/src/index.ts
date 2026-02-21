@@ -288,9 +288,11 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-bridge.start().catch((error) => {
-  logger.error('Fatal error:', error);
-  process.exit(1);
-});
+if (process.env.NODE_ENV !== 'test') {
+  bridge.start().catch((error) => {
+    logger.error('Fatal error:', error);
+    process.exit(1);
+  });
+}
 
 export { SanctuaryBridge };
