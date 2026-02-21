@@ -2,7 +2,7 @@
 
 **Zero-Trust Church Streaming Control System**
 
-[![Build Status](https://github.com/brentmzey/sanctuary-stream/workflows/Build%20and%20Release/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions)
+[![Build Status](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Professional Remote Control for OBS Studio.**

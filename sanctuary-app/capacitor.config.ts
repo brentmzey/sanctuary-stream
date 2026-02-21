@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.sanctuary.stream',
   appName: 'Sanctuary Stream',
   webDir: 'dist',
-  bundledWebRuntime: false,
   server: {
     // Allow connections to any backend
     hostname: 'sanctuary-stream',

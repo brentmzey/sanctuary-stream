@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { StreamRecord, pb, subscribeToStream, unsubscribeFromStream } from '../lib/pocketbase';
+import { Option, none, some } from '@shared/option';
 
 interface UseStreamProps {
   streamId: string;
 }
 
 export function useStream({ streamId }: UseStreamProps) {
-  const [stream, setStream] = useState<StreamRecord | null>(null);
+  const [stream, setStream] = useState<Option<StreamRecord>>(none());
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Option<string>>(none());
 
   useEffect(() => {
     let mounted = true;
@@ -17,13 +18,13 @@ export function useStream({ streamId }: UseStreamProps) {
       try {
         const record = await pb.collection('streams').getOne<StreamRecord>(streamId);
         if (mounted) {
-          setStream(record);
+          setStream(some(record));
           setLoading(false);
         }
       } catch (err) {
         if (mounted) {
           const message = err instanceof Error ? err.message : 'Unknown error';
-          setError(message);
+          setError(some(message));
           setLoading(false);
         }
       }
@@ -33,7 +34,7 @@ export function useStream({ streamId }: UseStreamProps) {
 
     subscribeToStream(streamId, (record) => {
       if (mounted) {
-        setStream(record);
+        setStream(some(record));
       }
     });
 

@@ -1,25 +1,29 @@
 import PocketBase from 'pocketbase';
 import { invoke } from '@tauri-apps/api/tauri';
+import { AsyncIO } from '@shared/io';
+import { fromNullable } from '@shared/option';
+import { Result, failure, fromThrowable, success } from '@shared/result';
 
 // Get PocketBase URL from multiple sources (priority order)
 const getPocketBaseUrl = (): string => {
   // 1. Runtime configuration (user settings in localStorage)
   if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('pb_url');
-    if (stored) return stored;
+    const stored = fromNullable(localStorage.getItem('pb_url'));
+    if (stored._tag === 'some') return stored.value;
 
     // 2. URL parameter (e.g., ?pb=https://church.pockethost.io)
     const params = new URLSearchParams(window.location.search);
-    const urlParam = params.get('pb');
-    if (urlParam) {
-      localStorage.setItem('pb_url', urlParam);
-      return urlParam;
+    const urlParam = fromNullable(params.get('pb'));
+    if (urlParam._tag === 'some') {
+      localStorage.setItem('pb_url', urlParam.value);
+      return urlParam.value;
     }
   }
 
   // 3. Environment variable (build-time configuration)
-  if (import.meta.env.VITE_PB_URL) {
-    return import.meta.env.VITE_PB_URL;
+  const envUrl = fromNullable(import.meta.env.VITE_PB_URL);
+  if (envUrl._tag === 'some') {
+    return envUrl.value;
   }
 
   // 4. Default (local development)
@@ -27,18 +31,21 @@ const getPocketBaseUrl = (): string => {
 };
 
 // Validate PocketBase URL
-const validatePocketBaseUrl = (url: string): boolean => {
-  try {
-    const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
+const validatePocketBaseUrl = (url: string): Result<boolean, Error> => {
+  return fromThrowable(
+    () => {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    },
+    (e: unknown) => new Error(`Invalid URL format: ${e}`)
+  );
 };
 
 // Initialize PocketBase client
 const initialUrl = getPocketBaseUrl();
-if (!validatePocketBaseUrl(initialUrl)) {
+const validationResult = validatePocketBaseUrl(initialUrl);
+
+if (validationResult._tag === 'failure' || validationResult.value === false) {
   console.error('Invalid PocketBase URL:', initialUrl);
 }
 
@@ -53,7 +60,7 @@ if (typeof window !== 'undefined') {
   // Auto-reconnect on connection loss
   let reconnectAttempts = 0;
   const maxReconnectAttempts = 10;
-  
+
   window.addEventListener('online', () => {
     console.log('[PocketBase] Network online - attempting reconnection...');
     reconnectAttempts = 0;
@@ -120,50 +127,59 @@ export interface UserRecord {
   updated: string;
 }
 
-export async function sendCommand(action: CommandRecord['action'], payload?: Record<string, unknown>) {
-  const user = pb.authStore.model;
-  if (!user) throw new Error('Not authenticated');
-
-  // Skip Rust optimization if payload is present (until Rust side is updated)
-  if (!payload) {
-    // Try Rust backend first
-    try {
-      // Note: Rust 'send_command' returns the correlation_id
-      await invoke('send_command', {
-        pocketbaseUrl: pb.baseUrl,
-        action,
-        authToken: pb.authStore.token,
-        userId: user.id,
-      });
-      return;
-    } catch (rustError) {
-      console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
+export function sendCommand(action: CommandRecord['action'], payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
+  return new AsyncIO(async () => {
+    const userOption = fromNullable(pb.authStore.model);
+    if (userOption._tag === 'none') {
+      throw new Error('Not authenticated');
     }
-  }
+    const user = userOption.value;
 
-  // Fallback to JS SDK (or primary path if payload exists)
-  const correlationId = crypto.randomUUID();
-  return await pb.collection('commands').create<CommandRecord>({
-    action,
-    executed: false,
-    correlation_id: correlationId,
-    created_by: user.id,
-    payload: payload
+    const maybePayload = fromNullable(payload);
+
+    // Skip Rust optimization if payload is present (until Rust side is updated)
+    if (maybePayload._tag === 'none') {
+      // Try Rust backend first
+      try {
+        // Note: Rust 'send_command' returns the correlation_id
+        await invoke('send_command', {
+          pocketbaseUrl: pb.baseUrl,
+          action,
+          authToken: pb.authStore.token,
+          userId: user.id,
+        });
+        return;
+      } catch (rustError) {
+        console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
+      }
+    }
+
+    // Fallback to JS SDK (or primary path if payload exists)
+    const correlationId = crypto.randomUUID();
+    return await pb.collection('commands').create<CommandRecord>({
+      action,
+      executed: false,
+      correlation_id: correlationId,
+      created_by: user.id,
+      payload: maybePayload._tag === 'some' ? maybePayload.value : undefined
+    });
   });
 }
 
-export async function getStreamStatus(streamId: string) {
-  // Try Rust backend first
-  try {
-    const status = await invoke<StreamRecord>('get_stream_status', {
-      pocketbaseUrl: pb.baseUrl,
-      streamId,
-    });
-    return status;
-  } catch (rustError) {
-    console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
-    return await pb.collection('streams').getOne<StreamRecord>(streamId);
-  }
+export function getStreamStatus(streamId: string): AsyncIO<StreamRecord> {
+  return new AsyncIO(async () => {
+    // Try Rust backend first
+    try {
+      const status = await invoke<StreamRecord>('get_stream_status', {
+        pocketbaseUrl: pb.baseUrl,
+        streamId,
+      });
+      return status;
+    } catch (rustError) {
+      console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
+      return await pb.collection('streams').getOne<StreamRecord>(streamId);
+    }
+  });
 }
 
 export function subscribeToStream(streamId: string, callback: (record: StreamRecord) => void) {
@@ -177,14 +193,19 @@ export function unsubscribeFromStream(streamId: string) {
 }
 
 // Allow runtime URL changes (for multi-backend support)
-export function setPocketBaseUrl(url: string): void {
-  if (!validatePocketBaseUrl(url)) {
-    throw new Error('Invalid PocketBase URL');
+export function setPocketBaseUrl(url: string): Result<void, Error> {
+  const validationResult = validatePocketBaseUrl(url);
+
+  if (validationResult._tag === 'failure' || validationResult.value === false) {
+    return failure(new Error('Invalid PocketBase URL'));
   }
+
   localStorage.setItem('pb_url', url);
   pb.baseUrl = url;
   // Clear auth when switching backends
   pb.authStore.clear();
+
+  return success(undefined);
 }
 
 // Get current PocketBase URL
@@ -193,12 +214,15 @@ export function getCurrentPocketBaseUrl(): string {
 }
 
 // Test connection to PocketBase
-export async function testConnection(url?: string): Promise<boolean> {
-  const testUrl = url || pb.baseUrl;
-  try {
-    const response = await fetch(`${testUrl}/api/health`);
-    return response.ok;
-  } catch {
-    return false;
-  }
+export function testConnection(url?: string): AsyncIO<boolean> {
+  return new AsyncIO(async () => {
+    const parsedUrl = fromNullable(url);
+    const testUrl = parsedUrl._tag === 'some' ? parsedUrl.value : pb.baseUrl;
+    try {
+      const response = await fetch(`${testUrl}/api/health`);
+      return response.ok;
+    } catch {
+      return false;
+    }
+  });
 }
