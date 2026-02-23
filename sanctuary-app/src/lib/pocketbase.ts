@@ -127,6 +127,44 @@ export interface UserRecord {
   updated: string;
 }
 
+export interface SermonRecord {
+  id: string;
+  title: string;
+  body?: string;
+  sermon_date: string;
+  youtube_url?: string;
+  tags?: string[];
+  published: boolean;
+  thumbnail?: string;
+  speaker?: string;
+  created: string;
+  updated: string;
+}
+
+export interface AnnouncementRecord {
+  id: string;
+  title: string;
+  body?: string;
+  published_at?: string;
+  expires_at?: string;
+  priority: 'low' | 'normal' | 'high';
+  published: boolean;
+  created: string;
+  updated: string;
+}
+
+export interface ResourceRecord {
+  id: string;
+  title: string;
+  description?: string;
+  file?: string;
+  url?: string;
+  category: 'essay' | 'article' | 'free';
+  published: boolean;
+  created: string;
+  updated: string;
+}
+
 export function sendCommand(action: CommandRecord['action'], payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
   return new AsyncIO(async () => {
     const userOption = fromNullable(pb.authStore.model);
@@ -225,4 +263,41 @@ export function testConnection(url?: string): AsyncIO<boolean> {
       return false;
     }
   });
+}
+
+// ─── Pastoral Content Helpers ────────────────────────────────────────────────
+
+export function getSermons(limit = 10): AsyncIO<SermonRecord[]> {
+  return new AsyncIO(() =>
+    pb.collection('sermons').getList<SermonRecord>(1, limit, {
+      filter: 'published = true',
+      sort: '-sermon_date',
+    }).then((r) => r.items)
+  );
+}
+
+export function getAnnouncements(): AsyncIO<AnnouncementRecord[]> {
+  const now = new Date().toISOString();
+  return new AsyncIO(() =>
+    pb.collection('announcements').getList<AnnouncementRecord>(1, 20, {
+      filter: `published = true && (expires_at = '' || expires_at > '${now}')`,
+      sort: '-priority,-created',
+    }).then((r) => r.items)
+  );
+}
+
+export function getResources(category?: ResourceRecord['category']): AsyncIO<ResourceRecord[]> {
+  const filter = category
+    ? `published = true && category = '${category}'`
+    : 'published = true';
+  return new AsyncIO(() =>
+    pb.collection('resources').getList<ResourceRecord>(1, 50, {
+      filter,
+      sort: 'category,title',
+    }).then((r) => r.items)
+  );
+}
+
+export function getFileUrl(collectionId: string, recordId: string, filename: string): string {
+  return `${pb.baseUrl}/api/files/${collectionId}/${recordId}/${filename}`;
 }
