@@ -6,14 +6,22 @@ import { CommandRecord } from './types';
 import { uploadFile } from './google-drive';
 import { fromPromise } from '@shared/result';
 import { AsyncIO } from '@shared/io';
+import { throttle } from '@shared/performance';
+
+// Constants for performance tuning
+const MAX_RECONNECT_ATTEMPTS = 5;
+const STATUS_UPDATE_THROTTLE_MS = 2000; // 2 seconds (avoid spam)
 
 class SanctuaryBridge {
   private pb: PocketBase;
   private obs: OBSWebSocket;
   private streamId: string;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = MAX_RECONNECT_ATTEMPTS;
   private heartbeatInterval?: NodeJS.Timeout;
+
+  // Throttled status update to avoid overwhelming PocketBase
+  private throttledStatusUpdate: (status: string) => void;
 
   constructor() {
     const pbUrl = process.env.PB_URL || 'http://127.0.0.1:8090';
@@ -24,6 +32,16 @@ class SanctuaryBridge {
     if (!this.streamId) {
       throw new Error('STREAM_ID environment variable is required');
     }
+
+    // Create throttled version of updateStreamStatus
+    this.throttledStatusUpdate = throttle(
+      (status: string) => { 
+        this.updateStreamStatus(status).catch(err => 
+          logger.error('Throttled status update failed:', err)
+        );
+      },
+      STATUS_UPDATE_THROTTLE_MS
+    );
   }
 
   async start() {
@@ -148,6 +166,81 @@ class SanctuaryBridge {
             key: key
           }
         });
+      },
+      'SET_VIDEO_SETTINGS': async () => {
+        const baseWidth = command.payload?.baseWidth as number;
+        const baseHeight = command.payload?.baseHeight as number;
+        const outputWidth = command.payload?.outputWidth as number;
+        const outputHeight = command.payload?.outputHeight as number;
+        const fpsNum = command.payload?.fpsNum as number;
+        const fpsDen = command.payload?.fpsDen as number;
+
+        if (!baseWidth || !baseHeight || !fpsNum) {
+          throw new Error('Missing video settings in payload for SET_VIDEO_SETTINGS');
+        }
+
+        logger.info(`Setting video: ${baseWidth}x${baseHeight} @ ${fpsNum}/${fpsDen}fps`);
+        return this.obs.call('SetVideoSettings', {
+          baseWidth,
+          baseHeight,
+          outputWidth: outputWidth || baseWidth,
+          outputHeight: outputHeight || baseHeight,
+          fpsNumerator: fpsNum,
+          fpsDenominator: fpsDen || 1,
+        });
+      },
+      'SET_STREAM_ENCODER': async () => {
+        const encoder = command.payload?.encoder as string;
+        const settings = command.payload?.settings as Record<string, unknown>;
+
+        if (!encoder || !settings) {
+          throw new Error('Missing encoder or settings in payload for SET_STREAM_ENCODER');
+        }
+
+        logger.info(`Setting encoder: ${encoder} with bitrate ${settings.bitrate}`);
+        
+        // Get current streaming output settings
+        const currentSettings = await this.obs.call('GetStreamServiceSettings');
+        
+        // Update encoder settings
+        return this.obs.call('SetStreamServiceSettings', {
+          streamServiceType: currentSettings.streamServiceType || 'rtmp_common',
+          streamServiceSettings: {
+            ...currentSettings.streamServiceSettings,
+            encoder: encoder,
+            ...settings,
+          }
+        });
+      },
+      'SET_AUDIO_SETTINGS': async () => {
+        const sampleRate = command.payload?.sampleRate as number;
+        const channels = command.payload?.channels as number;
+        const bitrate = command.payload?.bitrate as number;
+
+        if (!sampleRate) {
+          throw new Error('Missing audio settings in payload for SET_AUDIO_SETTINGS');
+        }
+
+        logger.info(`Setting audio: ${sampleRate}Hz, ${channels}ch, ${bitrate}kbps`);
+        
+        // Note: OBS WebSocket doesn't have a direct SetAudioSettings call in older versions
+        // This would typically be configured through the profile/scene collection
+        // For now, we log this and could implement via profile switching or config file modification
+        logger.warn('Audio settings update - may require OBS restart or profile reload');
+        
+        // Store settings in metadata for reference
+        await this.pb.collection('streams').update(this.streamId, {
+          metadata: {
+            audio_settings: {
+              sampleRate,
+              channels,
+              bitrate,
+              updated: new Date().toISOString()
+            }
+          }
+        });
+
+        return { success: true, message: 'Audio settings stored. Apply via OBS settings menu.' };
       }
     };
 

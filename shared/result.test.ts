@@ -5,7 +5,7 @@
  * operation that can fail returns one of these instead of throwing. These
  * tests make sure the rails never cross unexpectedly.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
     success,
     failure,
@@ -68,7 +68,7 @@ describe('map()', () => {
 
     it('is a no-op on Failure — mapper never called', () => {
         let called = false;
-        const r = map(failure<number, string>('err'), (n) => { called = true; return n * 2; });
+        const r = map(failure<string>('err'), (n: number) => { called = true; return n * 2; });
         expect(isFailure(r)).toBe(true);
         expect(called).toBe(false);
     });
@@ -103,13 +103,13 @@ describe('flatMap()', () => {
     });
 
     it('chains Success → Failure (short-circuits the happy path)', () => {
-        const r = flatMap(success(3), (_n) => failure(new Error('downstream fail')));
+        const r = flatMap(success(3), () => failure(new Error('downstream fail')));
         expect(isFailure(r) && r.error.message).toBe('downstream fail');
     });
 
     it('short-circuits on Failure — mapper never called', () => {
         let called = false;
-        const r = flatMap(failure<number, string>('initial'), (n) => { called = true; return success(n + 1); });
+        const r = flatMap(failure<string>('initial'), (n: number) => { called = true; return success(n + 1); });
         expect(isFailure(r)).toBe(true);
         expect(called).toBe(false);
     });
@@ -121,12 +121,12 @@ describe('flatMap()', () => {
 
 describe('fold() / match()', () => {
     it('calls onSuccess with value on Success', () => {
-        const msg = fold(success(42), (n) => `got ${n}`, (_e) => 'failed');
+        const msg = fold(success(42), (n) => `got ${n}`, () => 'failed');
         expect(msg).toBe('got 42');
     });
 
     it('calls onFailure with error on Failure', () => {
-        const msg = fold(failure(new Error('boom')), (_v) => 'ok', (e) => `failed: ${e.message}`);
+        const msg = fold(failure(new Error('boom')), () => 'ok', (e) => `failed: ${e.message}`);
         expect(msg).toBe('failed: boom');
     });
 
@@ -146,7 +146,7 @@ describe('getOrElse()', () => {
     });
 
     it('returns fallback on Failure', () => {
-        expect(getOrElse(failure<string, string>('err'), () => 'default')).toBe('default');
+        expect(getOrElse(failure<string>('err'), () => 'default')).toBe('default');
     });
 
     it('does not call fallback when Success', () => {
@@ -230,16 +230,16 @@ describe('asyncFlatMap()', () => {
     });
 
     it('short-circuits on initial failure', async () => {
-        const initial = fromResult(failure<number, string>('initial fail'));
+        const initial = fromResult(failure<string>('initial fail'));
         let mapperCalled = false;
-        const result = await asyncFlatMap(initial, (n) => { mapperCalled = true; return fromResult(success(n)); });
+        const result = await asyncFlatMap(initial, (n: number) => { mapperCalled = true; return fromResult(success(n)); });
         expect(isFailure(result)).toBe(true);
         expect(mapperCalled).toBe(false);
     });
 
     it('propagates mapper failure', async () => {
         const initial = fromResult(success(5));
-        const result = await asyncFlatMap(initial, (_n) => fromResult(failure('mapper failed')));
+        const result = await asyncFlatMap(initial, () => fromResult(failure('mapper failed')));
         expect(isFailure(result) && result.error).toBe('mapper failed');
     });
 });
@@ -251,14 +251,14 @@ describe('asyncFlatMap()', () => {
 describe('asyncMap()', () => {
     it('transforms AsyncResult success value', async () => {
         const initial = fromResult(success('hello'));
-        const result = await asyncMap(initial, (s) => s.toUpperCase());
+        const result = await asyncMap(initial, (s: string) => s.toUpperCase());
         expect(isSuccess(result) && result.value).toBe('HELLO');
     });
 
     it('is a no-op on AsyncResult failure', async () => {
-        const initial = fromResult(failure<string, string>('fail'));
+        const initial = fromResult(failure<string>('fail'));
         let called = false;
-        const result = await asyncMap(initial, (s) => { called = true; return s.toUpperCase(); });
+        const result = await asyncMap(initial, (s: string) => { called = true; return s.toUpperCase(); });
         expect(isFailure(result)).toBe(true);
         expect(called).toBe(false);
     });

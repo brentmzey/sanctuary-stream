@@ -1,0 +1,215 @@
+[
+    {
+        "id": "pbc_3910423001",
+        "name": "sermons",
+        "type": "base",
+        "system": false,
+        "fields": [
+            {
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "presentable": true,
+                "max": 200
+            },
+            {
+                "name": "body",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "max": 50000
+            },
+            {
+                "name": "sermon_date",
+                "type": "date",
+                "required": true,
+                "presentable": false
+            },
+            {
+                "name": "youtube_url",
+                "type": "url",
+                "required": false,
+                "presentable": false,
+                "onlyDomains": [
+                    "youtube.com",
+                    "youtu.be"
+                ]
+            },
+            {
+                "name": "tags",
+                "type": "json",
+                "required": false,
+                "presentable": false
+            },
+            {
+                "name": "published",
+                "type": "bool",
+                "required": false,
+                "presentable": false
+            },
+            {
+                "name": "thumbnail",
+                "type": "file",
+                "required": false,
+                "presentable": false,
+                "maxSize": 5242880,
+                "mimeTypes": [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ],
+                "maxSelect": 1
+            },
+            {
+                "name": "speaker",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "max": 100
+            }
+        ],
+        "indexes": [
+            "CREATE INDEX idx_sermon_date ON sermons (sermon_date DESC)",
+            "CREATE INDEX idx_sermon_published ON sermons (published)",
+            "CREATE INDEX idx_sermon_speaker ON sermons (speaker)"
+        ],
+        "listRule": "@request.auth.id != ''",
+        "viewRule": "@request.auth.id != ''",
+        "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+        "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+        "deleteRule": "@request.auth.role = 'admin'"
+    },
+    {
+        "id": "pbc_4821534112",
+        "name": "announcements",
+        "type": "base",
+        "system": false,
+        "fields": [
+            {
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "presentable": true,
+                "max": 150
+            },
+            {
+                "name": "body",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "max": 5000
+            },
+            {
+                "name": "published_at",
+                "type": "date",
+                "required": false,
+                "presentable": false
+            },
+            {
+                "name": "expires_at",
+                "type": "date",
+                "required": false,
+                "presentable": false
+            },
+            {
+                "name": "priority",
+                "type": "select",
+                "required": true,
+                "presentable": false,
+                "values": [
+                    "low",
+                    "normal",
+                    "high"
+                ],
+                "maxSelect": 1
+            },
+            {
+                "name": "published",
+                "type": "bool",
+                "required": false,
+                "presentable": false
+            }
+        ],
+        "indexes": [
+            "CREATE INDEX idx_announcement_published ON announcements (published)",
+            "CREATE INDEX idx_announcement_expires ON announcements (expires_at)",
+            "CREATE INDEX idx_announcement_priority ON announcements (priority)"
+        ],
+        "listRule": "",
+        "viewRule": "",
+        "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+        "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+        "deleteRule": "@request.auth.role = 'admin'"
+    },
+    {
+        "id": "pbc_5932645223",
+        "name": "resources",
+        "type": "base",
+        "system": false,
+        "fields": [
+            {
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "presentable": true,
+                "max": 200
+            },
+            {
+                "name": "description",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "max": 1000
+            },
+            {
+                "name": "file",
+                "type": "file",
+                "required": false,
+                "presentable": false,
+                "maxSize": 52428800,
+                "mimeTypes": [
+                    "application/pdf",
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                ],
+                "maxSelect": 1
+            },
+            {
+                "name": "url",
+                "type": "url",
+                "required": false,
+                "presentable": false
+            },
+            {
+                "name": "category",
+                "type": "select",
+                "required": true,
+                "presentable": false,
+                "values": [
+                    "essay",
+                    "article",
+                    "free"
+                ],
+                "maxSelect": 1
+            },
+            {
+                "name": "published",
+                "type": "bool",
+                "required": false,
+                "presentable": false
+            }
+        ],
+        "indexes": [
+            "CREATE INDEX idx_resource_category ON resources (category)",
+            "CREATE INDEX idx_resource_published ON resources (published)"
+        ],
+        "listRule": "",
+        "viewRule": "",
+        "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+        "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
+        "deleteRule": "@request.auth.role = 'admin'"
+    }
+]

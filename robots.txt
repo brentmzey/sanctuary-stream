@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /pocketbase/local/pb_data/
+Disallow: /sanctuary-app/dist/
+Disallow: /sanctuary-bridge/dist/
+Disallow: /node_modules/
+Disallow: /.git/
+
+# Allow AI crawlers for documentation indexing
+User-agent: GPTBot
+Allow: /docs/
+Allow: /README.md
+
+Sitemap: https://sanctuary-stream.vercel.app/sitemap.xml

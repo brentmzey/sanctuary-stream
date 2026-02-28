@@ -28,7 +28,15 @@ export interface User {
 /**
  * Stream command actions
  */
-export type CommandAction = 'START' | 'STOP' | 'RECORD_START' | 'RECORD_STOP';
+export type CommandAction = 
+  | 'START' 
+  | 'STOP' 
+  | 'RECORD_START' 
+  | 'RECORD_STOP'
+  | 'SET_STREAM_SETTINGS'
+  | 'SET_VIDEO_SETTINGS'
+  | 'SET_STREAM_ENCODER'
+  | 'SET_AUDIO_SETTINGS';
 
 /**
  * Command record for controlling OBS

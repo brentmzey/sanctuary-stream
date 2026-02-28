@@ -1,6 +1,6 @@
 {
   "name": "sanctuary-stream",
-  "version": "0.1.0",
+  "version": "0.1.0-RC1",
   "description": "Zero-trust church streaming control system with real-time remote management",
   "author": "Sanctuary Stream Contributors",
   "license": "MIT",
@@ -16,6 +16,9 @@
     "dev": "concurrently \"npm run dev:pocketbase\" \"npm run dev:bridge\" \"npm run dev:app\"",
     "dev:all": "concurrently -n \"obs,bridge,app\" -c \"yellow,cyan,green\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
     "dev:full": "concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:tmux": "./scripts/dev-tmux.sh",
+    "dev:iterm": "./scripts/dev-iterm.scpt",
+    "dev:simple": "./scripts/dev-simple.sh",
     "dev:app": "npm run dev --workspace=sanctuary-app",
     "dev:bridge": "npm run dev --workspace=sanctuary-bridge",
     "dev:pocketbase": "cd pocketbase/local && pocketbase serve --http=127.0.0.1:8090",

@@ -82,9 +82,20 @@ if (typeof window !== 'undefined') {
   }, 30000);
 }
 
+export type CommandAction = 
+  | 'START' 
+  | 'STOP' 
+  | 'RECORD_START' 
+  | 'RECORD_STOP' 
+  | 'SET_STREAM_SETTINGS'
+  | 'SET_VIDEO_SETTINGS'
+  | 'SET_STREAM_ENCODER'
+  | 'SET_AUDIO_SETTINGS'
+  | 'UPLOAD_TO_DRIVE';
+
 export interface CommandRecord {
   id: string;
-  action: 'START' | 'STOP' | 'RECORD_START' | 'RECORD_STOP' | 'SET_STREAM_SETTINGS' | 'UPLOAD_TO_DRIVE';
+  action: CommandAction;
   executed: boolean;
   correlation_id: string;
   payload?: Record<string, unknown>;
@@ -165,7 +176,7 @@ export interface ResourceRecord {
   updated: string;
 }
 
-export function sendCommand(action: CommandRecord['action'], payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
+export function sendCommand(action: CommandAction, payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
   return new AsyncIO(async () => {
     const userOption = fromNullable(pb.authStore.model);
     if (userOption._tag === 'none') {

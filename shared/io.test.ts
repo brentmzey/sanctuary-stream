@@ -6,7 +6,7 @@
  * call unsafeRunSync / unsafeRunAsync. That deliberateness is the whole
  * point. These tests prove the algebra holds.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { IO, AsyncIO } from './io';
 import { isSuccess, isFailure } from './result';
 

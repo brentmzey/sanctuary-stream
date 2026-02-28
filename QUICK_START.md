@@ -1,175 +1,173 @@
-# 🚀 Quick Start Guide
+# ⚡ Quick Start - 5 Minutes to Streaming
 
-Get Sanctuary Stream running in minutes.
+**Get Sanctuary Stream running in 5 minutes**
 
 ---
 
-## 🎯 **NEW: Auto-Deploy on Push to Main!**
-
-**Just push to `main` and everything builds automatically!**
+## 1️⃣ Prerequisites (2 minutes)
 
 ```bash
-git push origin main
-```
+# Install Node.js 18+ from: https://nodejs.org
+# Download OBS Studio from: https://obsproject.com
 
-**What happens automatically (~25 minutes):**
-1. ✅ Builds all 6 platforms (macOS, Windows, Linux, iOS, Android, Web)
-2. ✅ Runs all tests
-3. ✅ Creates development release on GitHub
-4. ✅ Uploads iOS to TestFlight
-5. ✅ Uploads Android to Google Play Internal
-6. ✅ Deploys web to Vercel
-7. ✅ Packages backend configuration
-
-**No manual steps required!**
-
----
-
-## 📦 Deploy Everything (Automated)
-
-### Option 1: Push to Main (Recommended)
-```bash
-# Make your changes
-git add .
-git commit -m "Add new feature"
-git push origin main
-
-# Wait ~25 minutes - everything builds automatically!
-```
-
-### Option 2: Create Production Release
-```bash
-# For production releases (not development builds)
-git tag -a v0.1.1 -m "Release v0.1.1"
-git push origin v0.1.1
-
-# Triggers production deployment
-```
-
-### Option 3: Use Helper Script (Manual Control)
-```bash
-# Full control with testing and verification
-./scripts/build-test-deploy.sh --version v0.1.1
+# Verify:
+node --version    # Should be v18+
+npm --version     # Should be 9+
 ```
 
 ---
 
-## 🧪 Test Only
+## 2️⃣ Clone & Install (2 minutes)
 
 ```bash
-./scripts/build-test-deploy.sh --skip-build --skip-deploy
-```
+# Clone repository
+git clone https://github.com/your-org/sanctuary-stream.git
+cd sanctuary-stream
 
-Runs all tests without building or deploying.
+# Install all dependencies
+npm install
+
+# Build everything
+npm run build
+```
 
 ---
 
-## 🏗️ Build Locally (Optional)
+## 3️⃣ Setup Database (30 seconds)
 
 ```bash
-# Web frontend
-cd sanctuary-app && npm run build
+# Download PocketBase for your OS:
+# https://pocketbase.io/docs/
 
-# Desktop (macOS)
-cd sanctuary-app && npm run tauri:build:mac
+# Extract to: pocketbase/local/
 
-# Mobile (iOS)
-cd sanctuary-app && npm run tauri:ios:build
+# Start PocketBase
+cd pocketbase/local
+./pocketbase serve
+
+# Open http://127.0.0.1:8090/_/
+# Create admin account when prompted
 ```
 
 ---
 
-## 📦 Download Binaries
+## 4️⃣ Configure OBS (30 seconds)
 
-After push to `main` completes (~25 minutes):
-
-**Automatic development builds:**
-https://github.com/brentmzey/sanctuary-stream/releases
-
-**Production releases (tags):**
-https://github.com/brentmzey/sanctuary-stream/releases/latest
-
-- 🍎 macOS: `Sanctuary-Stream-universal.dmg`
-- 🪟 Windows: `Sanctuary-Stream-x64.msi`
-- 🐧 Linux: `sanctuary-stream_amd64.deb` or `.AppImage`
-- 📱 iOS: Available on TestFlight (auto-uploaded)
-- 🤖 Android: Available on Google Play Internal (auto-uploaded)
-- 🌐 Web: https://sanctuary-stream.vercel.app
+```
+In OBS Studio:
+→ Tools 
+→ WebSocket Server Settings
+→ ☑ Enable WebSocket server
+→ Server Port: 4455
+→ Password: (leave blank)
+→ Click "Apply"
+```
 
 ---
 
-## 📱 Mobile App Stores
-
-### iOS (TestFlight)
-**Automatic:** Uploaded on every push
-**Manual:** Log into App Store Connect to promote
-
-### Android (Google Play)
-**Automatic:** Uploaded to Internal Track on every push
-**Manual:** Log into Play Console to promote
-
----
-
-## ✅ Verify Everything Works
+## 5️⃣ Start Everything (30 seconds)
 
 ```bash
-./scripts/verify-platform-support.sh
-```
+# Terminal 1: PocketBase (already running from step 3)
 
-Expected output:
-```
-✅ Passed:   24
-⚠️  Warnings: 0
-❌ Failed:   0
+# Terminal 2: Bridge
+cd sanctuary-bridge
+npm start
+# ✅ Wait for: "Connected to OBS"
 
-🎉 ALL PLATFORMS HAVE REAL-TIME ACCESS!
-```
-
----
-
-## 📚 More Information
-
-- **Auto-Deploy Guide:** [docs/AUTO_DEPLOY_GUIDE.md](docs/AUTO_DEPLOY_GUIDE.md) ⭐ **NEW**
-- **Complete Build Guide:** [docs/BUILD_DEPLOY_GUIDE.md](docs/BUILD_DEPLOY_GUIDE.md)
-- **Platform Details:** [docs/PLATFORM_SUPPORT.md](docs/PLATFORM_SUPPORT.md)
-- **User Guide:** [docs/USER_GUIDE.md](docs/USER_GUIDE.md)
-- **Status Report:** [PLATFORM_STATUS.md](PLATFORM_STATUS.md)
-
----
-
-## 🆘 Need Help?
-
-- **Troubleshooting:** See [docs/BUILD_DEPLOY_GUIDE.md](docs/BUILD_DEPLOY_GUIDE.md#-troubleshooting)
-- **GitHub Issues:** https://github.com/brentmzey/sanctuary-stream/issues
-- **GitHub Actions:** https://github.com/brentmzey/sanctuary-stream/actions
-
----
-
-## 🎯 Daily Workflow
-
-```bash
-# 1. Make changes
-vim sanctuary-app/src/...
-
-# 2. Commit and push
-git add .
-git commit -m "Add feature"
-git push origin main
-
-# 3. Wait ~25 minutes - everything builds automatically!
-
-# 4. Download from:
-#    https://github.com/brentmzey/sanctuary-stream/releases
-
-# 5. Test on all platforms
+# Terminal 3: Web App
+cd sanctuary-app
+npm run dev
+# ✅ Opens: http://localhost:5173
 ```
 
 ---
 
-**Ready? Just push to main! 🚀**
+## 6️⃣ First Login (30 seconds)
 
-```bash
-git push origin main
+```
+1. Open: http://localhost:5173
+2. Click "Setup Wizard" OR login:
+   Email: admin@local.dev
+   Password: admin123456
+3. ✅ You're in!
 ```
 
-**Everything deploys automatically. No manual steps required.**
+---
+
+## 🎬 Test Streaming
+
+```
+In the App:
+1. Go to "Stream Control" tab
+2. Click "🎬 Video Quality"
+3. Choose "High Quality" preset
+4. Click "Apply to OBS"
+5. Click "Start Streaming"
+6. ✅ Watch the Health Monitor!
+```
+
+---
+
+## 🆘 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Bridge won't connect to OBS | Make sure OBS WebSocket is enabled (step 4) |
+| Port 8090 already in use | Kill process: `lsof -ti:8090 \| xargs kill -9` |
+| "Cannot find module" | Run: `rm -rf node_modules && npm install` |
+| PocketBase won't start | Make sure it's executable: `chmod +x pocketbase` |
+
+---
+
+## 📚 Full Documentation
+
+- **Complete Install**: `INSTALLATION_GUIDE.md`
+- **Video Quality**: `docs/PROFESSIONAL_VIDEO_GUIDE.md`
+- **Performance**: `PERFORMANCE_OPTIMIZATIONS.md`
+- **All Platforms**: `MULTI_PLATFORM_BUILD_STATUS.md`
+
+---
+
+## ✅ Next Steps
+
+### For Your 3h 15m Parish Service
+
+**Recommended Settings**:
+```
+Resolution: 1080p @ 30fps
+Video Bitrate: 4,500 Kbps
+Audio Bitrate: 160 Kbps (speech) or 320 Kbps (music)
+Encoder: NVENC (GPU)
+```
+
+**Setup YouTube**:
+```
+1. Get stream key from YouTube Studio
+2. In OBS → Settings → Stream
+3. Service: YouTube - RTMPS
+4. Stream Key: (paste your key)
+5. Apply & OK
+```
+
+**Go Live**:
+```
+1. In Sanctuary Stream app: Click "Start Streaming"
+2. In OBS: Verify scenes/sources
+3. Monitor Health in app
+4. Stream your service! 🎉
+```
+
+---
+
+## 🎉 That's It!
+
+**Time to first stream**: ~5 minutes
+**Cost**: $0
+**Quality**: Professional broadcast-grade
+
+**Your Old St. Mary's Chicago 3h 15m service will stream beautifully! 🙏**
+
+---
+
+**Need help?** See `INSTALLATION_GUIDE.md` for detailed instructions.

@@ -6,6 +6,8 @@ import { LoginForm } from './components/LoginForm';
 import { StreamStatus } from './components/StreamStatus';
 import { ControlButtons } from './components/ControlButtons';
 import { StreamSettings } from './components/StreamSettings';
+import { VideoQualitySettings } from './components/VideoQualitySettings';
+import { StreamHealthMonitor } from './components/StreamHealthMonitor';
 import { SetupWizard } from './components/SetupWizard';
 import { AnnouncementsBanner } from './components/AnnouncementsBanner';
 import { PastoralReflections } from './components/PastoralReflections';
@@ -20,6 +22,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
+  const [showQualitySettings, setShowQualitySettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'control' | 'reflections'>('control');
 
   // Only hook into stream if we have an ID
@@ -124,6 +127,11 @@ function App() {
               <>
                 <StreamStatus stream={stream.value} />
 
+                {/* Stream Health Monitor - Only show when live */}
+                {stream.value.status === 'live' && (
+                  <StreamHealthMonitor stream={stream.value} />
+                )}
+
                 {canControl ? (
                   <>
                     <ControlButtons
@@ -131,7 +139,13 @@ function App() {
                       isRecording={stream.value.status === 'recording'}
                       disabled={stream.value.status === 'error'}
                     />
-                    <div className="flex justify-end mt-4">
+                    <div className="flex justify-end gap-4 mt-4">
+                      <button
+                        onClick={() => setShowQualitySettings(!showQualitySettings)}
+                        className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
+                      >
+                        {showQualitySettings ? '🔼 Hide Quality Controls' : '🎬 Video Quality'}
+                      </button>
                       <button
                         onClick={() => setShowSettings(!showSettings)}
                         className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
@@ -139,6 +153,7 @@ function App() {
                         {showSettings ? '🔼 Hide Settings' : '⚙️ Stream Settings'}
                       </button>
                     </div>
+                    {showQualitySettings && <VideoQualitySettings />}
                     {showSettings && <StreamSettings />}
                   </>
                 ) : (

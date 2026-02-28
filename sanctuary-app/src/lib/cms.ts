@@ -17,7 +17,7 @@
  */
 import { pb } from './pocketbase';
 import { AsyncIO } from '@shared/io';
-import { fromNullable, fromNonEmptyString, getOrElse, type Option } from '@shared/option';
+import { fromNonEmptyString, getOrElse } from '@shared/option';
 import type { Sermon, Announcement, Resource } from '@shared/types';
 
 // ---------------------------------------------------------------------------
@@ -53,7 +53,6 @@ export const listSermons = (
     perPage = 20
 ): AsyncIO<Sermon[]> =>
     new AsyncIO(async () => {
-        // fromNullable guards the filter — if it's null/undefined we get an empty string (no filter)
         const safeFilter = resolveFilter(filter);
         const result = await pb.collection('sermons').getList<Sermon>(page, perPage, {
             filter: safeFilter,
@@ -84,8 +83,8 @@ export const createSermon = (
     data: Omit<Sermon, 'id' | 'created' | 'updated'>
 ): AsyncIO<Sermon> =>
     new AsyncIO(async () => {
-        // Ensure published defaults to draft state if caller forgot to set it
-        const payload = { published: false, ...data };
+        // Ensure published defaults to draft state — caller's value takes precedence
+        const payload = { ...data, published: data.published ?? false };
         return pb.collection('sermons').create<Sermon>(payload);
     });
 
@@ -161,7 +160,11 @@ export const createAnnouncement = (
     data: Omit<Announcement, 'id' | 'created' | 'updated'>
 ): AsyncIO<Announcement> =>
     new AsyncIO(async () => {
-        const payload = { published: false, priority: 'normal' as const, ...data };
+        const payload = { 
+            ...data, 
+            published: data.published ?? false, 
+            priority: data.priority ?? ('normal' as const) 
+        };
         return pb.collection('announcements').create<Announcement>(payload);
     });
 
@@ -220,7 +223,7 @@ export const createResource = (
     data: Omit<Resource, 'id' | 'created' | 'updated'>
 ): AsyncIO<Resource> =>
     new AsyncIO(async () => {
-        const payload = { published: false, ...data };
+        const payload = { ...data, published: data.published ?? false };
         return pb.collection('resources').create<Resource>(payload);
     });
 
