@@ -1,33 +1,39 @@
 # ⛪ Sanctuary Stream
 
-**Zero-trust church streaming control system with real-time remote management.**
+[![Build and Release](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml)
+[![Platform Support](https://img.shields.io/badge/platform-macOS%20|%20Windows%20|%20Linux%20|%20iOS%20|%20Android-blue.svg)](#-platform-support)
+[![Built with Rust](https://img.shields.io/badge/built%20with-Rust-brown.svg)](https://www.rust-lang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**Zero-trust church streaming control system with a high-performance Rust engine.**
+
+Sanctuary Stream provides a secure, reliable way for church media teams to manage OBS and streaming services remotely. Built with a "zero-trust" architecture, it ensures that only authorized personnel can control the broadcast from any device, anywhere.
 
 ---
 
-## 🚨 [INSTALLER & ADMIN: CLICK HERE FOR THE STEP-BY-STEP SETUP GUIDE](./docs/ADMIN_SETUP.md) 🚨
+## 🚀 Get Started Now
+
+### 📥 Download Latest Installers
+| Platform | Installer | Version |
+| :--- | :--- | :--- |
+| **macOS** | [Download .dmg](https://github.com/brentmzey/sanctuary-stream/releases/latest) | `v0.1.0-RC2` |
+| **Windows** | [Download .msi](https://github.com/brentmzey/sanctuary-stream/releases/latest) | `v0.1.0-RC2` |
+| **Linux** | [Download .deb](https://github.com/brentmzey/sanctuary-stream/releases/latest) | `v0.1.0-RC2` |
+| **Mobile** | [iOS & Android Guides](./docs/INSTALLATION_DISTRIBUTION.md#mobile-installation) | `Coming Soon` |
+
+### 🚨 [ADMIN: STEP-BY-STEP SETUP GUIDE](./docs/ADMIN_SETUP.md) 🚨
+*New to the tech booth? Start here to set up your Station and Remote App.*
 
 ---
 
-Sanctuary Stream provides a secure, reliable way for church media teams to manage OBS and streaming services remotely. Built with a "zero-trust" architecture, it ensures that only authorized personnel can control the broadcast.
+## 🏛️ High-Performance Architecture
 
----
+The system has been fully migrated to a **Rust-based core**, providing industry-leading stability for live environments.
 
-## 🚀 Quick Start (Local Development)
-
-### 1. Setup Environment
-```bash
-./scripts/setup.sh
-```
-
-### 2. Launch Services (Choose one)
-- **iTerm2 (macOS):** `./scripts/dev-iterm.scpt` (Best for tabs)
-- **Standard:** `npm run dev:full` (Best for single-terminal logs)
-- **tmux:** `./scripts/dev-tmux.sh` (Best for persistent sessions)
-
-### 3. Verify
-Open [http://localhost:5173](http://localhost:5173) and login with:
-- **Email:** `admin@local.dev`
-- **Password:** `admin123456`
+- **Rust Station Engine:** ~12MB idle memory, instant startup, and native OBS integration.
+- **Zero-Trust Bridge:** No direct open ports. Commands are mediated through an encrypted PocketBase queue.
+- **Multi-Cloud Sync:** Automatic recording uploads to Google Drive and real-time health metrics.
+- **Universal Remote:** A beautiful, responsive React dashboard that runs on Web, iOS, and Android.
 
 ---
 
@@ -35,26 +41,38 @@ Open [http://localhost:5173](http://localhost:5173) and login with:
 
 | Document | Purpose |
 | :--- | :--- |
-| **[CHANGELOG.md](./CHANGELOG.md)** | Track all versions and RC releases. |
-| **[SRVDD.md](./docs/SRVDD.md)** | Service Runtime & Visual Design (Mermaid Architecture). |
+| **[Station Setup](./docs/STATION_SETUP.md)** | **Crucial:** How to configure the streaming computer (OBS + Rust Bridge). |
+| **[User Guide](./docs/USER_GUIDE.md)** | Instructions for church volunteers and media teams. |
+| **[SRVDD.md](./docs/SRVDD.md)** | Detailed architecture diagrams and design patterns. |
 | **[DIBR.md](./DIBR.md)** | Deployment, Installation, Backout, and Rollback Guide. |
-| **[agents.md](./agents.md)** | AI & Bot interaction policy. |
-| **[USER_GUIDE.md](./docs/USER_GUIDE.md)** | Detailed instructions for church volunteers. |
+| **[CHANGELOG.md](./CHANGELOG.md)** | Track all versions and RC releases. |
 
 ---
 
-## 🏷️ Release & Build Strategy
+## 💻 Developer Setup
 
-We follow a strict release lifecycle to ensure stability:
-- **Builds:** `x.xx.<epochMillis>` (e.g., `0.1.1770200000000`)
-- **Release Candidates:** `x.xx.xx-RCx` (e.g., `0.1.0-RC1`)
-- **Final Release:** `x.xx.xx` (e.g., `0.1.0`)
+If you want to contribute or build from source:
+
+### 1. Requirements
+- [Rust](https://rustup.rs/) (Stable)
+- [Node.js](https://nodejs.org/) (v18+)
+- [PocketBase](https://pocketbase.io/) (Included in `./pocketbase/local`)
+
+### 2. Initialization
+```bash
+./scripts/setup.sh
+```
+
+### 3. Launch (Dev Mode)
+- **Unified Dev:** `npm run dev:full`
+- **Tauri UI:** `cd sanctuary-app && npm run tauri dev`
 
 ---
 
-## 🛡️ Security Policy
-
-Sanctuary Stream utilizes a command-queue pattern. No direct connections are made between the control app and the broadcast machine (OBS). All actions are mediated through an encrypted PocketBase instance.
+## 🛡️ Security & Reliability
+- **Command Queue Pattern:** Prevents unauthorized direct access to OBS.
+- **JWT Authentication:** Secure login for all technical staff.
+- **Real-time Heartbeats:** Monitor the health of your streaming station from your phone.
 
 ## 📄 License
-MIT License. See [LICENSE](./LICENSE) for details.
+MIT License. Built with ❤️ for churches everywhere.
