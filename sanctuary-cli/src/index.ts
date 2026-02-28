@@ -61,13 +61,30 @@ program
     }
   });
 
+// --- CI Command ---
+program
+  .command('ci')
+  .description('Run full local CI validation suite')
+  .action(() => {
+    console.log(pc.yellow('🔍 Running local CI validation...'));
+    try {
+      execSync('./scripts/ci.sh', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+    } catch (e) {
+      process.exit(1);
+    }
+  });
+
 // --- Deploy Command ---
 program
   .command('push')
   .description('Push changes to GitHub and trigger CI/CD')
   .action(() => {
     console.log(pc.magenta('⬆️  Pushing to GitHub...'));
-    execSync('./push-to-github.sh', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+    try {
+      execSync('./push-to-github.sh', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+    } catch (e) {
+      process.exit(1);
+    }
   });
 
 program.parse();

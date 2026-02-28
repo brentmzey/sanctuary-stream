@@ -42,6 +42,7 @@ The system has been fully migrated to a **Rust-based core**, providing industry-
 | Document | Purpose |
 | :--- | :--- |
 | **[Station Setup](./docs/STATION_SETUP.md)** | **Crucial:** How to configure the streaming computer (OBS + Rust Bridge). |
+| **[CLI Guide](./docs/CLI.md)** | **NEW:** Manage the project via command-line (build, test, push). |
 | **[User Guide](./docs/USER_GUIDE.md)** | Instructions for church volunteers and media teams. |
 | **[SRVDD.md](./docs/SRVDD.md)** | Detailed architecture diagrams and design patterns. |
 | **[DIBR.md](./DIBR.md)** | Deployment, Installation, Backout, and Rollback Guide. |
