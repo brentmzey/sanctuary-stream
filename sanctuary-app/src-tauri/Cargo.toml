@@ -19,6 +19,15 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 uuid = { version = "1.6", features = ["v4"] }
+obws = "0.12"
+eventsource-client = "0.12"
+futures-util = "0.3"
+dotenvy = "0.15"
+chrono = "0.4"
+google-drive3 = "5.0"
+yup-oauth2 = "9.0"
+hyper-rustls = { version = "0.25", features = ["native-tokio", "http1", "tls12", "logging", "rustls-native-certs"] }
+tokio-util = { version = "0.7", features = ["io"] }
 
 # Cloud integrations (optional, enable as needed)
 aws-config = { version = "1.1", optional = true }

@@ -1,9 +1,15 @@
 // Prevents additional console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod bridge;
+mod drive;
+#[cfg(test)]
+mod bridge_tests;
+
+use bridge::SanctuaryBridge;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
-use tracing::info;
+use tracing::{info, error};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct StreamQualityMetrics {
@@ -161,13 +167,27 @@ async fn publish_to_rabbitmq(url: String, exchange: String, routing_key: String,
 }
 
 fn main() {
+    dotenvy::dotenv().ok();
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
     
     info!("Starting Sanctuary Stream");
-    
+
+    let pb_url = std::env::var("VITE_PB_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
+    let stream_id = std::env::var("VITE_STREAM_ID").unwrap_or_default();
+
+    let bridge = SanctuaryBridge::new(pb_url, stream_id);
+
     tauri::Builder::default()
+        .setup(|app| {
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = bridge.start().await {
+                    error!("Failed to start bridge: {}", e);
+                }
+            });
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_stream_status,
             send_command,
