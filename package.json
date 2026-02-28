@@ -10,9 +10,11 @@
   },
   "workspaces": [
     "sanctuary-app",
-    "sanctuary-bridge"
+    "sanctuary-bridge",
+    "sanctuary-cli"
   ],
   "scripts": {
+    "sanctuary": "tsx sanctuary-cli/src/index.ts",
     "dev": "concurrently \"npm run dev:pocketbase\" \"npm run dev:bridge\" \"npm run dev:app\"",
     "dev:all": "concurrently -n \"obs,bridge,app\" -c \"yellow,cyan,green\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
     "dev:full": "concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
