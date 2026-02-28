@@ -9,7 +9,7 @@
  * so env vars must be set BEFORE import. We use vi.hoisted() for the mock
  * instances so they're available inside vi.mock() factory closures.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks — must be declared here before any vi.mock() calls
@@ -100,7 +100,13 @@ const { SanctuaryBridge } = await import('./index');
 // ---------------------------------------------------------------------------
 // Reset mocks between tests
 // ---------------------------------------------------------------------------
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.clearAllTimers();
+});
 
 // ---------------------------------------------------------------------------
 // Constructor

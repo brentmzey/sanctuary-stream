@@ -62,6 +62,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "happy-dom": "^17.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^16.2.7",
     "prettier": "^3.0.0",

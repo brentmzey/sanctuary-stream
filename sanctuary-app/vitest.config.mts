@@ -5,30 +5,20 @@ import react from '@vitejs/plugin-react';
 /**
  * Vitest configuration for sanctuary-app.
  *
- * We run in jsdom (browser-like) environment because the components use
- * window, localStorage, and DOM APIs. The shared/ library tests come along
- * for the ride via the include glob — one config covers it all.
- *
- * Coverage is opt-in via `npm run test:coverage` — we use v8 (native)
- * provider for fast, accurate coverage without source-map gymnastics.
+ * We run in happy-dom environment because it's lighter and more ESM-friendly 
+ * than jsdom for React component tests.
  */
 export default defineConfig({
     plugins: [tsconfigPaths(), react()],
     test: {
-        environment: 'jsdom',
+        environment: 'happy-dom',
         globals: true,
         setupFiles: [],
         include: [
             'src/**/*.test.{ts,tsx}',
-            // Pull in the shared library tests so coverage is reported together
             '../shared/**/*.test.ts',
         ],
         exclude: ['dist/**', 'node_modules/**', 'src-tauri/**'],
-        server: {
-            deps: {
-                inline: [/jsdom/, /html-encoding-sniffer/, /@exodus\/bytes/],
-            },
-        },
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
