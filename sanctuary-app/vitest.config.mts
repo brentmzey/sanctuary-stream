@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import react from '@vitejs/plugin-react';
 
 /**
  * Vitest configuration for sanctuary-app.
@@ -12,7 +13,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
  * provider for fast, accurate coverage without source-map gymnastics.
  */
 export default defineConfig({
-    plugins: [tsconfigPaths()],
+    plugins: [tsconfigPaths(), react()],
     test: {
         environment: 'jsdom',
         globals: true,
@@ -23,6 +24,11 @@ export default defineConfig({
             '../shared/**/*.test.ts',
         ],
         exclude: ['dist/**', 'node_modules/**', 'src-tauri/**'],
+        server: {
+            deps: {
+                inline: [/jsdom/, /html-encoding-sniffer/, /@exodus\/bytes/],
+            },
+        },
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
