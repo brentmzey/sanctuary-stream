@@ -12,7 +12,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [streamName, setStreamName] = useState('Sunday Service');
   
-  // Auth state for creating stream
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -41,7 +40,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     try {
       await pb.collection('users').authWithPassword(email, password);
       
-      // Create a new stream record
       const record = await pb.collection('streams').create({
         status: 'idle',
         heartbeat: new Date().toISOString(),
@@ -51,9 +49,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         }
       });
 
-      // Save to local storage for persistence
       localStorage.setItem('stream_id', record.id);
-      
       onComplete(record.id);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Authentication failed';
@@ -64,87 +60,100 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700">
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-white">🚀 Initial Setup</h2>
-        <p className="text-gray-400">Let's get your sanctuary connected.</p>
+    <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 shadow-2xl">
+      <div className="mb-10 text-center">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 rounded-3xl mb-6 shadow-xl shadow-indigo-600/20">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-10 h-10 text-white">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.59 8.31m5.84 2.58a14.98 14.98 0 0 1-6.16 12.12A14.98 14.98 0 0 1 3.27 10.89a14.98 14.98 0 0 1 6.16-12.12ZM21 3s-3.75 3.61-3.75 3.61m-13.5 13.5L3.75 21" />
+          </svg>
+        </div>
+        <h2 className="text-3xl font-black text-white tracking-tight mb-2">Initial Setup</h2>
+        <p className="text-slate-400 font-medium">Link your sanctuary to the network.</p>
       </div>
 
       {step === 1 && (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Backend URL (PocketBase)
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+              Backend Service URL
             </label>
             <input
               type="text"
               value={pbUrl}
               onChange={(e) => setPbUrl(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded p-2 border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-600"
               placeholder="http://127.0.0.1:8090"
             />
           </div>
 
           {connectionError && (
-            <div className="text-red-400 text-sm bg-red-900/20 p-2 rounded">
-              {connectionError}
+            <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm rounded-xl animate-shake">
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clipRule="evenodd" />
+                </svg>
+                {connectionError}
+              </div>
             </div>
           )}
 
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50"
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black rounded-2xl shadow-xl shadow-indigo-600/20 transition-all duration-200 uppercase tracking-widest text-sm"
           >
-            {isConnecting ? 'Connecting...' : 'Connect to Backend'}
+            {isConnecting ? (
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                <span>Connecting</span>
+              </div>
+            ) : 'Establish Connection'}
           </button>
         </div>
       )}
 
       {step === 2 && (
-        <div className="space-y-4">
-          <div className="bg-green-900/20 text-green-400 p-2 rounded text-sm mb-4 text-center">
-            ✅ Connected to Backend
+        <div className="space-y-6">
+          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl text-xs font-black uppercase tracking-widest text-center flex items-center justify-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            Handshake Successful
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Admin Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded p-2 border border-gray-600"
-            />
-          </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admin Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-5 py-3 bg-slate-800/50 border border-slate-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                placeholder="pastor@church.com"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded p-2 border border-gray-600"
-            />
-          </div>
-          
-          <div className="border-t border-gray-700 my-4 pt-4">
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-              New Stream Name
-            </label>
-            <input
-              type="text"
-              value={streamName}
-              onChange={(e) => setStreamName(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded p-2 border border-gray-600"
-            />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Access Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-5 py-3 bg-slate-800/50 border border-slate-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              />
+            </div>
+            
+            <div className="pt-4 border-t border-white/5 space-y-2">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Station Name</label>
+              <input
+                type="text"
+                value={streamName}
+                onChange={(e) => setStreamName(e.target.value)}
+                className="w-full px-5 py-3 bg-slate-800/50 border border-slate-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              />
+            </div>
           </div>
 
           {authError && (
-            <div className="text-red-400 text-sm bg-red-900/20 p-2 rounded">
+            <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm rounded-xl">
               {authError}
             </div>
           )}
@@ -152,9 +161,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           <button
             onClick={handleLoginAndCreate}
             disabled={isConnecting}
-            className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50"
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black rounded-2xl shadow-xl shadow-indigo-600/20 transition-all duration-200 uppercase tracking-widest text-sm"
           >
-            {isConnecting ? 'Setting up...' : 'Create Stream & Start'}
+            {isConnecting ? 'Registering Station...' : 'Create Stream Account'}
           </button>
         </div>
       )}

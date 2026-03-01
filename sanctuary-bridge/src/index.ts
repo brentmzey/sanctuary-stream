@@ -1,7 +1,14 @@
 import 'dotenv/config';
 import PocketBase from 'pocketbase';
+import { EventSource } from 'eventsource';
 import OBSWebSocket from 'obs-websocket-js';
 import { logger } from './logger';
+
+// Polyfill EventSource for Node.js (required by PocketBase SDK for realtime)
+if (typeof (global as any).EventSource === 'undefined') {
+  (global as any).EventSource = EventSource;
+}
+
 import { CommandRecord } from './types';
 import { uploadFile } from './google-drive';
 import { fromPromise } from '@shared/result';
@@ -47,7 +54,7 @@ class SanctuaryBridge {
   async start() {
     const authResult = await fromPromise(
       () => this.authenticatePocketBase(),
-      (e) => (e instanceof Error ? e : new Error(String(e)))
+      (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
     );
 
     if (authResult._tag === 'failure') {
@@ -55,9 +62,12 @@ class SanctuaryBridge {
       process.exit(1);
     }
 
+    // Now that we're authenticated, we can update status
+    this.throttledStatusUpdate('starting');
+
     const obsResult = await fromPromise(
       () => this.connectOBS(),
-      (e) => (e instanceof Error ? e : new Error(String(e)))
+      (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
     );
 
     // We don't exit if OBS fails, as it has its own retry logic
@@ -140,7 +150,10 @@ class SanctuaryBridge {
     logger.info('✅ Subscribed to command changes');
   }
 
-  private async executeCommand(command: CommandRecord) {
+  /**
+   * Public for testing - executes a command record against OBS
+   */
+  public async executeCommand(command: CommandRecord) {
     logger.info(`Executing command: ${command.action} (${command.correlation_id})`);
 
     const actionMap: Record<string, () => Promise<unknown>> = {
@@ -156,12 +169,10 @@ class SanctuaryBridge {
         if (!service || !key) {
           throw new Error('Missing service or key in payload for SET_STREAM_SETTINGS');
         }
-        // specific mapping for common services if needed, or pass through
-        // OBS "rtmp_common" settings usually require 'service', 'server', 'key'
         return this.obs.call('SetStreamServiceSettings', {
           streamServiceType: 'rtmp_common',
           streamServiceSettings: {
-            service: service, // e.g. 'YouTube - RTMPS' or 'Twitch'
+            service: service,
             server: server || 'auto',
             key: key
           }
@@ -199,10 +210,8 @@ class SanctuaryBridge {
 
         logger.info(`Setting encoder: ${encoder} with bitrate ${settings.bitrate}`);
         
-        // Get current streaming output settings
         const currentSettings = await this.obs.call('GetStreamServiceSettings');
         
-        // Update encoder settings
         return this.obs.call('SetStreamServiceSettings', {
           streamServiceType: currentSettings.streamServiceType || 'rtmp_common',
           streamServiceSettings: {
@@ -223,12 +232,8 @@ class SanctuaryBridge {
 
         logger.info(`Setting audio: ${sampleRate}Hz, ${channels}ch, ${bitrate}kbps`);
         
-        // Note: OBS WebSocket doesn't have a direct SetAudioSettings call in older versions
-        // This would typically be configured through the profile/scene collection
-        // For now, we log this and could implement via profile switching or config file modification
         logger.warn('Audio settings update - may require OBS restart or profile reload');
         
-        // Store settings in metadata for reference
         await this.pb.collection('streams').update(this.streamId, {
           metadata: {
             audio_settings: {
@@ -246,15 +251,15 @@ class SanctuaryBridge {
 
     const action = actionMap[command.action];
     if (!action) {
-      const error = `Unknown command action: ${command.action}`;
-      logger.error(error);
-      await this.pb.collection('commands').update(command.id, { executed: true, error_message: error });
+      const errorStr = `Unknown command action: ${command.action}`;
+      logger.error(errorStr);
+      await this.pb.collection('commands').update(command.id, { executed: true, error_message: errorStr });
       return;
     }
 
     const result = await fromPromise(
       () => action(),
-      (e) => (e instanceof Error ? e : new Error(String(e)))
+      (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
     );
 
     if (result._tag === 'success') {
@@ -267,7 +272,11 @@ class SanctuaryBridge {
     } else {
       const message = result.error.message;
       logger.error(`Failed to execute command ${command.action}:`, result.error);
-      await this.pb.collection('commands').update(command.id, { executed: true, error_message: message });
+      // BUG FIX: Explicitly include error_message in update call
+      await this.pb.collection('commands').update(command.id, { 
+        executed: true, 
+        error_message: String(message) 
+      });
       await this.updateStreamStatus('error');
     }
   }
@@ -296,15 +305,14 @@ class SanctuaryBridge {
         heartbeat: new Date().toISOString()
       };
 
-      // Safely fetch OBS stats using functional wrapper
       const obsStatusResult = await fromPromise(
         () => this.obs.call('GetStreamStatus'),
-        (e) => (e instanceof Error ? e : new Error(String(e)))
+        (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
       );
 
       const obsStatsResult = await fromPromise(
         () => this.obs.call('GetStats'),
-        (e) => (e instanceof Error ? e : new Error(String(e)))
+        (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
       );
 
       if (obsStatusResult._tag === 'success') {
@@ -382,7 +390,7 @@ process.on('SIGTERM', async () => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
-  bridge.start().catch((error) => {
+  bridge.start().catch((error: unknown) => {
     logger.error('Fatal error:', error);
     process.exit(1);
   });

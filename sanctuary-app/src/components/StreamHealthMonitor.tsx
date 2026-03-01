@@ -16,7 +16,6 @@ interface HealthMetrics {
 
 export function StreamHealthMonitor({ stream }: StreamHealthMonitorProps) {
   const [metrics, setMetrics] = useState<HealthMetrics | null>(null);
-  const [bitrateHistory, setBitrateHistory] = useState<number[]>([]);
 
   useEffect(() => {
     if (!stream || stream.status !== 'live') {
@@ -29,7 +28,6 @@ export function StreamHealthMonitor({ stream }: StreamHealthMonitorProps) {
       const outputBytes = stream.metadata?.outputBytes || 0;
       const outputDuration = stream.metadata?.outputDuration || 1;
       
-      // Calculate current bitrate (in Kbps)
       const currentBitrate = outputDuration > 0 
         ? Math.round((outputBytes * 8) / outputDuration / 1000) 
         : 0;
@@ -42,36 +40,32 @@ export function StreamHealthMonitor({ stream }: StreamHealthMonitorProps) {
       const cpuUsage = quality?.cpu_usage || 0;
       const uptime = Math.floor(outputDuration / 1000);
 
-      // Determine overall health
       let overall: HealthMetrics['overall'] = 'excellent';
       const recommendations: string[] = [];
 
       if (droppedPercent > 5) {
         overall = 'critical';
-        recommendations.push('⚠️ High frame drops detected. Reduce bitrate or resolution.');
+        recommendations.push('High frame drops detected. Reduce bitrate or resolution.');
       } else if (droppedPercent > 2) {
         overall = 'poor';
-        recommendations.push('⚠️ Some frame drops occurring. Consider lowering settings.');
+        recommendations.push('Some frame drops occurring. Consider lowering settings.');
       } else if (droppedPercent > 0.5) {
         overall = 'fair';
-        recommendations.push('💡 Minor frame drops. Monitor your network connection.');
+        recommendations.push('Minor frame drops. Monitor your network connection.');
       }
 
       if (cpuUsage > 85) {
         overall = overall === 'excellent' ? 'poor' : overall;
-        recommendations.push('🔥 High CPU usage. Enable hardware encoding (GPU).');
-      } else if (cpuUsage > 70) {
-        overall = overall === 'excellent' ? 'fair' : overall;
-        recommendations.push('💡 Moderate CPU usage. Consider hardware encoding.');
+        recommendations.push('High CPU usage. Enable hardware encoding (GPU).');
       }
 
       if (currentBitrate < 1000 && uptime > 30) {
         overall = 'critical';
-        recommendations.push('⚠️ Very low bitrate detected. Check your internet connection.');
+        recommendations.push('Very low bitrate detected. Check your internet connection.');
       }
 
       if (recommendations.length === 0) {
-        recommendations.push('✅ Stream health is optimal. Keep up the great work!');
+        recommendations.push('Stream health is optimal. Performance is stable.');
       }
 
       return {
@@ -86,171 +80,99 @@ export function StreamHealthMonitor({ stream }: StreamHealthMonitorProps) {
 
     const newMetrics = calculateMetrics();
     setMetrics(newMetrics);
-
-    // Update bitrate history for graph
-    setBitrateHistory(prev => {
-      const updated = [...prev, newMetrics.bandwidth];
-      // Keep last 60 data points (1 minute if updating every second)
-      return updated.slice(-60);
-    });
   }, [stream]);
 
   if (!metrics || stream.status !== 'live') {
     return null;
   }
 
-  const healthColors = {
-    excellent: 'bg-green-600',
-    good: 'bg-blue-600',
-    fair: 'bg-yellow-600',
-    poor: 'bg-orange-600',
-    critical: 'bg-red-600',
+  const healthStyles = {
+    excellent: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', dot: 'bg-emerald-500' },
+    good: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', dot: 'bg-blue-500' },
+    fair: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', dot: 'bg-amber-500' },
+    poor: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400', dot: 'bg-orange-500' },
+    critical: { bg: 'bg-rose-500/10', border: 'border-rose-500/20', text: 'text-rose-400', dot: 'bg-rose-500' },
   };
 
-  const healthLabels = {
-    excellent: '🟢 Excellent',
-    good: '🔵 Good',
-    fair: '🟡 Fair',
-    poor: '🟠 Poor',
-    critical: '🔴 Critical',
-  };
+  const style = healthStyles[metrics.overall];
 
   const formatUptime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    }
-    if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
-    }
-    return `${secs}s`;
-  };
-
-  // Simple sparkline chart
-  const renderBitrateSparkline = () => {
-    if (bitrateHistory.length < 2) return null;
-
-    const max = Math.max(...bitrateHistory, 1);
-    const width = 100;
-    const height = 30;
-    const points = bitrateHistory.map((value, index) => {
-      const x = (index / (bitrateHistory.length - 1)) * width;
-      const y = height - (value / max) * height;
-      return `${x},${y}`;
-    }).join(' ');
-
-    return (
-      <svg width={width} height={height} className="inline-block">
-        <polyline
-          points={points}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-blue-400"
-        />
-      </svg>
-    );
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-6 mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-          <span>💊</span> Stream Health
+    <div className="bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-8 mt-8 shadow-xl">
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xl font-bold text-white flex items-center gap-3">
+          <div className="p-2 bg-indigo-600/20 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-indigo-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+            </svg>
+          </div>
+          Live Diagnostics
         </h3>
-        <div className={`px-3 py-1 rounded-full text-sm font-medium text-white ${healthColors[metrics.overall]}`}>
-          {healthLabels[metrics.overall]}
+        <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${style.bg} ${style.border} ${style.text}`}>
+          <div className={`w-2 h-2 rounded-full animate-pulse ${style.dot}`}></div>
+          {metrics.overall}
         </div>
       </div>
 
-      {/* Key Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-          <div className="text-xs text-gray-400 mb-1">Bitrate</div>
-          <div className="text-2xl font-mono font-bold text-white">
-            {metrics.bandwidth.toLocaleString()}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-slate-950/40 p-5 rounded-2xl border border-white/5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Bitrate</span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-black text-white font-mono">{metrics.bandwidth.toLocaleString()}</span>
+            <span className="text-xs font-bold text-slate-500 uppercase">Kbps</span>
           </div>
-          <div className="text-xs text-gray-500">Kbps</div>
-          <div className="mt-2">{renderBitrateSparkline()}</div>
         </div>
 
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-          <div className="text-xs text-gray-400 mb-1">Frame Drops</div>
-          <div className={`text-2xl font-mono font-bold ${
-            metrics.droppedFramesPercent > 2 ? 'text-red-400' : 
-            metrics.droppedFramesPercent > 0.5 ? 'text-yellow-400' : 
-            'text-green-400'
-          }`}>
-            {metrics.droppedFramesPercent.toFixed(2)}%
+        <div className="bg-slate-950/40 p-5 rounded-2xl border border-white/5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Frame Drops</span>
+          <div className="flex items-baseline gap-1">
+            <span className={`text-2xl font-black font-mono ${metrics.droppedFramesPercent > 1 ? 'text-rose-400' : 'text-emerald-400'}`}>
+              {metrics.droppedFramesPercent.toFixed(1)}%
+            </span>
+            <span className="text-xs font-bold text-slate-500 uppercase">loss</span>
           </div>
-          <div className="text-xs text-gray-500">of total frames</div>
         </div>
 
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-          <div className="text-xs text-gray-400 mb-1">CPU Usage</div>
-          <div className={`text-2xl font-mono font-bold ${
-            metrics.cpuUsage > 85 ? 'text-red-400' : 
-            metrics.cpuUsage > 70 ? 'text-yellow-400' : 
-            'text-green-400'
-          }`}>
-            {metrics.cpuUsage.toFixed(1)}%
+        <div className="bg-slate-950/40 p-5 rounded-2xl border border-white/5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">CPU Load</span>
+          <div className="flex items-baseline gap-1">
+            <span className={`text-2xl font-black font-mono ${metrics.cpuUsage > 80 ? 'text-rose-400' : 'text-emerald-400'}`}>
+              {Math.round(metrics.cpuUsage)}%
+            </span>
+            <span className="text-xs font-bold text-slate-500 uppercase">usage</span>
           </div>
-          <div className="text-xs text-gray-500">processor load</div>
         </div>
 
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-          <div className="text-xs text-gray-400 mb-1">Uptime</div>
-          <div className="text-2xl font-mono font-bold text-white">
-            {formatUptime(metrics.uptime)}
+        <div className="bg-slate-950/40 p-5 rounded-2xl border border-white/5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Uptime</span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-black text-white font-mono">{formatUptime(metrics.uptime)}</span>
           </div>
-          <div className="text-xs text-gray-500">live duration</div>
         </div>
       </div>
 
-      {/* Recommendations */}
-      <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">📋 Recommendations</h4>
-        <div className="space-y-2">
-          {metrics.recommendations.map((rec, index) => (
-            <div
-              key={index}
-              className={`text-sm p-2 rounded ${
-                rec.startsWith('⚠️') ? 'bg-red-900/30 text-red-200' :
-                rec.startsWith('🔥') ? 'bg-orange-900/30 text-orange-200' :
-                rec.startsWith('💡') ? 'bg-yellow-900/30 text-yellow-200' :
-                'bg-green-900/30 text-green-200'
-              }`}
-            >
+      <div className="bg-indigo-600/5 rounded-2xl p-6 border border-indigo-500/10">
+        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+            <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clipRule="evenodd" />
+          </svg>
+          Optimization Log
+        </h4>
+        <ul className="space-y-3">
+          {metrics.recommendations.map((rec, i) => (
+            <li key={i} className="flex items-start gap-3 text-sm text-slate-300 font-medium">
+              <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></div>
               {rec}
-            </div>
+            </li>
           ))}
-        </div>
-      </div>
-
-      {/* Network Health Indicators */}
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className={`p-2 rounded text-center text-xs ${
-          metrics.bandwidth > 2000 ? 'bg-green-900/30 text-green-300' : 'bg-gray-900 text-gray-500'
-        }`}>
-          {metrics.bandwidth > 2000 ? '✓' : '○'} Bandwidth OK
-        </div>
-        <div className={`p-2 rounded text-center text-xs ${
-          metrics.droppedFramesPercent < 1 ? 'bg-green-900/30 text-green-300' : 'bg-gray-900 text-gray-500'
-        }`}>
-          {metrics.droppedFramesPercent < 1 ? '✓' : '○'} Frame Stability
-        </div>
-        <div className={`p-2 rounded text-center text-xs ${
-          metrics.cpuUsage < 80 ? 'bg-green-900/30 text-green-300' : 'bg-gray-900 text-gray-500'
-        }`}>
-          {metrics.cpuUsage < 80 ? '✓' : '○'} CPU Headroom
-        </div>
-      </div>
-
-      <div className="mt-4 text-xs text-gray-500">
-        💡 Monitor updated in real-time. Data refreshes every few seconds.
+        </ul>
       </div>
     </div>
   );

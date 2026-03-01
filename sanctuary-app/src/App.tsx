@@ -11,22 +11,24 @@ import { StreamHealthMonitor } from './components/StreamHealthMonitor';
 import { SetupWizard } from './components/SetupWizard';
 import { AnnouncementsBanner } from './components/AnnouncementsBanner';
 import { PastoralReflections } from './components/PastoralReflections';
+import { useTheme } from './lib/ThemeContext';
 import './App.css';
 
 function App() {
+  const { resolvedTheme } = useTheme();
   // Initialize Stream ID from LocalStorage or Environment
   const [streamId, setStreamId] = useState<string>(() => {
     return localStorage.getItem('stream_id') || import.meta.env.VITE_STREAM_ID || '';
   });
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(pb.authStore.isValid);
   const [userRole, setUserRole] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showQualitySettings, setShowQualitySettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'control' | 'reflections'>('control');
 
-  // Only hook into stream if we have an ID
-  const { stream, loading, error } = useStream({ streamId });
+  // Only hook into stream if we have an ID and are authenticated
+  const { stream, loading, error } = useStream({ streamId, isAuthenticated });
 
   useEffect(() => {
     const auth = pb.authStore.isValid;
@@ -58,7 +60,7 @@ function App() {
   };
 
   // 1. Show Setup Wizard if no Stream ID is configured
-  if (!streamId) {
+  if (!streamId || streamId === 'your_stream_id_here') {
     return (
       <div className="app-container flex items-center justify-center h-screen">
         <SetupWizard onComplete={handleSetupComplete} />
@@ -74,19 +76,30 @@ function App() {
   const canControl = userRole === 'admin' || userRole === 'pastor';
 
   return (
-    <div className="app-container">
+    <div className={`app-container-wrapper min-h-screen transition-colors duration-500 ${resolvedTheme === 'dark' ? 'dark bg-slate-950' : 'light bg-slate-50'}`}>
+      <div className="app-container">
       {/* Live announcements banner — always visible */}
       <AnnouncementsBanner />
 
       <header className="app-header">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Sanctuary Stream</h1>
-          <p className="text-gray-400">
-            Signed in as {pb.authStore.model?.name} ({userRole})
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-7 h-7 text-white">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.348 14.651a3.75 3.75 0 0 1 0-5.303m5.304 0a3.75 3.75 0 0 1 0 5.303m-7.425 2.122a6.75 6.75 0 0 1 0-9.546m9.546 0a6.75 6.75 0 0 1 0 9.546M5.106 18.894c-3.808-3.807-3.808-9.98 0-13.788m13.788 0c3.808 3.807 3.808 9.98 0 13.788M12 12h.008v.008H12V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight">Sanctuary Stream</h1>
+            <p className="text-slate-400 text-sm font-medium">
+              Signed in as <span className="text-indigo-400">{pb.authStore.model?.name}</span> ({userRole})
+            </p>
+          </div>
         </div>
-        <button onClick={handleLogout} className="logout-btn">
-          Sign Out
+        <button onClick={handleLogout} className="logout-btn flex items-center gap-2 group">
+          <span>Sign Out</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+          </svg>
         </button>
       </header>
 
@@ -96,13 +109,19 @@ function App() {
           className={`app-tab ${activeTab === 'control' ? 'app-tab--active' : ''}`}
           onClick={() => setActiveTab('control')}
         >
-          🎙️ Stream Control
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.348 14.651a3.75 3.75 0 0 1 0-5.303m5.304 0a3.75 3.75 0 0 1 0 5.303m-7.425 2.122a6.75 6.75 0 0 1 0-9.546m9.546 0a6.75 6.75 0 0 1 0 9.546M5.106 18.894c-3.808-3.807-3.808-9.98 0-13.788m13.788 0c3.808 3.807 3.808 9.98 0 13.788M12 12h.008v.008H12V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+          </svg>
+          Stream Control
         </button>
         <button
           className={`app-tab ${activeTab === 'reflections' ? 'app-tab--active' : ''}`}
           onClick={() => setActiveTab('reflections')}
         >
-          ✦ Reflections
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          </svg>
+          Pastoral Reflections
         </button>
       </nav>
 
@@ -215,6 +234,7 @@ function App() {
         {/* ── Reflections Tab ────────────────────────────────────── */}
         {activeTab === 'reflections' && <PastoralReflections />}
       </main>
+      </div>
     </div>
   );
 }

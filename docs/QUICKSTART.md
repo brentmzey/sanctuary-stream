@@ -152,10 +152,11 @@ npm run dev
 
 ## 📚 Full Documentation
 
-- **BUILD_AND_RUN.md** - Complete build & deployment guide
-- **SHELL_CONFIG.md** - Environment variable setup
-- **PROJECT_STRUCTURE.md** - Code organization
-- **shared/types.ts** - TypeScript type definitions
+- **[BUILD_AND_RUN.md](./BUILD_AND_RUN.md)** - Complete build & development guide
+- **[OBS_INTEGRATION.md](./OBS_INTEGRATION.md)** - Essential OBS configuration
+- **[USER_GUIDE.md](./USER_GUIDE.md)** - Complete installation guide
+- **[COMPLETE_GUIDE.md](./COMPLETE_GUIDE.md)** - Technical deep-dive & walkthrough
+- **[INDEX.md](./INDEX.md)** - Full documentation index
 
 ---
 

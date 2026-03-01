@@ -10,7 +10,7 @@ migrate((app) => {
         "name": "status",
         "type": "select",
         "required": true,
-        "values": ["idle", "live", "recording", "error"]
+        "values": ["idle", "starting", "live", "recording", "error"]
       },
       {
         "name": "heartbeat",

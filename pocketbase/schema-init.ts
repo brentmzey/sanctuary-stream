@@ -3,7 +3,7 @@ import PocketBase from 'pocketbase';
 const ENVIRONMENTS: Record<string, { url: string; admin: string }> = {
   local: { 
     url: 'http://127.0.0.1:8090', 
-    admin: 'admin@local.dev' 
+    admin: process.env.PB_ADMIN_EMAIL_LOCAL || 'admin@local.dev' 
   },
   staging: { 
     url: process.env.PB_URL_STAGING || 'https://staging.pockethost.io', 
@@ -36,11 +36,20 @@ async function initSchema(env: string = 'local') {
   }
 
   try {
-    // Try to authenticate with the admin account
-    await pb.admins.authWithPassword(config.admin, password);
+    // Try to authenticate as superuser (v0.30+)
+    try {
+      await pb.collection('_superusers').authWithPassword(config.admin, password);
+    } catch (err: any) {
+      console.error('Superuser auth failed:', err.message, err.data);
+      // Fallback to legacy admin auth (<v0.30)
+      await (pb as any).admins.authWithPassword(config.admin, password);
+    }
     console.log(`✅ Connected to ${env} PocketBase at ${config.url}`);
   } catch (error: any) {
     console.error(`❌ Failed to authenticate:`, error.message);
+    if (error.data) {
+      console.error('   Error details:', JSON.stringify(error.data, null, 2));
+    }
     console.error(`   Make sure you created the admin account at ${config.url}/_`);
     console.error(`   Email: ${config.admin}`);
     console.error(`   Password: <value of ${passwordEnvVar}>`);
@@ -90,6 +99,13 @@ async function createTestUsers(pb: PocketBase) {
   
   const testUsers = [
     { 
+      email: 'brentmzey4795@gmail.com', 
+      password: 'sanctuary123456', 
+      role: 'admin', 
+      name: 'Brent Zey',
+      passwordConfirm: 'sanctuary123456'
+    },
+    { 
       email: 'admin@local.dev', 
       password: 'admin123456', 
       role: 'admin', 
@@ -138,6 +154,7 @@ async function createDefaultStreamRecord(pb: PocketBase) {
     }
 
     const record = await pb.collection('streams').create({
+      id: 'defaultstream01',
       status: 'idle',
       heartbeat: new Date().toISOString(),
       metadata: {}

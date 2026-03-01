@@ -4,18 +4,25 @@ import { Option, none, some } from '@shared/option';
 
 interface UseStreamProps {
   streamId: string;
+  isAuthenticated: boolean;
 }
 
-export function useStream({ streamId }: UseStreamProps) {
+export function useStream({ streamId, isAuthenticated }: UseStreamProps) {
   const [stream, setStream] = useState<Option<StreamRecord>>(none());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Option<string>>(none());
 
   useEffect(() => {
+    if (!streamId || streamId === 'your_stream_id_here' || !isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
 
     async function fetchStream() {
       try {
+        setLoading(true);
         const record = await pb.collection('streams').getOne<StreamRecord>(streamId);
         if (mounted) {
           setStream(some(record));
@@ -42,7 +49,7 @@ export function useStream({ streamId }: UseStreamProps) {
       mounted = false;
       unsubscribeFromStream(streamId);
     };
-  }, [streamId]);
+  }, [streamId, isAuthenticated]);
 
   return { stream, loading, error };
 }

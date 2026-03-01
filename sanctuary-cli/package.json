@@ -1,23 +1,25 @@
 {
   "name": "sanctuary-cli",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Project management CLI for Sanctuary Stream",
+  "main": "src/index.ts",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No tests for CLI yet'",
+    "build": "echo 'CLI built via tsx directly'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "commander": "^14.0.3",
-    "dotenv": "^17.3.1",
+    "commander": "^13.1.0",
+    "dotenv": "^17.2.3",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^25.3.3",
+    "@types/node": "^25.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.1.0"
   }
 }

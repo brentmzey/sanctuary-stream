@@ -3,7 +3,11 @@ import { Command } from 'commander';
 import pc from 'picocolors';
 import { execSync } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import 'dotenv/config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const program = new Command();
 
@@ -23,7 +27,8 @@ program
     try {
       execSync(cmd, { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
     } catch (e) {
-      console.error(pc.red('Failed to start services'));
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(pc.red(`Failed to start services: ${msg}`));
     }
   });
 
@@ -34,15 +39,19 @@ program
   .option('-a, --app', 'Build app only')
   .option('-b, --bridge', 'Build bridge only')
   .action((options) => {
-    if (options.app) {
-      console.log(pc.cyan('📦 Building App...'));
-      execSync('npm run build:app', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
-    } else if (options.bridge) {
-      console.log(pc.cyan('📦 Building Bridge...'));
-      execSync('npm run build:bridge', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
-    } else {
-      console.log(pc.cyan('📦 Building all components...'));
-      execSync('npm run build', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+    try {
+      if (options.app) {
+        console.log(pc.cyan('📦 Building App...'));
+        execSync('npm run build:app', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+      } else if (options.bridge) {
+        console.log(pc.cyan('📦 Building Bridge...'));
+        execSync('npm run build:bridge', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+      } else {
+        console.log(pc.cyan('📦 Building all components...'));
+        execSync('npm run build', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+      }
+    } catch (e) {
+      process.exit(1);
     }
   });
 
@@ -52,12 +61,16 @@ program
   .description('Run all tests')
   .option('-e, --e2e', 'Run E2E tests only')
   .action((options) => {
-    if (options.e2e) {
-      console.log(pc.yellow('🧪 Running E2E tests...'));
-      execSync('npm run test:e2e', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
-    } else {
-      console.log(pc.yellow('🧪 Running all tests...'));
-      execSync('npm run test', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+    try {
+      if (options.e2e) {
+        console.log(pc.yellow('🧪 Running E2E tests...'));
+        execSync('npm run test:e2e', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+      } else {
+        console.log(pc.yellow('🧪 Running all tests...'));
+        execSync('npm run test', { stdio: 'inherit', cwd: path.join(__dirname, '../..') });
+      }
+    } catch (e) {
+      process.exit(1);
     }
   });
 

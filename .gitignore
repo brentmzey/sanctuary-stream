@@ -37,6 +37,11 @@ coverage/
 # Logs
 logs/
 *.log
+.dev-pids
+DEPLOYMENT_STATUS.txt
+sanctuary-bridge/logs/
+sanctuary-app/logs/
+previous_context_gemini.txt
 
 # OS
 Thumbs.db

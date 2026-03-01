@@ -5,27 +5,53 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    @apply bg-slate-950;
   }
   
   body {
-    @apply antialiased;
+    @apply antialiased text-slate-50;
+  }
+
+  ::selection {
+    @apply bg-indigo-500/30 text-white;
   }
 }
 
 @layer components {
+  .btn {
+    @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
+    @apply btn bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20;
   }
   
   .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
+    @apply btn bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/20;
+  }
+
+  .btn-secondary {
+    @apply btn bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700;
   }
   
   .card {
-    @apply bg-slate-800 border border-slate-700 rounded-lg p-6 shadow-md;
+    @apply bg-slate-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl;
   }
   
   .input-field {
-    @apply bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all;
+    @apply bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-500;
   }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-950;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 rounded-full hover:bg-slate-700 transition-colors;
 }

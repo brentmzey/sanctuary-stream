@@ -112,11 +112,11 @@ echo ""
 # Create admin account automatically via CLI
 # We need to run it from where the pocketbase data will be
 cd pocketbase/local
-if pocketbase admin create admin@local.dev admin123456 > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ Admin account created automatically${NC}"
+if pocketbase superuser upsert admin@local.dev admin123456 > /dev/null 2>&1; then
+    echo -e "${GREEN}✅ Admin account created/updated automatically${NC}"
 else
     # Maybe it already exists?
-    echo -e "${YELLOW}⚠️  Could not create admin via CLI (it may already exist)${NC}"
+    echo -e "${YELLOW}⚠️  Could not create/update admin via CLI${NC}"
 fi
 cd ../..
 
