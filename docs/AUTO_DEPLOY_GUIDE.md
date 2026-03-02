@@ -332,10 +332,10 @@ git push origin v0.1.1
 → Builds everything, creates production release
 
 # Monitor builds
-open https://github.com/brentmzey/sanctuary-stream/actions
+open https://github.com/sanctuary-stream/sanctuary-stream/actions
 
 # View releases
-open https://github.com/brentmzey/sanctuary-stream/releases
+open https://github.com/sanctuary-stream/sanctuary-stream/releases
 
 # Test web app
 open https://sanctuary-stream-git-main.vercel.app  # Preview

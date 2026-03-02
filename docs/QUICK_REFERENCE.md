@@ -43,7 +43,7 @@ Tools → WebSocket Server Settings → Enable
 Set password: YourSecurePassword
 
 # 3. Install Sanctuary Stream
-Download from: https://github.com/brentmzey/sanctuary-stream/releases
+Download from: https://github.com/sanctuary-stream/sanctuary-stream/releases
 Install for your platform
 
 # 4. Configure & Run
@@ -136,7 +136,7 @@ Audio:
 ## 📥 Download Links
 
 ### Sanctuary Stream
-- **Releases:** https://github.com/brentmzey/sanctuary-stream/releases/latest
+- **Releases:** https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
 - **macOS:** Sanctuary-Stream-universal.dmg
 - **Windows:** Sanctuary-Stream-x64.msi
 - **Linux:** sanctuary-stream_amd64.deb or .AppImage
@@ -277,7 +277,7 @@ Audio:
 ```bash
 # New user? Start here:
 1. Read: docs/QUICKSTART.md (5 minutes)
-2. Download: https://github.com/brentmzey/sanctuary-stream/releases
+2. Download: https://github.com/sanctuary-stream/sanctuary-stream/releases
 3. Install OBS: https://obsproject.com/download
 4. Enable WebSocket in OBS
 5. Connect & stream!
@@ -285,8 +285,8 @@ Audio:
 
 ### Need Help?
 - 📖 **Docs:** All in `./docs/` folder
-- 🐛 **Issues:** https://github.com/brentmzey/sanctuary-stream/issues
-- 💬 **Discuss:** https://github.com/brentmzey/sanctuary-stream/discussions
+- 🐛 **Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues
+- 💬 **Discuss:** https://github.com/sanctuary-stream/sanctuary-stream/discussions
 - 📧 **Email:** support@sanctuary-stream.com
 
 ### Video Tutorials

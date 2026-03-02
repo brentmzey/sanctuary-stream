@@ -99,7 +99,7 @@ async function createTestUsers(pb: PocketBase) {
   
   const testUsers = [
     { 
-      email: 'brentmzey4795@gmail.com', 
+      email: 'support@sanctuarystream.com', 
       password: 'sanctuary123456', 
       role: 'admin', 
       name: 'Brent Zey',

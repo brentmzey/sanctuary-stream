@@ -443,8 +443,8 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 
 # Wait ~20 minutes
-# Check: https://github.com/brentmzey/sanctuary-stream/actions
-# Then: https://github.com/brentmzey/sanctuary-stream/releases
+# Check: https://github.com/sanctuary-stream/sanctuary-stream/actions
+# Then: https://github.com/sanctuary-stream/sanctuary-stream/releases
 ```
 
 ---

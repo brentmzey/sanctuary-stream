@@ -96,7 +96,7 @@ git push origin v0.1.0
 
 ### 5. Verify Release
 ```
-https://github.com/brentmzey/sanctuary-stream/releases/latest
+https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
 ```
 
 ---

@@ -118,7 +118,7 @@ npm run lint
 **macOS:**
 ```bash
 # Download from GitHub releases
-curl -L https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream.dmg -o app.dmg
+curl -L https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream.dmg -o app.dmg
 
 # Install
 hdiutil attach app.dmg
@@ -132,7 +132,7 @@ open /Applications/Sanctuary\ Stream.app
 **Windows:**
 ```powershell
 # Download MSI installer
-Invoke-WebRequest -Uri "https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream.msi" -OutFile "app.msi"
+Invoke-WebRequest -Uri "https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream.msi" -OutFile "app.msi"
 
 # Install
 Start-Process msiexec.exe -ArgumentList "/i app.msi /qn" -Wait
@@ -144,12 +144,12 @@ Start-Process "C:\Program Files\Sanctuary Stream\Sanctuary Stream.exe"
 **Linux:**
 ```bash
 # Debian/Ubuntu (DEB)
-wget https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.deb
+wget https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.deb
 sudo dpkg -i sanctuary-stream_0.1.0_amd64.deb
 sanctuary-stream
 
 # Universal (AppImage)
-wget https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.AppImage
+wget https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.AppImage
 chmod +x sanctuary-stream_0.1.0_amd64.AppImage
 ./sanctuary-stream_0.1.0_amd64.AppImage
 ```
@@ -276,7 +276,7 @@ echo "=== INSTALLATION TEST ==="
 
 # 1. Download
 echo "1. Visit GitHub releases..."
-open https://github.com/brentmzey/sanctuary-stream/releases
+open https://github.com/sanctuary-stream/sanctuary-stream/releases
 
 # 2. Select platform
 echo "2. User selects their platform (macOS/Windows/Linux)"
@@ -303,7 +303,7 @@ echo "=== TEST COMPLETE ==="
 
 ```bash
 # 1. Clone
-git clone https://github.com/brentmzey/sanctuary-stream.git
+git clone https://github.com/sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 
 # 2. Install
@@ -346,7 +346,7 @@ git push origin v0.1.0
 
 **3. Release Available (20 minutes):**
 ```
-https://github.com/brentmzey/sanctuary-stream/releases/tag/v0.1.0
+https://github.com/sanctuary-stream/sanctuary-stream/releases/tag/v0.1.0
 ```
 
 **4. Users Download:**
@@ -514,7 +514,7 @@ git push origin v0.1.0
 # 2. Wait for GitHub Actions (20 minutes)
 
 # 3. Verify release
-open https://github.com/brentmzey/sanctuary-stream/releases
+open https://github.com/sanctuary-stream/sanctuary-stream/releases
 
 # 4. Announce to users!
 ```

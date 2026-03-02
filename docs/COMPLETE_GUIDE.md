@@ -15,7 +15,7 @@ npm install && npm run build && ./START.sh
 ```
 
 **Open:** http://localhost:5173  
-**Login:** brentmzey4795@gmail.com / sanctuary123456
+**Login:** support@sanctuarystream.com / sanctuary123456
 
 **Done!** 🎉
 
@@ -73,7 +73,7 @@ npm run build    # 30 seconds
 ### Access
 - **Web App:** http://localhost:5173
 - **PocketBase:** http://127.0.0.1:8090/_/
-- **Login:** brentmzey4795@gmail.com / sanctuary123456
+- **Login:** support@sanctuarystream.com / sanctuary123456
 
 ---
 
@@ -220,7 +220,7 @@ pocketbase serve --http=127.0.0.1:8090 --migrationsDir=local/pb_migrations
 **Terminal 2 - Create Admin:**
 ```bash
 cd pocketbase
-pocketbase superuser upsert brentmzey4795@gmail.com sanctuary123456
+pocketbase superuser upsert support@sanctuarystream.com sanctuary123456
 ```
 
 **Terminal 3 - Web App:**
@@ -439,7 +439,7 @@ brew install pocketbase  # macOS
 
 # Recreate admin
 cd pocketbase
-pocketbase superuser upsert brentmzey4795@gmail.com sanctuary123456
+pocketbase superuser upsert support@sanctuarystream.com sanctuary123456
 ```
 
 ### Desktop Build Fails

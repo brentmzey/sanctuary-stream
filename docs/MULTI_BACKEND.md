@@ -79,7 +79,7 @@ VITE_PB_URL=https://your-church.pockethost.io npm run build
 
 **1. Clone Repository:**
 ```bash
-git clone https://github.com/brentmzey/sanctuary-stream.git
+git clone https://github.com/sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 npm install
 ```

@@ -110,9 +110,9 @@ Fastest way to find what you need! Organized by role, topic, and scenario.
 ## 📖 Additional Resources
 
 - **📚 Index:** [INDEX.md](./INDEX.md) - Find anything quickly
-- **🐙 GitHub:** https://github.com/brentmzey/sanctuary-stream
-- **🐛 Issues:** https://github.com/brentmzey/sanctuary-stream/issues
-- **💬 Discuss:** https://github.com/brentmzey/sanctuary-stream/discussions
+- **🐙 GitHub:** https://github.com/sanctuary-stream/sanctuary-stream
+- **🐛 Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues
+- **💬 Discuss:** https://github.com/sanctuary-stream/sanctuary-stream/discussions
 - **📧 Support:** support@sanctuary-stream.com
 
 ---

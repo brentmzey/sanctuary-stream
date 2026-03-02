@@ -14,7 +14,7 @@ npm --version   # Should be 9.0.0 or higher
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/YOUR-USERNAME/sanctuary-stream.git
+git clone https://github.com/sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 ```
 
@@ -44,7 +44,7 @@ http://localhost:5173
 ```
 
 **Login with:**
-- Email: `brentmzey4795@gmail.com`
+- Email: `support@sanctuarystream.com`
 - Password: `sanctuary123456`
 
 **Done!** 🎉
@@ -121,7 +121,7 @@ ls -lh sanctuary-app/dist/
    http://localhost:5173
 
 🔐 Login Credentials:
-   Email:    brentmzey4795@gmail.com
+   Email:    support@sanctuarystream.com
    Password: sanctuary123456
 
 🆔 Process IDs: 12345 67890
@@ -146,7 +146,7 @@ pocketbase serve --http=127.0.0.1:8090 --migrationsDir=local/pb_migrations
 **Terminal 2 - Create Admin:**
 ```bash
 cd pocketbase
-pocketbase superuser upsert brentmzey4795@gmail.com sanctuary123456
+pocketbase superuser upsert support@sanctuarystream.com sanctuary123456
 cd ..
 ```
 
@@ -381,7 +381,7 @@ brew install pocketbase  # macOS
 ```bash
 # Recreate admin
 cd pocketbase
-pocketbase superuser upsert brentmzey4795@gmail.com sanctuary123456
+pocketbase superuser upsert support@sanctuarystream.com sanctuary123456
 cd ..
 ```
 
@@ -449,7 +449,7 @@ After running, you should see:
 - [x] ✅ Can access PocketBase admin
 
 **Open:** http://localhost:5173  
-**Login:** brentmzey4795@gmail.com / sanctuary123456  
+**Login:** support@sanctuarystream.com / sanctuary123456  
 **Works!** ✅
 
 ---

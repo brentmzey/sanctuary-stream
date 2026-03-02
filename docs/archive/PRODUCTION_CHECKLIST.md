@@ -186,7 +186,7 @@ git push origin v0.1.0
 
 ### 4. Monitor GitHub Actions
 ```
-Visit: https://github.com/brentmzey/sanctuary-stream/actions
+Visit: https://github.com/sanctuary-stream/sanctuary-stream/actions
 
 Expected workflow runs:
 - CI validation (~5 minutes)
@@ -199,7 +199,7 @@ Expected workflow runs:
 
 ### 5. Verify Release
 ```
-Visit: https://github.com/brentmzey/sanctuary-stream/releases/latest
+Visit: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
 
 Expected artifacts:
 - Sanctuary-Stream-universal.dmg (macOS)
@@ -235,7 +235,7 @@ Expected artifacts:
 
 ### GitHub Releases (Primary) ✅
 - **Access:** Public (no account needed)
-- **URL:** https://github.com/brentmzey/sanctuary-stream/releases
+- **URL:** https://github.com/sanctuary-stream/sanctuary-stream/releases
 - **Auto-updates:** Supported via Tauri
 - **Status:** Ready
 

@@ -20,7 +20,7 @@
 **Option A: With Bun (⚡ 10-25x faster!)**
 ```bash
 # 1. Clone repository
-git clone https://github.com/YOUR-USERNAME/sanctuary-stream.git
+git clone https://github.com/sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 
 # 2. Install dependencies (535ms!)
@@ -36,7 +36,7 @@ bun run build
 **Option B: With npm (Traditional)**
 ```bash
 # 1. Clone repository
-git clone https://github.com/YOUR-USERNAME/sanctuary-stream.git
+git clone https://github.com/sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 
 # 2. Install dependencies (5 minutes)
@@ -54,7 +54,7 @@ npm run build
 **Open:** http://localhost:5173
 
 **Credentials:**
-- Email: `brentmzey4795@gmail.com`
+- Email: `support@sanctuarystream.com`
 - Password: `sanctuary123456`
 
 **That's it!** You're streaming! 🎉
@@ -96,9 +96,9 @@ npm run build
 | Platform | Status | Download / Install |
 |----------|--------|---------|
 | 🌐 **Web Browser** | ✅ Working | [Launch Web App](http://localhost:5173) |
-| 🍎 **macOS** | ✅ Ready | [Download .dmg](https://github.com/YOUR-USERNAME/sanctuary-stream/releases/latest) |
-| 🪟 **Windows** | ✅ Ready | [Download .msi](https://github.com/YOUR-USERNAME/sanctuary-stream/releases/latest) |
-| 🐧 **Linux** | ✅ Ready | [Download .AppImage](https://github.com/YOUR-USERNAME/sanctuary-stream/releases/latest) |
+| 🍎 **macOS** | ✅ Ready | [Download .dmg](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) |
+| 🪟 **Windows** | ✅ Ready | [Download .msi](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) |
+| 🐧 **Linux** | ✅ Ready | [Download .AppImage](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) |
 | 📱 **iOS** | ✅ Ready | [App Store](https://apps.apple.com/app/sanctuary-stream) |
 | 🤖 **Android** | ✅ Ready | [Play Store](https://play.google.com/store/apps/details?id=com.sanctuarystream) |
 
@@ -111,13 +111,14 @@ npm run build
 Looking to build your own tailored version? Sanctuary Stream is designed to be forked and customized.
 
 - **[Tailoring Guide](docs/BUILD_AND_RUN.md)** - Learn how to customize the UI, add your own branding, and deploy your own private version.
+- **[Production Setup & Publishing](docs/PRODUCTION_SETUP.md)** - Complete guide on how to build, sign, and distribute your own production releases.
 - **Self-Hosting:** You own the data, you own the platform. No vendor lock-in.
 
 ---
 
 ## 🔄 Rollbacks & Releases
 
-We maintain the last **5 versions** in our [GitHub Releases](https://github.com/YOUR-USERNAME/sanctuary-stream/releases) to ensure you can always roll back to a known-stable version if your environment changes unexpectedly.
+We maintain the last **5 versions** in our [GitHub Releases](https://github.com/sanctuary-stream/sanctuary-stream/releases) to ensure you can always roll back to a known-stable version if your environment changes unexpectedly.
 
 ---
 
@@ -258,9 +259,9 @@ MIT License - See [LICENSE](LICENSE)
 
 ## 🙏 Support
 
-- **Issues:** [GitHub Issues](https://github.com/YOUR-USERNAME/sanctuary-stream/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/YOUR-USERNAME/sanctuary-stream/discussions)
-- **Email:** brentmzey4795@gmail.com
+- **Issues:** [GitHub Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/sanctuary-stream/sanctuary-stream/discussions)
+- **Email:** support@sanctuarystream.com
 
 ---
 

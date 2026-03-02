@@ -18,7 +18,7 @@
 - **Status:** RUNNING ✅
 
 ### ✅ Admin Account
-- **Email:** brentmzey4795@gmail.com
+- **Email:** support@sanctuarystream.com
 - **Password:** sanctuary123456
 - **Status:** CREATED ✅
 
@@ -32,7 +32,7 @@ http://localhost:5173
 ```
 
 ### Login
-- **Email:** brentmzey4795@gmail.com
+- **Email:** support@sanctuarystream.com
 - **Password:** sanctuary123456
 
 ### Start Streaming
@@ -52,7 +52,7 @@ http://localhost:5173
 
 **Features:**
 - ✅ Starts PocketBase
-- ✅ Creates admin (brentmzey4795@gmail.com)
+- ✅ Creates admin (support@sanctuarystream.com)
 - ✅ Starts web app
 - ✅ Shows all info
 - ✅ Takes 10 seconds
@@ -70,7 +70,7 @@ http://localhost:5173
 ### After (Solutions):
 - ✅ Admin auto-created on startup
 - ✅ One-command start (./START.sh)
-- ✅ Your email as default (brentmzey4795@gmail.com)
+- ✅ Your email as default (support@sanctuarystream.com)
 - ✅ Bridge ready to connect (after admin exists)
 
 ---
@@ -102,7 +102,7 @@ http://localhost:5173
 | **Tests** | ✅ 99.3% | 138/139 tests pass |
 | **PocketBase** | ✅ Running | PID 21601 live |
 | **Web App** | ✅ Running | PID 21608 live |
-| **Admin** | ✅ Created | brentmzey4795@gmail.com |
+| **Admin** | ✅ Created | support@sanctuarystream.com |
 | **Docs** | ✅ Complete | 50+ pages |
 
 ---
@@ -110,7 +110,7 @@ http://localhost:5173
 ## 🔐 YOUR CREDENTIALS
 
 **Login to web app:**
-- Email: `brentmzey4795@gmail.com`
+- Email: `support@sanctuarystream.com`
 - Password: `sanctuary123456`
 
 **PocketBase admin:**
@@ -120,7 +120,7 @@ http://localhost:5173
 **Change password:**
 ```bash
 cd pocketbase
-pocketbase superuser update brentmzey4795@gmail.com NEW_PASSWORD
+pocketbase superuser update support@sanctuarystream.com NEW_PASSWORD
 ```
 
 ---
@@ -164,7 +164,7 @@ pocketbase superuser update brentmzey4795@gmail.com NEW_PASSWORD
 - ✅ Deploy: Ready
 
 **YOUR ADMIN:**
-- ✅ Email: brentmzey4795@gmail.com
+- ✅ Email: support@sanctuarystream.com
 - ✅ Password: sanctuary123456
 - ✅ Created automatically on startup
 
@@ -185,7 +185,7 @@ http://localhost:5173
 ## 📞 NEXT STEPS
 
 1. **Open browser:** http://localhost:5173
-2. **Login:** brentmzey4795@gmail.com / sanctuary123456
+2. **Login:** support@sanctuarystream.com / sanctuary123456
 3. **Click "Start Streaming"**
 4. **Watch it work!**
 

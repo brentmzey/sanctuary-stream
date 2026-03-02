@@ -468,25 +468,25 @@ jobs:
             Choose your platform:
 
             #### Desktop
-            - 🍎 **macOS** (Universal - Intel + Apple Silicon): [Download DMG](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-universal.dmg)
-            - 🪟 **Windows** (10/11): [Download MSI](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-x64.msi)
-            - 🐧 **Linux** (Ubuntu/Debian): [Download DEB](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.deb)
-            - 🐧 **Linux** (Any distro): [Download AppImage](https://github.com/brentmzey/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.AppImage)
+            - 🍎 **macOS** (Universal - Intel + Apple Silicon): [Download DMG](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-universal.dmg)
+            - 🪟 **Windows** (10/11): [Download MSI](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-x64.msi)
+            - 🐧 **Linux** (Ubuntu/Debian): [Download DEB](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.deb)
+            - 🐧 **Linux** (Any distro): [Download AppImage](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.AppImage)
 
             #### Mobile
-            - 📱 **iOS**: ${{ github.ref_type == 'tag' && '[Download IPA](https://github.com/brentmzey/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/Sanctuary-Stream.ipa)' || 'Dev build available' }}
-            - 🤖 **Android**: ${{ github.ref_type == 'tag' && '[Download APK](https://github.com/brentmzey/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/sanctuary-stream-release.apk)' || 'Dev build available' }}
+            - 📱 **iOS**: ${{ github.ref_type == 'tag' && '[Download IPA](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/Sanctuary-Stream.ipa)' || 'Dev build available' }}
+            - 🤖 **Android**: ${{ github.ref_type == 'tag' && '[Download APK](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/sanctuary-stream-release.apk)' || 'Dev build available' }}
 
             #### Web
             - 🌐 **Web App**: [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app)
 
             ### What's New
 
-            ${{ github.ref_type == 'tag' && 'See [CHANGELOG.md](https://github.com/brentmzey/sanctuary-stream/blob/main/CHANGELOG.md) for details.' || 'Latest development changes from main branch.' }}
+            ${{ github.ref_type == 'tag' && 'See [CHANGELOG.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/CHANGELOG.md) for details.' || 'Latest development changes from main branch.' }}
 
             ### Installation & Setup
 
-            📚 Complete guide: [docs/USER_GUIDE.md](https://github.com/brentmzey/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
+            📚 Complete guide: [docs/USER_GUIDE.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
 
             **Quick Start:**
             1. Download for your platform above
@@ -498,9 +498,9 @@ jobs:
 
             ### Support
 
-            - 📖 [User Guide](https://github.com/brentmzey/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
-            - ❓ [Issues](https://github.com/brentmzey/sanctuary-stream/issues)
-            - 💬 [Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
+            - 📖 [User Guide](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
+            - ❓ [Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues)
+            - 💬 [Discussions](https://github.com/sanctuary-stream/sanctuary-stream/discussions)
 
             ---
 

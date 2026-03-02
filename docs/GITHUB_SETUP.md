@@ -2,7 +2,7 @@
 
 ## ✅ Repository Created
 
-**URL:** https://github.com/brentmzey/sanctuary-stream
+**URL:** https://github.com/sanctuary-stream/sanctuary-stream
 
 **Settings:**
 - ✅ **Private repository** (source code protected)
@@ -37,7 +37,7 @@ git commit -m "Initial commit: Multi-platform church streaming system
 git branch -M main
 
 # Add remote
-git remote add origin git@github.com:brentmzey/sanctuary-stream.git
+git remote add origin git@github.com:sanctuary-stream/sanctuary-stream.git
 
 # Push to GitHub
 git push -u origin main
@@ -150,14 +150,14 @@ VITE_POCKETBASE_URL            # Production PocketBase URL
 
 **Public downloads:**
 ```
-https://github.com/brentmzey/sanctuary-stream/releases
+https://github.com/sanctuary-stream/sanctuary-stream/releases
 ```
 
 **Direct links:**
 ```
-macOS:   https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream-0.1.0-universal.dmg
-Windows: https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream-0.1.0-x64.msi
-Linux:   https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.deb
+macOS:   https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream-0.1.0-universal.dmg
+Windows: https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/Sanctuary-Stream-0.1.0-x64.msi
+Linux:   https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.deb
 ```
 
 ---
@@ -243,7 +243,7 @@ sanctuary-stream/
 
 ### Development
 ```bash
-git clone git@github.com:brentmzey/sanctuary-stream.git
+git clone git@github.com:sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 npm install
 npm run setup
@@ -260,10 +260,10 @@ git push origin --tags
 ### CI/CD Status
 ```bash
 # View builds:
-open https://github.com/brentmzey/sanctuary-stream/actions
+open https://github.com/sanctuary-stream/sanctuary-stream/actions
 
 # Download artifacts:
-open https://github.com/brentmzey/sanctuary-stream/releases
+open https://github.com/sanctuary-stream/sanctuary-stream/releases
 ```
 
 ---
@@ -273,9 +273,9 @@ open https://github.com/brentmzey/sanctuary-stream/releases
 ### Badges
 Add to README.md:
 ```markdown
-[![Build Status](https://github.com/brentmzey/sanctuary-stream/workflows/Build%20and%20Release/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions)
-[![Downloads](https://img.shields.io/github/downloads/brentmzey/sanctuary-stream/total)](https://github.com/brentmzey/sanctuary-stream/releases)
-[![License](https://img.shields.io/github/license/brentmzey/sanctuary-stream)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/sanctuary-stream/sanctuary-stream/workflows/Build%20and%20Release/badge.svg)](https://github.com/sanctuary-stream/sanctuary-stream/actions)
+[![Downloads](https://img.shields.io/github/downloads/sanctuary-stream/sanctuary-stream/total)](https://github.com/sanctuary-stream/sanctuary-stream/releases)
+[![License](https://img.shields.io/github/license/sanctuary-stream/sanctuary-stream)](https://opensource.org/licenses/MIT)
 ```
 
 ### Topics
@@ -295,7 +295,7 @@ Rust + TypeScript | macOS, Windows, Linux, iOS, Android, Web
 
 ## 📞 Support
 
-**Issues:** https://github.com/brentmzey/sanctuary-stream/issues  
-**Discussions:** https://github.com/brentmzey/sanctuary-stream/discussions  
+**Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues  
+**Discussions:** https://github.com/sanctuary-stream/sanctuary-stream/discussions  
 
 **Private repo, public releases!** 🚀
