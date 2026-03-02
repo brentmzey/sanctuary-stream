@@ -73,7 +73,7 @@
       "copyright": "Copyright © 2026 Sanctuary Stream Contributors",
       "category": "Utility",
       "shortDescription": "Church streaming control",
-      "longDescription": "Zero-trust church streaming control system",
+      "longDescription": "Secure-by-Design church streaming control system",
       "macOS": {
         "minimumSystemVersion": "10.13"
       },

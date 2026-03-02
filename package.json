@@ -1,7 +1,7 @@
 {
   "name": "sanctuary-stream",
   "version": "0.1.0-RC1",
-  "description": "Zero-trust church streaming control system with real-time remote management",
+  "description": "Secure-by-Design church streaming control system with real-time remote management",
   "author": "Sanctuary Stream Contributors",
   "license": "MIT",
   "repository": {

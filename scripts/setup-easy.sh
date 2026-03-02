@@ -1,6 +1,6 @@
 #!/bin/bash
 # Sanctuary Stream - One-Click Setup for New Users
-# Just run: ./setup-easy.sh
+# Just run: ./scripts/setup-easy.sh
 
 set -e
 

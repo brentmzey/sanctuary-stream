@@ -1,6 +1,6 @@
 # 🏛️ Sanctuary Stream
 
-**Zero-trust church streaming control system - Control OBS from ANY device**
+**Secure-by-Design church streaming control system - Control OBS from ANY device**
 
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
 [![Tests](https://img.shields.io/badge/tests-99.3%25-brightgreen)]()
@@ -30,7 +30,7 @@ bun install
 bun run build
 
 # 4. Start everything (10 seconds)
-./START-BUN.sh
+./scripts/START-BUN.sh
 ```
 
 **Option B: With npm (Traditional)**
@@ -46,7 +46,7 @@ npm install
 npm run build
 
 # 4. Start everything (10 seconds)
-./START.sh
+./scripts/START.sh
 ```
 
 ### First Login
@@ -84,7 +84,7 @@ npm run build
 - ✅ Smart recommendations
 
 ### 🔐 Security
-- ✅ Zero-trust architecture
+- ✅ Secure-by-Design architecture
 - ✅ Role-based access control
 - ✅ Encrypted connections
 - ✅ Self-hosted (own your data)
@@ -93,16 +93,31 @@ npm run build
 
 ## 📱 Supported Platforms
 
-| Platform | Status | Install |
+| Platform | Status | Download / Install |
 |----------|--------|---------|
-| 🌐 **Web Browser** | ✅ Working | Visit URL |
-| 🍎 **macOS** | ✅ Ready | .dmg installer |
-| 🪟 **Windows** | ✅ Ready | .msi installer |
-| 🐧 **Linux** | ✅ Ready | .deb / .AppImage |
-| 📱 **iOS** | ✅ Ready | App Store |
-| 🤖 **Android** | ✅ Ready | Play Store |
+| 🌐 **Web Browser** | ✅ Working | [Launch Web App](http://localhost:5173) |
+| 🍎 **macOS** | ✅ Ready | [Download .dmg](https://github.com/YOUR-USERNAME/sanctuary-stream/releases/latest) |
+| 🪟 **Windows** | ✅ Ready | [Download .msi](https://github.com/YOUR-USERNAME/sanctuary-stream/releases/latest) |
+| 🐧 **Linux** | ✅ Ready | [Download .AppImage](https://github.com/YOUR-USERNAME/sanctuary-stream/releases/latest) |
+| 📱 **iOS** | ✅ Ready | [App Store](https://apps.apple.com/app/sanctuary-stream) |
+| 🤖 **Android** | ✅ Ready | [Play Store](https://play.google.com/store/apps/details?id=com.sanctuarystream) |
 
 **Control from ANY device you own!**
+
+---
+
+## 🛠️ Customization (Superusers)
+
+Looking to build your own tailored version? Sanctuary Stream is designed to be forked and customized.
+
+- **[Tailoring Guide](docs/BUILD_AND_RUN.md)** - Learn how to customize the UI, add your own branding, and deploy your own private version.
+- **Self-Hosting:** You own the data, you own the platform. No vendor lock-in.
+
+---
+
+## 🔄 Rollbacks & Releases
+
+We maintain the last **5 versions** in our [GitHub Releases](https://github.com/YOUR-USERNAME/sanctuary-stream/releases) to ensure you can always roll back to a known-stable version if your environment changes unexpectedly.
 
 ---
 
@@ -159,7 +174,7 @@ npm run lint       # 0 warnings
 
 ---
 
-## �� Building
+## 🏗️ Building
 
 ### Build All
 ```bash
@@ -199,12 +214,12 @@ npm run cap:build:android   # Android (opens Android Studio)
 
 ## 🎯 Use Cases
 
-### 👴 Old St. Mary's Chicago
-- **Service length:** 3 hours 15 minutes
+### ⛪ Long-form Service
+- **Typical length:** 1-3+ hours
 - **Recommended quality:** 1080p @ 30fps, 4,500 Kbps
-- **Expected data:** ~6.8 GB
-- **Expected cost:** $0 (YouTube free)
-- **CPU usage:** 5-15% (GPU encoding)
+- **Expected data:** ~6.8 GB (for 3hr)
+- **Expected cost:** $0 (YouTube/Facebook free)
+- **CPU usage:** 5-15% (with GPU encoding)
 
 ### 📱 Remote Control
 - Pastor controls from podium (iPhone)
@@ -222,7 +237,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ```bash
 # Start dev environment
-./START.sh
+./scripts/START.sh
 
 # Or with tmux
 npm run dev:tmux
@@ -264,7 +279,7 @@ MIT License - See [LICENSE](LICENSE)
 
 ```bash
 # Start everything
-./START.sh
+./scripts/START.sh
 
 # Build everything
 npm run build
@@ -280,6 +295,6 @@ kill $(cat logs/*.pid)
 
 **Made with ❤️ for churches worldwide**
 
-**Zero cost. Zero vendor lock-in. Zero compromise.**
+**Zero cost. Secure by default. Zero compromise.**
 
 🏛️ **Sanctuary Stream - Stream Your Message, Own Your Platform**
