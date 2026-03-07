@@ -368,6 +368,15 @@ describe('SanctuaryBridge.executeCommand() - Direct Logic Verification', () => {
     );
     expect(match).toBe(true);
   });
+
+  it('handles error during shutdown', async () => {
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    mockObsDisconnect.mockRejectedValueOnce(new Error('Shutdown fail'));
+    
+    await expect(bridge.shutdown()).resolves.not.toThrow();
+  });
 });
 
 describe('SanctuaryBridge OBS Event Handlers', () => {
@@ -434,9 +443,94 @@ describe('SanctuaryBridge OBS Event Handlers', () => {
     );
     expect(match).toBe(true);
   });
+
+  it('handles GetStats failure gracefully in updateStreamStatus', async () => {
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    mockObsCall.mockImplementation((requestType: string) => {
+      if (requestType === 'GetStats') return Promise.reject(new Error('OBS Stats Error'));
+      if (requestType === 'GetStreamStatus') return Promise.resolve({ outputActive: true, outputDuration: 123, outputBytes: 456, outputSkippedFrames: 0 });
+      return Promise.resolve({});
+    });
+
+    const callArgs = mockObsOn.mock.calls.find(args => args[0] === 'StreamStateChanged');
+    const callback = callArgs?.[1];
+
+    await callback({ outputActive: true });
+    
+    // Should still have updated status with partial metadata
+    const match = mockPbUpdate.mock.calls.some(args => 
+      args[0] === 'test-stream-123' && args[1].status === 'live' && args[1].metadata?.outputActive === true
+    );
+    expect(match).toBe(true);
+  });
+
+  it('handles PocketBase update failure gracefully in updateStreamStatus', async () => {
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    mockPbUpdate.mockRejectedValueOnce(new Error('PB Update Error'));
+
+    const callArgs = mockObsOn.mock.calls.find(args => args[0] === 'StreamStateChanged');
+    const callback = callArgs?.[1];
+
+    // the promise catch should log it, so just make sure it doesn't throw globally
+    await expect(callback({ outputActive: true })).resolves.not.toThrow();
+  });
+
+  it('handles Identified event', async () => {
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    const callArgs = mockObsOn.mock.calls.find(args => args[0] === 'Identified');
+    const callback = callArgs?.[1];
+
+    expect(() => callback()).not.toThrow();
+  });
+
+  it('handles uploadFile failure when recording stops', async () => {
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    const { uploadFile } = await import('./google-drive');
+    vi.mocked(uploadFile).mockRejectedValueOnce(new Error('Upload failed'));
+
+    const callArgs = mockObsOn.mock.calls.find(args => args[0] === 'RecordStateChanged');
+    const callback = callArgs?.[1];
+
+    // the promise catch will swallow the error and log it, so just make sure it doesn't throw
+    await expect(callback({ outputActive: false, outputPath: '/path/to/video.mp4' })).resolves.not.toThrow();
+  });
+
+  it('handles heartbeat failure gracefully', async () => {
+    vi.useFakeTimers();
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    // Make update fail for heartbeat
+    let resolveUpdate: any;
+    const updatePromise = new Promise((_, reject) => {
+      resolveUpdate = () => reject(new Error('Network error during heartbeat'));
+    });
+    mockPbUpdate.mockReturnValueOnce(updatePromise);
+    
+    // Fast forward to trigger interval
+    vi.advanceTimersByTime(11000);
+
+    // Resolve the promise to trigger the catch block
+    resolveUpdate();
+    
+    // allow microtasks to flush so catch block executes
+    await Promise.resolve();
+
+    expect(mockPbUpdate).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
 });
 
-describe('SanctuaryBridge Reconnection & Throttling', () => {
+describe('SanctuaryBridge Realtime Subscription', () => {
   it('attempts to reconnect when OBS connection is closed', async () => {
     vi.useFakeTimers();
     const bridge = new SanctuaryBridge();
@@ -510,6 +604,23 @@ describe('SanctuaryBridge Realtime Subscription', () => {
       record: { id: 'cmd-2', action: 'START', executed: false, correlation_id: 'abc' },
     });
     expect(mockObsCall).not.toHaveBeenCalled();
+  });
+
+  it('handles commands that are missing executed field', async () => {
+    const bridge = new SanctuaryBridge();
+    await bridge.start();
+
+    const callArgs = mockSubscribe.mock.calls.find((args: unknown[]) => args[0] === '*') as unknown[] | undefined;
+    const subscribeCallback = callArgs?.[1] as ((e: { action: string; record: Record<string, unknown> }) => Promise<void>) | undefined;
+
+    vi.clearAllMocks();
+    await subscribeCallback!({
+      action: 'create',
+      record: { id: 'cmd-missing', action: 'START' }, // executed is undefined (falsy)
+    });
+    
+    // Should attempt to execute since !undefined is true
+    expect(mockObsCall).toHaveBeenCalledWith('StartStream');
   });
 
   it('ignores commands that are already executed', async () => {

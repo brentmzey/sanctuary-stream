@@ -89,4 +89,50 @@ describe('PastoralReflections', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Resources/i })); });
     expect(screen.getByText('Bible Reading Plan')).toBeDefined();
   });
+
+  it('renders all optional fields in cards and rows', async () => {
+    vi.mocked(getSermons).mockReturnValue(AsyncIO.pure([{
+      id: '1', title: 'Full Sermon', sermon_date: '2023-01-01T10:00:00Z', 
+      speaker: 'Pastor Bob', body: 'A'.repeat(250), youtube_url: 'http://youtube.com',
+      published: true, created: '', updated: ''
+    } as any]));
+    vi.mocked(getAnnouncements).mockReturnValue(AsyncIO.pure([{
+      id: '1', title: 'Urgent Alert', priority: 'high', body: 'Please read', expires_at: '2023-12-31T00:00:00Z',
+      published: true, created: '', updated: ''
+    } as any]));
+    vi.mocked(getResources).mockReturnValue(AsyncIO.pure([{
+      id: '1', title: 'PDF Guide', category: 'free', description: 'Helpful doc', file: 'file.pdf', url: 'http://example.com',
+      published: true, created: '', updated: ''
+    } as any]));
+
+    render(<PastoralReflections />);
+    await act(async () => {});
+
+    // Sermon with all fields
+    expect(screen.getByText(/Pastor Bob/)).toBeDefined();
+    expect(screen.getByText(/Watch Recording/)).toBeDefined();
+    // body length > 220 should show ellipsis
+    expect(screen.getByText(/A…/)).toBeDefined();
+
+    // Announcements
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Announcements/i })); });
+    expect(screen.getByText('Urgent Alert')).toBeDefined();
+    expect(screen.getByText('Urgent')).toBeDefined(); // priority badge
+    expect(screen.getByText('Please read')).toBeDefined(); // body
+    expect(screen.getByText(/Expires/)).toBeDefined(); // expires_at
+
+    // Resources
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Resources/i })); });
+    expect(screen.getByText('Helpful doc')).toBeDefined(); // description
+    expect(screen.getByText(/Download/)).toBeDefined(); // file link
+
+    // And test a resource with NO url/file
+    vi.mocked(getResources).mockReturnValue(AsyncIO.pure([{
+      id: '2', title: 'Just Text', category: 'free', published: true, created: '', updated: ''
+    } as any]));
+    render(<PastoralReflections />);
+    await act(async () => {});
+    await act(async () => { fireEvent.click(screen.getAllByRole('button', { name: /Resources/i })[1]!); });
+    expect(screen.getByText('Just Text')).toBeDefined();
+  });
 });

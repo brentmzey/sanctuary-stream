@@ -96,4 +96,27 @@ describe('LoginForm', () => {
       resolveAuth!({ record: {} });
     });
   });
+
+  it('can toggle themes', async () => {
+    renderWithTheme(<LoginForm onSuccess={() => {}} />);
+    
+    const lightBtn = screen.getByTitle(/Light Mode/i);
+    const darkBtn = screen.getByTitle(/Dark Mode/i);
+    const systemBtn = screen.getByTitle(/System Preference/i);
+
+    await act(async () => {
+      fireEvent.click(lightBtn);
+    });
+    await act(async () => {
+      fireEvent.click(darkBtn);
+    });
+    await act(async () => {
+      fireEvent.click(systemBtn);
+    });
+    
+    // We just need to ensure the clicks don't crash and execute the setTheme handler
+    expect(lightBtn).toBeDefined();
+    expect(darkBtn).toBeDefined();
+    expect(systemBtn).toBeDefined();
+  });
 });

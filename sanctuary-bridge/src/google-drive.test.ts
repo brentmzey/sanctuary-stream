@@ -106,4 +106,38 @@ describe('google-drive', () => {
       expect(result.error.message).toBe('Drive API error');
     }
   });
+
+  it('handles Drive API returning empty file ID', async () => {
+    vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify({ type: 'authorized_user' }));
+    vi.mocked(google.auth.fromJSON).mockReturnValue({ credentials: {} } as any);
+
+    const mockCreate = vi.fn().mockResolvedValue({ data: {} }); // no id
+    vi.mocked(google.drive).mockReturnValue({
+      files: { create: mockCreate },
+    } as any);
+
+    const result = await uploadFile('empty-id-video.mp4');
+
+    expect(result._tag).toBe('success');
+    if (result._tag === 'success') {
+      expect(result.value).toBe('unknown-id');
+    }
+  });
+
+  it('handles string errors thrown during upload', async () => {
+    vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify({ type: 'authorized_user' }));
+    vi.mocked(google.auth.fromJSON).mockReturnValue({ credentials: {} } as any);
+
+    const mockCreate = vi.fn().mockRejectedValue('String Error');
+    vi.mocked(google.drive).mockReturnValue({
+      files: { create: mockCreate },
+    } as any);
+
+    const result = await uploadFile('video.mp4');
+
+    expect(result._tag).toBe('failure');
+    if (result._tag === 'failure') {
+      expect(result.error.message).toBe('String Error');
+    }
+  });
 });
