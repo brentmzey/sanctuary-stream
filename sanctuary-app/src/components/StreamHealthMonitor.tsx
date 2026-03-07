@@ -29,7 +29,7 @@ export function StreamHealthMonitor({ stream }: StreamHealthMonitorProps) {
       const outputDuration = stream.metadata?.outputDuration || 1;
       
       const currentBitrate = outputDuration > 0 
-        ? Math.round((outputBytes * 8) / outputDuration / 1000) 
+        ? Math.round((outputBytes * 8) / outputDuration) 
         : 0;
 
       const droppedFrames = quality?.dropped_frames || 0;

@@ -1,8 +1,27 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 import PocketBase from 'pocketbase';
 import { EventSource } from 'eventsource';
 import OBSWebSocket from 'obs-websocket-js';
 import { logger } from './logger';
+
+// Load advanced user configuration (if exists)
+let advancedConfig: Record<string, string> = {};
+try {
+  const configPath = path.join(process.cwd(), 'config.json');
+  if (fs.existsSync(configPath)) {
+    advancedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    logger.info('🔧 Loaded advanced configuration from config.json');
+  }
+} catch (e) {
+  logger.warn('Failed to parse config.json, falling back to ENV variables');
+}
+
+// Helper to get config from either JSON file or ENV (JSON takes precedence for super users)
+const getConfig = (key: string, defaultValue: string = ''): string => {
+  return advancedConfig[key] || process.env[key] || defaultValue;
+};
 
 // Polyfill EventSource for Node.js (required by PocketBase SDK for realtime)
 if (typeof (global as any).EventSource === 'undefined') {
@@ -31,13 +50,13 @@ class SanctuaryBridge {
   private throttledStatusUpdate: (status: string) => void;
 
   constructor() {
-    const pbUrl = process.env.PB_URL || 'http://127.0.0.1:8090';
+    const pbUrl = getConfig('PB_URL', 'http://127.0.0.1:8090');
     this.pb = new PocketBase(pbUrl);
     this.obs = new OBSWebSocket();
-    this.streamId = process.env.STREAM_ID || '';
+    this.streamId = getConfig('STREAM_ID');
 
     if (!this.streamId) {
-      throw new Error('STREAM_ID environment variable is required');
+      throw new Error('STREAM_ID configuration is required (via ENV or config.json)');
     }
 
     // Create throttled version of updateStreamStatus
@@ -81,14 +100,14 @@ class SanctuaryBridge {
   }
 
   private async authenticatePocketBase() {
-    const email = process.env.BRIDGE_EMAIL || 'bridge@local.dev';
-    const password = process.env.BRIDGE_PASS || 'bridge123456';
+    const email = getConfig('BRIDGE_EMAIL', 'bridge@local.dev');
+    const password = getConfig('BRIDGE_PASS', 'bridge123456');
     return this.pb.collection('users').authWithPassword(email, password);
   }
 
   private async connectOBS() {
-    const obsUrl = process.env.OBS_URL || 'ws://127.0.0.1:4455';
-    const obsPassword = process.env.OBS_PASS || '';
+    const obsUrl = getConfig('OBS_URL', 'ws://127.0.0.1:4455');
+    const obsPassword = getConfig('OBS_PASS', '');
 
     await this.obs.connect(obsUrl, obsPassword);
     logger.info('✅ Connected to OBS WebSocket');

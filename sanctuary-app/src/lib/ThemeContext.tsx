@@ -25,8 +25,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => getResolvedTheme(theme));
 
   const setTheme = (newTheme: Theme) => {
-    const nextResolved = getResolvedTheme(newTheme);
-    
     // Only update the underlying state if the preference changed AND
     // the resolved visual state actually changes (or if we're moving from a 
     // resolved state back to 'system' but they are visually identical, 

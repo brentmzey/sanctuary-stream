@@ -21,7 +21,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setConnectionError(null);
     try {
       setPocketBaseUrl(pbUrl);
-      const isHealthy = await testConnection(pbUrl);
+      const isHealthy = await testConnection(pbUrl).unsafeRunAsync();
       if (isHealthy) {
         setStep(2);
       } else {
@@ -121,8 +121,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admin Email</label>
+              <label htmlFor="admin-email" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admin Email</label>
               <input
+                id="admin-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -132,8 +133,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Access Password</label>
+              <label htmlFor="access-password" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Access Password</label>
               <input
+                id="access-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

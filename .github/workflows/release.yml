@@ -1,0 +1,142 @@
+name: Release Sanctuary Stream
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger only on version tags, e.g., v1.0.0
+
+jobs:
+  build-bridge:
+    name: Build Bridge Standalone Executables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Build Linux Executable
+        run: cd sanctuary-bridge && bun run build:exe:linux
+
+      - name: Build Windows Executable
+        run: cd sanctuary-bridge && bun run build:exe:windows
+
+      # Bun cross-compilation for macOS requires the macOS runner for optimal architecture targeting.
+      # We'll rely on a secondary mac job for the bridge's mac binary, or just provide the Linux/Windows ones here.
+      # For now, we upload Linux and Windows from this runner.
+      
+      - name: Upload Linux Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanctuary-bridge-linux
+          path: sanctuary-bridge/dist/sanctuary-bridge-linux
+
+      - name: Upload Windows Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanctuary-bridge-windows
+          path: sanctuary-bridge/dist/sanctuary-bridge.exe
+
+  build-tauri-app:
+    name: Build Desktop Apps (Tauri)
+    needs: build-bridge
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            args: ''
+            artifact_name: sanctuary-app-linux
+          - platform: macos-latest
+            args: '--target aarch64-apple-darwin'
+            artifact_name: sanctuary-app-macos
+          - platform: windows-latest
+            args: ''
+            artifact_name: sanctuary-app-windows
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install Node Dependencies
+        run: bun install
+
+      - name: Build Tauri App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: ./sanctuary-app
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+          releaseName: 'Sanctuary Stream App v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  release:
+    name: Publish GitHub Release
+    needs: [build-bridge, build-tauri-app]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Linux Bridge
+        uses: actions/download-artifact@v4
+        with:
+          name: sanctuary-bridge-linux
+          path: dist-artifacts/
+
+      - name: Download Windows Bridge
+        uses: actions/download-artifact@v4
+        with:
+          name: sanctuary-bridge-windows
+          path: dist-artifacts/
+
+      - name: Create Release Notes
+        run: |
+          echo "## 🚀 Sanctuary Stream $(git describe --tags)" > release-notes.md
+          echo "### The 'No-Code' Out-of-the-Box Release" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "**For Parishes & Tech Volunteers:**" >> release-notes.md
+          echo "1. Download the \`sanctuary-bridge\` executable for your OBS computer." >> release-notes.md
+          echo "2. Place a \`config.json\` next to it with your PocketHost URL." >> release-notes.md
+          echo "3. Download the Desktop App installer for your Mac or Windows control station." >> release-notes.md
+          echo "" >> release-notes.md
+          echo "[Read the Setup Guide Here](https://github.com/${{ github.repository }}/blob/main/docs/SUPER_USER_CONFIGURATION.md)" >> release-notes.md
+
+      - name: Publish Release with Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          draft: true # Set to false once you are ready for automatic public releases
+          files: |
+            dist-artifacts/sanctuary-bridge-linux
+            dist-artifacts/sanctuary-bridge.exe
+            sanctuary-bridge/config.json.example
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

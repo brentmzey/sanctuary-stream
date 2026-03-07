@@ -97,10 +97,11 @@ export function VideoQualitySettings() {
             <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.2em]">Visual Configuration</h4>
             
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Resolution Profile</label>
+              <label htmlFor="resolution-profile" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Resolution Profile</label>
               <select
+                id="resolution-profile"
                 value={videoSettings.resolution}
-                onChange={(e) => setVideoSettings({ ...videoSettings, resolution: e.target.value })}
+                onChange={(e) => setVideoSettings(prev => ({ ...prev, resolution: e.target.value }))}
                 className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
               >
                 {RESOLUTION_PRESETS.map(preset => (
@@ -114,7 +115,7 @@ export function VideoQualitySettings() {
               <input
                 type="range" min="1000" max="10000" step="500"
                 value={videoSettings.videoBitrate}
-                onChange={(e) => setVideoSettings({ ...videoSettings, videoBitrate: Number(e.target.value) })}
+                onChange={(e) => setVideoSettings(prev => ({ ...prev, videoBitrate: Number(e.target.value) }))}
                 className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
               />
               <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase tracking-tighter">
@@ -128,10 +129,11 @@ export function VideoQualitySettings() {
             <h4 className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">Processing Engine</h4>
             
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Hardware Encoder</label>
+              <label htmlFor="hardware-encoder" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Hardware Encoder</label>
               <select
+                id="hardware-encoder"
                 value={videoSettings.encoder}
-                onChange={(e) => setVideoSettings({ ...videoSettings, encoder: e.target.value })}
+                onChange={(e) => setVideoSettings(prev => ({ ...prev, encoder: e.target.value }))}
                 className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
               >
                 {ENCODER_OPTIONS.map(option => (
@@ -147,7 +149,7 @@ export function VideoQualitySettings() {
                   {[30, 60].map(f => (
                     <button
                       key={f} type="button"
-                      onClick={() => setVideoSettings({ ...videoSettings, fps: f })}
+                      onClick={() => setVideoSettings(prev => ({ ...prev, fps: f }))}
                       className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${videoSettings.fps === f ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                     >
                       {f} FPS
@@ -156,10 +158,11 @@ export function VideoQualitySettings() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Audio quality</label>
+                <label htmlFor="audio-quality" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Audio quality</label>
                 <select
+                  id="audio-quality"
                   value={videoSettings.audioBitrate}
-                  onChange={(e) => setVideoSettings({ ...videoSettings, audioBitrate: Number(e.target.value) })}
+                  onChange={(e) => setVideoSettings(prev => ({ ...prev, audioBitrate: Number(e.target.value) }))}
                   className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5 text-xs font-bold text-white focus:outline-none"
                 >
                   <option value={128}>128 Kbps (STD)</option>

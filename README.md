@@ -9,13 +9,28 @@
 
 ---
 
-## 🚀 Quick Start (7 Minutes)
+## 🚀 Quick Start & Installation Paths
 
-### Prerequisites
-- Node.js 18+
-- npm 9+
+Sanctuary Stream is designed for two distinct audiences. Choose the path that fits your technical comfort level:
 
-### Installation
+### 🌟 Path A: The "No-Code" Default (For Parishes & Volunteers)
+**Best for:** Churches that want a ready-to-use, secure streaming controller without touching code.
+
+1. **Download:** Go to the [Releases page](https://github.com/sanctuary-stream/sanctuary-stream/releases) and download the pre-compiled `sanctuary-bridge` executable for your OBS computer, and the App installer (Mac/Windows/iOS/Android) for your control device.
+2. **Configure:** Place a simple `config.json` next to the bridge to link it to your PocketBase/PocketHost instance.
+3. **Stream:** Open the app on your iPad or PC and start streaming!
+
+👉 **[Read the Full No-Code / Super-User Configuration Guide](docs/SUPER_USER_CONFIGURATION.md)**
+
+### 💻 Path B: The "SDK" & Developer Path
+**Best for:** Open-source contributors, large ministries, and developers building bespoke streaming setups.
+
+👉 **[Read the Developer Documentation](docs/BUILD_TEST_RUN_GUIDE.md)** or follow the quickstart below:
+
+#### Prerequisites
+- Node.js 18+ or Bun (Recommended)
+
+#### Installation
 
 **Option A: With Bun (⚡ 10-25x faster!)**
 ```bash
@@ -49,7 +64,7 @@ npm run build
 ./scripts/START.sh
 ```
 
-### First Login
+### First Login (Developer Mode)
 
 **Open:** http://localhost:5173
 
@@ -146,12 +161,11 @@ We maintain the last **5 versions** in our [GitHub Releases](https://github.com/
 
 ## 📖 Documentation
 
-- **[Quick Start](docs/QUICKSTART.md)** - 5-minute setup
-- **[Build/Test/Run Guide](docs/BUILD_TEST_RUN_GUIDE.md)** - Complete developer guide
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Deploy to any platform
-- **[Complete Guide](docs/COMPLETE_GUIDE.md)** - Full walkthrough & troubleshooting
-- **[Station Setup](docs/STATION_SETUP.md)** - OBS + Bridge setup
-- **[Professional Video Guide](docs/PROFESSIONAL_VIDEO_GUIDE.md)** - 20K-word technical deep-dive
+- **[Distribution & Paths](docs/DISTRIBUTION_PATHS.md)** - Learn about Path A (No-Code) vs Path B (SDK).
+- **[Releasing & Automation](docs/RELEASING.md)** - How the CI/CD pipeline builds the binaries.
+- **[Super User Configuration](docs/SUPER_USER_CONFIGURATION.md)** - How to tailor the app without code.
+- **[Developer Setup](docs/BUILD_TEST_RUN_GUIDE.md)** - Complete developer guide (Bun/Node).
+- **[Professional Video Guide](docs/PROFESSIONAL_VIDEO_GUIDE.md)** - Technical deep-dive on encoders.
 
 ---
 
