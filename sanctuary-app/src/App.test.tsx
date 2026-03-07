@@ -68,7 +68,7 @@ describe('App', () => {
     });
 
     renderApp();
-    expect(screen.getByText(/Sanctuary Stream/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Sanctuary Stream/i, level: 1 })).toBeDefined();
     expect(screen.getByText(/Admin User/i)).toBeDefined();
     expect(screen.getByText(/Stream Control/i)).toBeDefined();
   });
@@ -92,6 +92,13 @@ describe('App', () => {
     });
 
     expect(screen.getByText(/Sermons, announcements, and resources/i)).toBeDefined();
+
+    const helpTab = screen.getByRole('button', { name: /Help/i });
+    await act(async () => {
+      fireEvent.click(helpTab);
+    });
+
+    expect(screen.getByText(/Sanctuary Stream Guide/i)).toBeDefined();
   });
 
   it('can sign out', async () => {
@@ -133,7 +140,7 @@ describe('App', () => {
     });
 
     // Should transition to the main app layout now that stream_id is set
-    expect(screen.getByText(/Sanctuary Stream/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Sanctuary Stream/i, level: 1 })).toBeDefined();
   });
 
   it('can toggle quality and settings panels', async () => {

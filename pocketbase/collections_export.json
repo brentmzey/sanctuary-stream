@@ -211,5 +211,55 @@
         "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "deleteRule": "@request.auth.role = 'admin'"
+,
+    {
+        "id": "pbc_6043756334",
+        "name": "recordings",
+        "type": "base",
+        "system": false,
+        "fields": [
+            {
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "presentable": true,
+                "max": 255
+            },
+            {
+                "name": "file_id",
+                "type": "text",
+                "required": true,
+                "presentable": false
+            },
+            {
+                "name": "stream_id",
+                "type": "relation",
+                "required": true,
+                "presentable": false,
+                "collectionId": "streams",
+                "cascadeDelete": false,
+                "maxSelect": 1
+            },
+            {
+                "name": "duration",
+                "type": "number",
+                "required": false,
+                "presentable": false
+            },
+            {
+                "name": "size",
+                "type": "number",
+                "required": false,
+                "presentable": false
+            }
+        ],
+        "indexes": [
+            "CREATE INDEX idx_recording_stream ON recordings (stream_id)"
+        ],
+        "listRule": "@request.auth.id != ''",
+        "viewRule": "@request.auth.id != ''",
+        "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'tech'",
+        "updateRule": "@request.auth.role = 'admin'",
+        "deleteRule": "@request.auth.role = 'admin'"
     }
 ]

@@ -176,6 +176,17 @@ export interface ResourceRecord {
   updated: string;
 }
 
+export interface RecordingRecord {
+  id: string;
+  title: string;
+  file_id: string;
+  stream_id: string;
+  duration?: number;
+  size?: number;
+  created: string;
+  updated: string;
+}
+
 export function sendCommand(action: CommandAction, payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
   return new AsyncIO(async () => {
     const userOption = fromNullable(pb.authStore.model);
@@ -305,6 +316,15 @@ export function getResources(category?: ResourceRecord['category']): AsyncIO<Res
     pb.collection('resources').getList<ResourceRecord>(1, 50, {
       filter,
       sort: 'category,title',
+    }).then((r) => r.items)
+  );
+}
+
+export function getRecordings(streamId: string): AsyncIO<RecordingRecord[]> {
+  return new AsyncIO(() =>
+    pb.collection('recordings').getList<RecordingRecord>(1, 50, {
+      filter: `stream_id = '${streamId}'`,
+      sort: '-created',
     }).then((r) => r.items)
   );
 }

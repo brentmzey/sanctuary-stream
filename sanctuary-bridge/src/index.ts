@@ -137,13 +137,26 @@ class SanctuaryBridge {
 
       // Auto-upload when recording stops
       if (!data.outputActive && data.outputPath) {
-        logger.info(`Recording finished: ${data.outputPath}`);
+        const outputPath = data.outputPath;
+        logger.info(`Recording finished: ${outputPath}`);
         // Run in background so we don't block the event loop
-        uploadFile(data.outputPath).catch(err => {
+        uploadFile(outputPath).then(async (fileId) => {
+          logger.info(`✅ Upload complete! File ID: ${fileId}`);
+          try {
+            await this.pb.collection('recordings').create({
+              title: path.basename(outputPath),
+              file_id: fileId,
+              stream_id: this.streamId,
+              size: fs.existsSync(outputPath) ? fs.statSync(outputPath).size : 0
+            });
+            logger.info('✅ Recording record created in PocketBase');
+          } catch (pbErr) {
+            logger.error(`Failed to create recording record: ${pbErr}`);
+          }
+        }).catch(err => {
           logger.error('Background upload failed:', err);
         });
-      }
-    });
+      }    });
   }
 
   private async handleOBSReconnect() {
@@ -266,6 +279,27 @@ class SanctuaryBridge {
         });
 
         return { success: true, message: 'Audio settings stored. Apply via OBS settings menu.' };
+      },
+      'SET_MUTE': async () => {
+        const inputName = command.payload?.inputName as string;
+        const muted = command.payload?.muted as boolean;
+
+        if (!inputName) {
+          throw new Error('Missing inputName in payload for SET_MUTE');
+        }
+
+        logger.info(`Setting mute for ${inputName}: ${muted}`);
+        return this.obs.call('SetInputMute', { inputName, inputMuted: muted });
+      },
+      'SET_SCENE': async () => {
+        const sceneName = command.payload?.sceneName as string;
+
+        if (!sceneName) {
+          throw new Error('Missing sceneName in payload for SET_SCENE');
+        }
+
+        logger.info(`Setting scene to: ${sceneName}`);
+        return this.obs.call('SetCurrentProgramScene', { sceneName });
       }
     };
 
@@ -314,6 +348,9 @@ class SanctuaryBridge {
         outputDuration?: number;
         outputBytes?: number;
         quality?: QualityMetrics;
+        scenes?: string[];
+        currentScene?: string;
+        inputs?: { name: string; muted: boolean; volume: number }[];
       }
 
       const update: {
@@ -335,6 +372,16 @@ class SanctuaryBridge {
         (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
       );
 
+      const sceneListResult = await fromPromise(
+        () => this.obs.call('GetSceneList'),
+        (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
+      );
+
+      const inputListResult = await fromPromise(
+        () => this.obs.call('GetInputList'),
+        (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
+      );
+
       if (obsStatusResult._tag === 'success') {
         const s = obsStatusResult.value;
         update.metadata = {
@@ -353,6 +400,28 @@ class SanctuaryBridge {
             fps: stats.activeFps as number,
             cpu_usage: stats.cpuUsage as number
           };
+        }
+
+        if (sceneListResult._tag === 'success') {
+          const sceneList = sceneListResult.value;
+          update.metadata.scenes = sceneList.scenes.map((s: any) => s.sceneName);
+          update.metadata.currentScene = sceneList.currentProgramSceneName;
+        }
+
+        if (inputListResult._tag === 'success') {
+          const inputList = inputListResult.value;
+          const inputs = [];
+          for (const input of inputList.inputs) {
+            if (['wasapi_input_capture', 'wasapi_output_capture', 'coreaudio_input_capture', 'coreaudio_output_capture'].includes(input.inputKind)) {
+               const muteStatus = await this.obs.call('GetInputMute', { inputName: input.inputName });
+               inputs.push({
+                 name: input.inputName,
+                 muted: muteStatus.inputMuted,
+                 volume: 0 // We could also fetch volume if needed
+               });
+            }
+          }
+          update.metadata.inputs = inputs;
         }
       }
 
