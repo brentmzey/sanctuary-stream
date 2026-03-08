@@ -1,329 +1,201 @@
-# 📚 Complete Documentation Index
+# 📚 Sanctuary Stream Documentation Index
 
-**All Sanctuary Stream documentation in one place**
-
----
-
-## 🎯 Start Here
-
-**Complete beginners - start here:**
-
-1. **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** ⚡ (8 min read)
-   - Fastest answers to common questions
-   - Copy-paste OBS settings
-   - Quick troubleshooting
-   - Cost breakdown
-
-2. **[USER_ONBOARDING.md](./USER_ONBOARDING.md)** 🧙 (10 min read) **NEW!**
-   - **Zero-Config Setup Wizard walkthrough**
-   - First-time user guide
-   - OBS configuration for beginners
-
-3. **[QUICKSTART.md](./QUICKSTART.md)** 🚀 (5 min read)
-   - 5-minute setup guide
-   - Essential commands
-   - First run instructions
-
-3. **[USER_GUIDE.md](./USER_GUIDE.md)** 👤 (20 min read)
-   - Complete installation guide
-   - Platform-specific instructions
-   - Basic usage
+Welcome to the Sanctuary Stream documentation. Use this index to find what you need.
 
 ---
 
-## 🎥 Streaming & OBS
+## 🚀 Getting Started
 
-**Learn about video/audio quality and OBS:**
+**Start here based on your role:**
 
-4. **[OBS_INTEGRATION.md](./OBS_INTEGRATION.md)** ⭐ (30 min read)
-   - **MOST IMPORTANT for streaming**
-   - HD/4K video configuration
-   - Professional audio setup
-   - Equipment recommendations
-   - Platform configs (YouTube, Facebook)
-   - Troubleshooting streaming issues
+### For End Users (Path A: No-Code)
+👉 **[Super User Configuration Guide](SUPER_USER_CONFIGURATION.md)**
+- How to set up Sanctuary Stream without touching code
+- Configuration options
+- Troubleshooting
 
----
-
-## 🔧 Technical Setup
-
-**For developers and advanced users:**
-
-5. **[BUILD_AND_RUN.md](./BUILD_AND_RUN.md)** 🛠️ (25 min read)
-   - Development environment setup
-   - Building from source
-   - Running locally
-   - Testing procedures
-
-6. **[MULTI_BACKEND.md](./MULTI_BACKEND.md)** 🌐 (20 min read) **NEW!**
-   - **Support for 245+ distinct backends**
-   - PocketBase/PocketHost configuration
-   - Multi-church deployments
-   - Switching between backends
-   - Scaling considerations
-
-7. **[FUNCTIONAL_STYLE.md](./FUNCTIONAL_STYLE.md)** 📖 (15 min read)
-   - **REQUIRED READING for contributors**
-   - Pure functional programming
-   - Code style guide (TypeScript + Rust)
-   - Immutability patterns
-   - Best practices
+### For Developers (Path B: SDK)
+👉 **[Build, Test, Run Guide](../BUILD_TEST_RUN.md)** (at root level)
+- Local development setup
+- Building all workspaces
+- Running tests and smoke tests
+- Complete pre-commit checklist
 
 ---
 
-## 🚀 Deployment & CI/CD
+## 💻 Development
 
-**For deploying to production:**
+### Code Standards & Style
+📖 **[Functional Programming Style Guide](FUNCTIONAL_STYLE.md)**
+- Architectural patterns used (Result<T,E>, Option<T>, AsyncIO<T>)
+- Code examples
+- What we accept/don't accept
 
-8. **[CI_CD_SUMMARY.md](./CI_CD_SUMMARY.md)** ⚙️ (15 min read)
-   - GitHub Actions workflows
-   - Jenkins pipelines
-   - Automated builds (6 platforms)
-   - Release automation
-
-9. **[GITHUB_SETUP.md](./GITHUB_SETUP.md)** 🐙 (10 min read)
-   - Repository configuration
-   - Private repo with public releases
-   - Branch protection
-   - Secrets management
-
-10. **[MULTI_PLATFORM_CLOUD.md](./MULTI_PLATFORM_CLOUD.md)** ☁️ (20 min read)
-    - Deploy to Vercel, Railway, Fly.io
-    - PocketHost setup
-    - Docker containers
-    - CDN configuration (S3, CloudFront)
-
-11. **[INSTALLATION_DISTRIBUTION.md](./INSTALLATION_DISTRIBUTION.md)** 📦 (15 min read)
-    - App Store submission
-    - Google Play deployment
-    - Code signing
-    - Distribution strategies
+### Contributing
+📖 **[Contributing Guidelines](../CONTRIBUTING.md)** (at root level)
+- How to fork and set up development
+- Pull request process
+- Code of conduct
 
 ---
 
-## ✅ Quality Assurance
+## 🏗️ Architecture & Design
 
-**For testing and validation:**
+### System Architecture
+📖 **[Service Runtime & Visual Design (SRVDD)](../SRVDD.md)** (at root level)
+- Component diagrams
+- Service interactions
+- Zero-trust design principles
 
-12. **[USER_ACCEPTANCE_TESTING.md](./USER_ACCEPTANCE_TESTING.md)** ✓ (15 min read)
-    - UAT procedures
-    - Test scenarios
-    - Acceptance criteria
-    - User feedback
-
-13. **[PRODUCTION_READY.md](./PRODUCTION_READY.md)** 🎯 (10 min read)
-    - Pre-launch checklist
-    - Production requirements
-    - Performance benchmarks
-    - Security validation
+### Distribution Paths
+📖 **[Distribution Paths](DISTRIBUTION_PATHS.md)**
+- Path A: No-Code (for parishes)
+- Path B: SDK (for developers)
+- Decision matrix
 
 ---
 
-## 📊 By Topic
+## 🎬 Technical References
 
-### For End Users
-- Quick answers: [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
-- Getting started: [QUICKSTART.md](./QUICKSTART.md)
-- Installation: [USER_GUIDE.md](./USER_GUIDE.md)
-- OBS & streaming: [OBS_INTEGRATION.md](./OBS_INTEGRATION.md)
+### Video Encoding & Quality
+📖 **[Professional Video Guide](PROFESSIONAL_VIDEO_GUIDE.md)**
+- Encoder selection (CPU, NVENC, QuickSync, AMF)
+- Resolution and bitrate recommendations
+- Performance optimization
 
-### For Developers
-- Code style: [FUNCTIONAL_STYLE.md](./FUNCTIONAL_STYLE.md)
-- Building: [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
-- Multi-backend: [MULTI_BACKEND.md](./MULTI_BACKEND.md)
-- Contributing: [../CONTRIBUTING.md](../CONTRIBUTING.md)
-
-### For DevOps
-- CI/CD: [CI_CD_SUMMARY.md](./CI_CD_SUMMARY.md)
-- GitHub: [GITHUB_SETUP.md](./GITHUB_SETUP.md)
-- Cloud: [MULTI_PLATFORM_CLOUD.md](./MULTI_PLATFORM_CLOUD.md)
-- Distribution: [INSTALLATION_DISTRIBUTION.md](./INSTALLATION_DISTRIBUTION.md)
-
-### For QA/Testing
-- UAT: [USER_ACCEPTANCE_TESTING.md](./USER_ACCEPTANCE_TESTING.md)
-- Production: [PRODUCTION_READY.md](./PRODUCTION_READY.md)
+### OBS Integration
+📖 **[OBS Integration Guide](OBS_INTEGRATION.md)**
+- WebSocket setup
+- Command execution
+- Health monitoring
 
 ---
 
-## 📈 Documentation Stats
+## 🚢 Deployment & Operations
 
-**Total Guides:** 13 comprehensive documents
-**Total Words:** 20,000+ words
-**Total Size:** ~250 KB
-**Read Time:** ~4 hours (all docs)
-**Maintenance:** Updated with each release
+### Production Setup
+📖 **[Production Setup Guide](PRODUCTION_SETUP.md)**
+- Self-hosting setup
+- Configuration for production
+- Security considerations
 
----
+### Release & CI/CD
+📖 **[Releasing Guide](RELEASING.md)**
+- GitHub Actions pipeline
+- Version naming conventions
+- Release checklist
 
-## 🎯 Common Scenarios
-
-### "I want to use this app"
-👉 Start with [QUICK_REFERENCE.md](./QUICK_REFERENCE.md), then [USER_GUIDE.md](./USER_GUIDE.md)
-
-### "I want to set up OBS"
-👉 Read [OBS_INTEGRATION.md](./OBS_INTEGRATION.md) - **most important!**
-
-### "I want to develop/contribute"
-👉 Must read [FUNCTIONAL_STYLE.md](./FUNCTIONAL_STYLE.md), then [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
-
-### "I want to deploy for my church"
-👉 Start [MULTI_BACKEND.md](./MULTI_BACKEND.md), then [MULTI_PLATFORM_CLOUD.md](./MULTI_PLATFORM_CLOUD.md)
-
-### "I want to deploy for many churches"
-👉 Read [MULTI_BACKEND.md](./MULTI_BACKEND.md) - supports 245+ backends!
-
-### "I want to build from source"
-👉 Follow [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
-
-### "I want to set up CI/CD"
-👉 See [CI_CD_SUMMARY.md](./CI_CD_SUMMARY.md) and [GITHUB_SETUP.md](./GITHUB_SETUP.md)
-
-### "I want to publish to app stores"
-👉 Follow [INSTALLATION_DISTRIBUTION.md](./INSTALLATION_DISTRIBUTION.md)
+### Deployment, Backout, Rollback
+📖 **[DIBR Guide](../DIBR.md)** (at root level)
+- Fresh installation
+- Environment promotion
+- Emergency backout procedures
+- Database rollback
 
 ---
 
-## 🔍 Quick Search
+## 📋 Other Resources
 
-### Video & Audio
-- HD/4K support → [OBS_INTEGRATION.md](./OBS_INTEGRATION.md)
-- Audio quality → [OBS_INTEGRATION.md](./OBS_INTEGRATION.md)
-- Bitrate settings → [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
-- Equipment guide → [OBS_INTEGRATION.md](./OBS_INTEGRATION.md)
+### Change Log
+📖 **[CHANGELOG](../CHANGELOG.md)** (at root level)
+- Version history
+- Breaking changes
+- What's new
 
-### Installation
-- Desktop apps → [USER_GUIDE.md](./USER_GUIDE.md)
-- Mobile apps → [USER_GUIDE.md](./USER_GUIDE.md)
-- Web app → [MULTI_PLATFORM_CLOUD.md](./MULTI_PLATFORM_CLOUD.md)
-- From source → [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
+### License
+📖 **[LICENSE](../LICENSE)** (at root level)
+- MIT License
 
-### Configuration
-- PocketBase setup → [MULTI_BACKEND.md](./MULTI_BACKEND.md)
-- Multiple backends → [MULTI_BACKEND.md](./MULTI_BACKEND.md)
-- Environment vars → [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
-- OBS WebSocket → [OBS_INTEGRATION.md](./OBS_INTEGRATION.md)
-
-### Development
-- Code style → [FUNCTIONAL_STYLE.md](./FUNCTIONAL_STYLE.md)
-- TypeScript → [FUNCTIONAL_STYLE.md](./FUNCTIONAL_STYLE.md)
-- Rust → [FUNCTIONAL_STYLE.md](./FUNCTIONAL_STYLE.md)
-- Building → [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
-- Testing → [USER_ACCEPTANCE_TESTING.md](./USER_ACCEPTANCE_TESTING.md)
-
-### Deployment
-- CI/CD → [CI_CD_SUMMARY.md](./CI_CD_SUMMARY.md)
-- Cloud hosting → [MULTI_PLATFORM_CLOUD.md](./MULTI_PLATFORM_CLOUD.md)
-- App stores → [INSTALLATION_DISTRIBUTION.md](./INSTALLATION_DISTRIBUTION.md)
-- Production → [PRODUCTION_READY.md](./PRODUCTION_READY.md)
-
-### Troubleshooting
-- Quick fixes → [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
-- OBS issues → [OBS_INTEGRATION.md](./OBS_INTEGRATION.md)
-- Connection → [MULTI_BACKEND.md](./MULTI_BACKEND.md)
-- Build errors → [BUILD_AND_RUN.md](./BUILD_AND_RUN.md)
+### Compliance & AI Policy
+📖 **[agents.md](../agents.md)** (at root level)
+- AI and bot interaction policy
+- Crawling rules
 
 ---
 
-## 📖 Reading Paths
+## 📁 Document Organization
 
-### Path 1: End User (30 minutes)
-1. QUICK_REFERENCE.md (8 min)
-2. USER_GUIDE.md (20 min)
-3. Done! Ready to use
+### Root Level (Essential)
+```
+├── README.md                 # Main project README
+├── BUILD_TEST_RUN.md         # Developer build/test/run guide ⭐
+├── CONTRIBUTING.md           # Contributing guidelines
+├── CHANGELOG.md              # Version history
+├── SRVDD.md                  # Architecture & design
+├── DIBR.md                   # Deployment procedures
+├── agents.md                 # AI policy
+├── robots.txt                # Web crawler directives
+└── LICENSE                   # MIT License
+```
 
-### Path 2: Church Tech (60 minutes)
-1. QUICKSTART.md (5 min)
-2. USER_GUIDE.md (20 min)
-3. OBS_INTEGRATION.md (30 min)
-4. QUICK_REFERENCE.md (5 min)
-5. Done! Ready to stream
-
-### Path 3: Developer (90 minutes)
-1. QUICKSTART.md (5 min)
-2. FUNCTIONAL_STYLE.md (15 min) - **REQUIRED**
-3. BUILD_AND_RUN.md (25 min)
-4. MULTI_BACKEND.md (20 min)
-5. CI_CD_SUMMARY.md (15 min)
-6. CONTRIBUTING.md (10 min)
-7. Done! Ready to contribute
-
-### Path 4: DevOps (75 minutes)
-1. BUILD_AND_RUN.md (25 min)
-2. MULTI_BACKEND.md (20 min)
-3. CI_CD_SUMMARY.md (15 min)
-4. GITHUB_SETUP.md (10 min)
-5. MULTI_PLATFORM_CLOUD.md (20 min)
-6. PRODUCTION_READY.md (10 min)
-7. Done! Ready to deploy
-
-### Path 5: Multi-Church Deployment (60 minutes)
-1. MULTI_BACKEND.md (20 min) - **REQUIRED for 245+ churches**
-2. MULTI_PLATFORM_CLOUD.md (20 min)
-3. INSTALLATION_DISTRIBUTION.md (15 min)
-4. PRODUCTION_READY.md (10 min)
-5. Done! Ready to scale
+### Docs Directory (Reference)
+```
+docs/
+├── INDEX.md (this file)              # Documentation index
+├── FUNCTIONAL_STYLE.md               # Code style & patterns
+├── DISTRIBUTION_PATHS.md             # Path A vs B strategy
+├── SUPER_USER_CONFIGURATION.md       # No-code setup
+├── PRODUCTION_SETUP.md               # Production deployment
+├── PROFESSIONAL_VIDEO_GUIDE.md       # Video encoding guide
+├── OBS_INTEGRATION.md                # OBS WebSocket integration
+├── RELEASING.md                      # CI/CD & release process
+├── archive/                          # Archived/deprecated docs
+│   └── (31 docs from development history)
+```
 
 ---
 
-## 🆘 Getting Help
+## 🎯 Quick Links by Task
 
-**Documentation not enough?**
-
-- 🐛 **Bug Reports:** https://github.com/sanctuary-stream/sanctuary-stream/issues
-- 💬 **Discussions:** https://github.com/sanctuary-stream/sanctuary-stream/discussions
-- 📧 **Email:** support@sanctuary-stream.com
-- 📖 **Wiki:** https://github.com/sanctuary-stream/sanctuary-stream/wiki
-
-**Before asking:**
-1. Check [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
-2. Check [OBS_INTEGRATION.md](./OBS_INTEGRATION.md) troubleshooting
-3. Search existing issues
-4. Read relevant docs above
-
----
-
-## 🔄 Documentation Updates
-
-**Last Updated:** 2026-02-05
-**Version:** 0.1.0
-**Status:** Complete & current
-
-**Recent Changes:**
-- ✅ **New Setup Wizard:** Zero-config onboarding for all users.
-- ✅ **Rust Logic Migration:** Core network calls moved to high-performance Rust.
-- ✅ **Quality Metrics:** Real-time FPS, CPU, and Dropped Frame monitoring.
-- ✅ **Functional Refactor:** safer code using Result/Option patterns in TS & Rust.
-- ✅ Added MULTI_BACKEND.md (supports 245+ distinct backends)
-- ✅ Added INDEX.md (this file)
+| I want to... | Read this |
+|--------------|-----------|
+| Set up locally for development | [BUILD_TEST_RUN.md](../BUILD_TEST_RUN.md) |
+| Contribute code | [CONTRIBUTING.md](../CONTRIBUTING.md) + [FUNCTIONAL_STYLE.md](FUNCTIONAL_STYLE.md) |
+| Deploy to production | [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) + [DIBR.md](../DIBR.md) |
+| Configure without coding | [SUPER_USER_CONFIGURATION.md](SUPER_USER_CONFIGURATION.md) |
+| Optimize video quality | [PROFESSIONAL_VIDEO_GUIDE.md](PROFESSIONAL_VIDEO_GUIDE.md) |
+| Understand the architecture | [SRVDD.md](../SRVDD.md) |
+| Release a new version | [RELEASING.md](RELEASING.md) |
+| Roll back or recover | [DIBR.md](../DIBR.md) |
+| Find what's new | [CHANGELOG.md](../CHANGELOG.md) |
 
 ---
 
-## ✅ Documentation Checklist
+## 🔍 Finding What You Need
 
-**For Contributors:**
-- [ ] Read FUNCTIONAL_STYLE.md (REQUIRED)
-- [ ] Read CONTRIBUTING.md
-- [ ] Read BUILD_AND_RUN.md
-- [ ] Set up development environment
-- [ ] Run all tests
-- [ ] Follow code style guide
+**By Role:**
+- 👨‍💼 **Church Administrator** → SUPER_USER_CONFIGURATION.md, PRODUCTION_SETUP.md
+- 👨‍💻 **Developer** → BUILD_TEST_RUN.md, CONTRIBUTING.md, FUNCTIONAL_STYLE.md
+- 🛠️ **DevOps/Operations** → PRODUCTION_SETUP.md, RELEASING.md, DIBR.md
+- 📹 **Video/Streaming Tech** → PROFESSIONAL_VIDEO_GUIDE.md, OBS_INTEGRATION.md
 
-**For Deployers:**
-- [ ] Read MULTI_BACKEND.md (if using multiple backends)
-- [ ] Read CI_CD_SUMMARY.md
-- [ ] Read MULTI_PLATFORM_CLOUD.md
-- [ ] Read PRODUCTION_READY.md
-- [ ] Complete pre-launch checklist
+**By Task:**
+- 🚀 Getting started → BUILD_TEST_RUN.md
+- 🧪 Testing & validation → BUILD_TEST_RUN.md (smoke tests section)
+- 🏗️ Building → BUILD_TEST_RUN.md (building section)
+- 🚢 Production deployment → PRODUCTION_SETUP.md
+- 🔄 Rollback/recovery → DIBR.md
+- 📊 Video optimization → PROFESSIONAL_VIDEO_GUIDE.md
 
-**For Users:**
-- [ ] Read QUICK_REFERENCE.md or QUICKSTART.md
-- [ ] Read USER_GUIDE.md
-- [ ] Read OBS_INTEGRATION.md (if streaming)
-- [ ] Install software
-- [ ] Test setup
+**By Technology:**
+- React/Frontend → FUNCTIONAL_STYLE.md
+- TypeScript → FUNCTIONAL_STYLE.md
+- PocketBase → SUPER_USER_CONFIGURATION.md, PRODUCTION_SETUP.md
+- OBS → OBS_INTEGRATION.md, PROFESSIONAL_VIDEO_GUIDE.md
+- CI/CD → RELEASING.md
+- Docker/Containers → PRODUCTION_SETUP.md
 
 ---
 
-**📚 Complete, comprehensive, and always up-to-date!**
+## 📞 Getting Help
 
-**🎯 Find what you need. Learn at your pace. Build with confidence.**
+- **Questions about code?** → See [CONTRIBUTING.md](../CONTRIBUTING.md)
+- **Architecture questions?** → See [SRVDD.md](../SRVDD.md)
+- **Bugs or issues?** → Go to [GitHub Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues)
+- **Discussions?** → Go to [GitHub Discussions](https://github.com/sanctuary-stream/sanctuary-stream/discussions)
+- **Contact us?** → Email: support@sanctuarystream.com
+
+---
+
+**Last Updated:** 2026-03-08  
+**Documentation Status:** ✅ Organized & Current

@@ -25,7 +25,7 @@ Sanctuary Stream is designed for two distinct audiences. Choose the path that fi
 ### 💻 Path B: The "SDK" & Developer Path
 **Best for:** Open-source contributors, large ministries, and developers building bespoke streaming setups.
 
-👉 **[Read the Developer Documentation](docs/BUILD_TEST_RUN_GUIDE.md)** or follow the quickstart below:
+👉 **[Read the Developer Documentation](BUILD_TEST_RUN.md)** or follow the quickstart below:
 
 #### Prerequisites
 - Node.js 18+ or Bun (Recommended)
@@ -125,7 +125,7 @@ npm run build
 
 Looking to build your own tailored version? Sanctuary Stream is designed to be forked and customized.
 
-- **[Tailoring Guide](docs/BUILD_AND_RUN.md)** - Learn how to customize the UI, add your own branding, and deploy your own private version.
+- **[Tailoring Guide](BUILD_TEST_RUN.md)** - Learn how to customize the UI, add your own branding, and deploy your own private version. See [Customization section](BUILD_TEST_RUN.md) for details.
 - **[Production Setup & Publishing](docs/PRODUCTION_SETUP.md)** - Complete guide on how to build, sign, and distribute your own production releases.
 - **Self-Hosting:** You own the data, you own the platform. No vendor lock-in.
 
@@ -164,8 +164,9 @@ We maintain the last **5 versions** in our [GitHub Releases](https://github.com/
 - **[Distribution & Paths](docs/DISTRIBUTION_PATHS.md)** - Learn about Path A (No-Code) vs Path B (SDK).
 - **[Releasing & Automation](docs/RELEASING.md)** - How the CI/CD pipeline builds the binaries.
 - **[Super User Configuration](docs/SUPER_USER_CONFIGURATION.md)** - How to tailor the app without code.
-- **[Developer Setup](docs/BUILD_TEST_RUN_GUIDE.md)** - Complete developer guide (Bun/Node).
+- **[Developer Setup](BUILD_TEST_RUN.md)** - Complete developer guide for building, testing, and running locally (Bun/Node).
 - **[Professional Video Guide](docs/PROFESSIONAL_VIDEO_GUIDE.md)** - Technical deep-dive on encoders.
+- **[Documentation Index](docs/INDEX.md)** - Complete navigation guide for all documentation.
 
 ---
 
@@ -294,7 +295,7 @@ MIT License - See [LICENSE](LICENSE)
 
 ```bash
 # Start everything
-./scripts/START.sh
+npm run dev
 
 # Build everything
 npm run build
@@ -303,8 +304,10 @@ npm run build
 npm test
 
 # Stop everything
-kill $(cat logs/*.pid)
+killall node pocketbase
 ```
+
+**For more commands, see [QUICK_REFERENCE.md](QUICK_REFERENCE.md)**
 
 ---
 
