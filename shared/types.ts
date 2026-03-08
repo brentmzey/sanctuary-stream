@@ -36,7 +36,31 @@ export type CommandAction =
   | 'SET_STREAM_SETTINGS'
   | 'SET_VIDEO_SETTINGS'
   | 'SET_STREAM_ENCODER'
-  | 'SET_AUDIO_SETTINGS';
+  | 'SET_AUDIO_SETTINGS'
+  | 'SET_SCENE'
+  | 'SET_MUTE';
+
+/**
+ * Metadata for OBS stream state
+ */
+export interface StreamMetadata {
+  scenes?: string[];
+  currentScene?: string;
+  inputs?: StreamInput[];
+  outputActive?: boolean;
+  outputDuration?: number;
+  outputBytes?: number;
+  [key: string]: unknown;
+}
+
+/**
+ * OBS Audio Input state
+ */
+export interface StreamInput {
+  name: string;
+  muted: boolean;
+  volume: number;
+}
 
 /**
  * Command record for controlling OBS
@@ -69,7 +93,7 @@ export interface Stream {
   scene_name: string | null;
   bitrate: number | null;
   fps: number | null;
-  metadata: Record<string, unknown> | null;
+  metadata: StreamMetadata | null;
   created: string;
   updated: string;
 }

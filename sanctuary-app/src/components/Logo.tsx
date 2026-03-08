@@ -1,71 +1,62 @@
 export function Logo({ className = "w-10 h-10" }: { className?: string }) {
   return (
     <div className={`relative flex items-center justify-center ${className} group`}>
-      {/* Dynamic Background Glow */}
-      <div className="absolute inset-0 bg-indigo-600/30 blur-2xl rounded-full animate-pulse group-hover:bg-indigo-500/40 transition-colors duration-700"></div>
-      <div className="absolute inset-2 bg-emerald-500/10 blur-xl rounded-full animate-bounce [animation-duration:4s]"></div>
+      {/* Electronic Glow Aura */}
+      <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full scale-150 group-hover:bg-indigo-400/30 transition-all duration-1000 group-hover:animate-pulse"></div>
       
-      {/* Main Logo Vessel */}
       <svg 
         viewBox="0 0 100 100" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
-        className="relative w-full h-full drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]"
+        className="relative w-full h-full drop-shadow-[0_0_10px_rgba(99,102,241,0.4)]"
       >
-        {/* Outer Sanctuary Arch */}
+        {/* Sanctuary Arch - Geometric & Modern */}
         <path 
-          d="M20 80C20 40 35 20 50 20C65 20 80 40 80 80" 
+          d="M25 80V40C25 26.1929 36.1929 15 50 15V15C63.8071 15 75 26.1929 75 40V80" 
           stroke="currentColor" 
-          strokeWidth="4" 
-          strokeLinecap="round"
-          className="text-indigo-500/40"
+          strokeWidth="3" 
+          strokeLinecap="square"
+          className="text-indigo-400/40"
         />
         
-        {/* The 'S' Stream Path */}
+        {/* Dripping Digital Elements */}
+        <rect x="35" y="25" width="2" height="15" fill="currentColor" className="text-indigo-500/30 animate-pulse" />
+        <rect x="63" y="20" width="2" height="25" fill="currentColor" className="text-emerald-500/30 animate-pulse [animation-delay:0.7s]" />
+        <rect x="50" y="10" width="2" height="10" fill="currentColor" className="text-indigo-500/30 animate-pulse [animation-delay:0.3s]" />
+
+        {/* The Stream 'S' - Integrated Circuit feel */}
         <path 
-          d="M50 25C35 25 25 35 25 50C25 65 50 65 50 80C50 95 65 95 75 80" 
-          stroke="url(#logo-gradient)" 
-          strokeWidth="8" 
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="animate-draw"
+          d="M50 20H35V45H65V70H50" 
+          stroke="url(#circuit-grad)" 
+          strokeWidth="6" 
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+          className="filter drop-shadow-sm"
         />
         
-        {/* Core Radiance Point */}
+        {/* Connection Points (Nodes) */}
+        <circle cx="50" cy="20" r="3" fill="#6366f1" />
+        <circle cx="35" cy="45" r="3" fill="#6366f1" />
+        <circle cx="65" cy="45" r="3" fill="#10b981" />
+        <circle cx="50" cy="70" r="3" fill="#10b981" />
+        
+        {/* Core Radiance */}
         <circle 
           cx="50" 
           cy="45" 
-          r="6" 
-          fill="currentColor"
-          className="text-white shadow-lg animate-pulse"
-        />
-        
-        {/* Signal Waves */}
-        <path 
-          d="M65 35C70 40 70 50 65 55" 
-          stroke="currentColor" 
-          strokeWidth="3" 
-          strokeLinecap="round"
-          className="text-emerald-400 opacity-60 animate-ping [animation-duration:3s]"
-        />
-        <path 
-          d="M75 25C85 35 85 55 75 65" 
-          stroke="currentColor" 
-          strokeWidth="3" 
-          strokeLinecap="round"
-          className="text-emerald-400 opacity-30 animate-ping [animation-duration:4s]"
+          r="5" 
+          fill="white" 
+          className="animate-pulse shadow-lg blur-[1px]"
         />
 
         <defs>
-          <linearGradient id="logo-gradient" x1="25" y1="25" x2="75" y2="95" gradientUnits="userSpaceOnUse">
+          <linearGradient id="circuit-grad" x1="35" y1="20" x2="65" y2="70" gradientUnits="userSpaceOnUse">
             <stop stopColor="#6366f1" />
             <stop offset="1" stopColor="#10b981" />
           </linearGradient>
         </defs>
       </svg>
-      
-      {/* Hidden text for accessibility */}
-      <span className="sr-only">Sanctuary Stream Logo</span>
+      <span className="sr-only">Sanctuary Stream</span>
     </div>
   );
 }

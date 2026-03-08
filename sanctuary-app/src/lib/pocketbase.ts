@@ -6,12 +6,10 @@ import { Result, failure, fromThrowable, success } from '@shared/result';
 
 // Get PocketBase URL from multiple sources (priority order)
 const getPocketBaseUrl = (): string => {
-  // 1. Runtime configuration (user settings in localStorage)
   if (typeof window !== 'undefined') {
     const stored = fromNullable(localStorage.getItem('pb_url'));
     if (stored._tag === 'some') return stored.value;
 
-    // 2. URL parameter (e.g., ?pb=https://church.pockethost.io)
     const params = new URLSearchParams(window.location.search);
     const urlParam = fromNullable(params.get('pb'));
     if (urlParam._tag === 'some') {
@@ -20,17 +18,14 @@ const getPocketBaseUrl = (): string => {
     }
   }
 
-  // 3. Environment variable (build-time configuration)
   const envUrl = fromNullable(import.meta.env.VITE_PB_URL);
   if (envUrl._tag === 'some') {
     return envUrl.value;
   }
 
-  // 4. Default (local development)
   return 'http://127.0.0.1:8090';
 };
 
-// Validate PocketBase URL
 const validatePocketBaseUrl = (url: string): Result<boolean, Error> => {
   return fromThrowable(
     () => {
@@ -41,7 +36,6 @@ const validatePocketBaseUrl = (url: string): Result<boolean, Error> => {
   );
 };
 
-// Initialize PocketBase client
 const initialUrl = getPocketBaseUrl();
 const validationResult = validatePocketBaseUrl(initialUrl);
 
@@ -49,38 +43,8 @@ if (validationResult._tag === 'failure' || validationResult.value === false) {
   console.error('Invalid PocketBase URL:', initialUrl);
 }
 
-// Configure PocketBase for optimal real-time performance
 export const pb = new PocketBase(initialUrl);
-
-// Enable auto-cancellation of duplicate requests (reduces load)
 pb.autoCancellation(true);
-
-// Configure WebSocket reconnection (critical for real-time)
-if (typeof window !== 'undefined') {
-  // Auto-reconnect on connection loss
-  let reconnectAttempts = 0;
-  const maxReconnectAttempts = 10;
-
-  window.addEventListener('online', () => {
-    console.log('[PocketBase] Network online - attempting reconnection...');
-    reconnectAttempts = 0;
-    // Note: PocketBase handles reconnection automatically
-    // Just log the event for debugging
-  });
-
-  window.addEventListener('offline', () => {
-    console.log('[PocketBase] Network offline - WebSocket will auto-reconnect when online');
-  });
-
-  // PocketBase SDK handles reconnection automatically
-  // We just need to monitor connection state for UI feedback
-  setInterval(() => {
-    // Health check could be added here if needed
-    if (reconnectAttempts >= maxReconnectAttempts) {
-      console.warn('[PocketBase] Max reconnection attempts reached');
-    }
-  }, 30000);
-}
 
 export type CommandAction = 
   | 'START' 
@@ -91,6 +55,8 @@ export type CommandAction =
   | 'SET_VIDEO_SETTINGS'
   | 'SET_STREAM_ENCODER'
   | 'SET_AUDIO_SETTINGS'
+  | 'SET_SCENE'
+  | 'SET_MUTE'
   | 'UPLOAD_TO_DRIVE';
 
 export interface CommandRecord {
@@ -112,11 +78,20 @@ export interface StreamQualityMetrics {
   cpu_usage?: number;
 }
 
+export interface StreamInput {
+  name: string;
+  muted: boolean;
+  volume: number;
+}
+
 export interface StreamMetadata {
   outputActive?: boolean;
   outputDuration?: number;
   outputBytes?: number;
   quality?: StreamQualityMetrics;
+  scenes?: string[];
+  currentScene?: string;
+  inputs?: StreamInput[];
 }
 
 export interface StreamRecord {
@@ -138,44 +113,6 @@ export interface UserRecord {
   updated: string;
 }
 
-export interface SermonRecord {
-  id: string;
-  title: string;
-  body?: string;
-  sermon_date: string;
-  youtube_url?: string;
-  tags?: string[];
-  published: boolean;
-  thumbnail?: string;
-  speaker?: string;
-  created: string;
-  updated: string;
-}
-
-export interface AnnouncementRecord {
-  id: string;
-  title: string;
-  body?: string;
-  published_at?: string;
-  expires_at?: string;
-  priority: 'low' | 'normal' | 'high';
-  published: boolean;
-  created: string;
-  updated: string;
-}
-
-export interface ResourceRecord {
-  id: string;
-  title: string;
-  description?: string;
-  file?: string;
-  url?: string;
-  category: 'essay' | 'article' | 'free';
-  published: boolean;
-  created: string;
-  updated: string;
-}
-
 export interface RecordingRecord {
   id: string;
   title: string;
@@ -187,6 +124,38 @@ export interface RecordingRecord {
   updated: string;
 }
 
+export interface AnnouncementRecord {
+  id: string;
+  title: string;
+  body?: string;
+  priority: 'low' | 'medium' | 'high';
+  expires_at?: string;
+  created: string;
+  updated: string;
+}
+
+export interface SermonRecord {
+  id: string;
+  title: string;
+  speaker?: string;
+  sermon_date: string;
+  body?: string;
+  youtube_url?: string;
+  created: string;
+  updated: string;
+}
+
+export interface ResourceRecord {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  url?: string;
+  file?: string;
+  created: string;
+  updated: string;
+}
+
 export function sendCommand(action: CommandAction, payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
   return new AsyncIO(async () => {
     const userOption = fromNullable(pb.authStore.model);
@@ -194,14 +163,10 @@ export function sendCommand(action: CommandAction, payload?: Record<string, unkn
       throw new Error('Not authenticated');
     }
     const user = userOption.value;
-
     const maybePayload = fromNullable(payload);
 
-    // Skip Rust optimization if payload is present (until Rust side is updated)
     if (maybePayload._tag === 'none') {
-      // Try Rust backend first
       try {
-        // Note: Rust 'send_command' returns the correlation_id
         await invoke('send_command', {
           pocketbaseUrl: pb.baseUrl,
           action,
@@ -214,7 +179,6 @@ export function sendCommand(action: CommandAction, payload?: Record<string, unkn
       }
     }
 
-    // Fallback to JS SDK (or primary path if payload exists)
     const correlationId = crypto.randomUUID();
     return await pb.collection('commands').create<CommandRecord>({
       action,
@@ -228,7 +192,6 @@ export function sendCommand(action: CommandAction, payload?: Record<string, unkn
 
 export function getStreamStatus(streamId: string): AsyncIO<StreamRecord> {
   return new AsyncIO(async () => {
-    // Try Rust backend first
     try {
       const status = await invoke<StreamRecord>('get_stream_status', {
         pocketbaseUrl: pb.baseUrl,
@@ -252,28 +215,17 @@ export function unsubscribeFromStream(streamId: string) {
   pb.collection('streams').unsubscribe(streamId);
 }
 
-// Allow runtime URL changes (for multi-backend support)
 export function setPocketBaseUrl(url: string): Result<void, Error> {
   const validationResult = validatePocketBaseUrl(url);
-
   if (validationResult._tag === 'failure' || validationResult.value === false) {
     return failure(new Error('Invalid PocketBase URL'));
   }
-
   localStorage.setItem('pb_url', url);
   pb.baseUrl = url;
-  // Clear auth when switching backends
   pb.authStore.clear();
-
   return success(undefined);
 }
 
-// Get current PocketBase URL
-export function getCurrentPocketBaseUrl(): string {
-  return pb.baseUrl;
-}
-
-// Test connection to PocketBase
 export function testConnection(url?: string): AsyncIO<boolean> {
   return new AsyncIO(async () => {
     const parsedUrl = fromNullable(url);
@@ -287,39 +239,6 @@ export function testConnection(url?: string): AsyncIO<boolean> {
   });
 }
 
-// ─── Pastoral Content Helpers ────────────────────────────────────────────────
-
-export function getSermons(limit = 10): AsyncIO<SermonRecord[]> {
-  return new AsyncIO(() =>
-    pb.collection('sermons').getList<SermonRecord>(1, limit, {
-      filter: 'published = true',
-      sort: '-sermon_date',
-    }).then((r) => r.items)
-  );
-}
-
-export function getAnnouncements(): AsyncIO<AnnouncementRecord[]> {
-  const now = new Date().toISOString();
-  return new AsyncIO(() =>
-    pb.collection('announcements').getList<AnnouncementRecord>(1, 20, {
-      filter: `published = true && (expires_at = '' || expires_at > '${now}')`,
-      sort: '-priority,-created',
-    }).then((r) => r.items)
-  );
-}
-
-export function getResources(category?: ResourceRecord['category']): AsyncIO<ResourceRecord[]> {
-  const filter = category
-    ? `published = true && category = '${category}'`
-    : 'published = true';
-  return new AsyncIO(() =>
-    pb.collection('resources').getList<ResourceRecord>(1, 50, {
-      filter,
-      sort: 'category,title',
-    }).then((r) => r.items)
-  );
-}
-
 export function getRecordings(streamId: string): AsyncIO<RecordingRecord[]> {
   return new AsyncIO(() =>
     pb.collection('recordings').getList<RecordingRecord>(1, 50, {
@@ -329,6 +248,36 @@ export function getRecordings(streamId: string): AsyncIO<RecordingRecord[]> {
   );
 }
 
-export function getFileUrl(collectionId: string, recordId: string, filename: string): string {
-  return `${pb.baseUrl}/api/files/${collectionId}/${recordId}/${filename}`;
+export function getAnnouncements(): AsyncIO<AnnouncementRecord[]> {
+  return new AsyncIO(() =>
+    pb.collection('announcements').getList<AnnouncementRecord>(1, 50, {
+      filter: 'expires_at = "" || expires_at > @now',
+      sort: '-priority,-created',
+    }).then((r) => r.items)
+  );
+}
+
+export function getSermons(limit = 10): AsyncIO<SermonRecord[]> {
+  return new AsyncIO(() =>
+    pb.collection('sermons').getList<SermonRecord>(1, limit, {
+      sort: '-sermon_date',
+    }).then((r) => r.items)
+  );
+}
+
+export function getResources(category?: string): AsyncIO<ResourceRecord[]> {
+  return new AsyncIO(() =>
+    pb.collection('resources').getList<ResourceRecord>(1, 50, {
+      filter: category ? `category = '${category}'` : '',
+      sort: '-created',
+    }).then((r) => r.items)
+  );
+}
+
+export function getFileUrl(collectionId: string, recordId: string, fileName: string): string {
+  return `${pb.baseUrl}/api/files/${collectionId}/${recordId}/${fileName}`;
+}
+
+export function getCurrentPocketBaseUrl(): string {
+  return pb.baseUrl;
 }

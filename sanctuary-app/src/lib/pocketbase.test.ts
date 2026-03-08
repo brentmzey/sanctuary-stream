@@ -11,7 +11,8 @@ import {
   getFileUrl,
   getCurrentPocketBaseUrl,
   subscribeToStream,
-  unsubscribeFromStream
+  unsubscribeFromStream,
+  UserRecord
 } from './pocketbase';
 import { invoke } from '@tauri-apps/api/tauri';
 
@@ -56,14 +57,14 @@ describe('pocketbase lib', () => {
 
   describe('testConnection', () => {
     it('returns true on successful fetch', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({ ok: true } as any);
+      vi.mocked(global.fetch).mockResolvedValue({ ok: true } as Response);
       const isConnected = await testConnection('http://localhost:8090').unsafeRunAsync();
       expect(isConnected).toBe(true);
       expect(global.fetch).toHaveBeenCalledWith('http://localhost:8090/api/health');
     });
 
     it('uses baseUrl when no url is provided', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({ ok: true } as any);
+      vi.mocked(global.fetch).mockResolvedValue({ ok: true } as Response);
       pb.baseUrl = 'http://test.url';
       await testConnection().unsafeRunAsync();
       expect(global.fetch).toHaveBeenCalledWith('http://test.url/api/health');
@@ -82,7 +83,8 @@ describe('pocketbase lib', () => {
     });
 
     it('uses Rust invoke if no payload is provided', async () => {
-      pb.authStore.save('token', { id: 'user-123' } as any);
+      // @ts-expect-error - UserRecord is a partial RecordModel for testing
+      pb.authStore.save('token', { id: 'user-123' } as UserRecord);
       vi.mocked(invoke).mockResolvedValue('corr-id');
       
       await sendCommand('START').unsafeRunAsync();
@@ -94,7 +96,8 @@ describe('pocketbase lib', () => {
     });
 
     it('falls back to JS SDK if Rust fails', async () => {
-      pb.authStore.save('token', { id: 'user-123' } as any);
+      // @ts-expect-error - UserRecord is a partial RecordModel for testing
+      pb.authStore.save('token', { id: 'user-123' } as UserRecord);
       vi.mocked(invoke).mockRejectedValue(new Error('Rust error'));
       const mockCreate = vi.fn().mockResolvedValue({ id: 'cmd-1' });
       pb.collection = vi.fn().mockReturnValue({ create: mockCreate });
@@ -108,7 +111,8 @@ describe('pocketbase lib', () => {
     });
 
     it('falls back to JS SDK if payload is present', async () => {
-      pb.authStore.save('token', { id: 'user-123' } as any);
+      // @ts-expect-error - UserRecord is a partial RecordModel for testing
+      pb.authStore.save('token', { id: 'user-123' } as UserRecord);
       const mockCreate = vi.fn().mockResolvedValue({ id: 'cmd-1' });
       pb.collection = vi.fn().mockReturnValue({ create: mockCreate });
 

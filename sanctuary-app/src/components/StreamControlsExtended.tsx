@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sendCommand, StreamRecord } from '../lib/pocketbase';
+import { sendCommand, StreamRecord, StreamInput } from '../lib/pocketbase';
 
 interface StreamControlsExtendedProps {
   stream: StreamRecord;
@@ -12,7 +12,7 @@ export function StreamControlsExtended({ stream, disabled }: StreamControlsExten
   const handleSceneChange = async (sceneName: string) => {
     setLoadingAction(`SCENE_${sceneName}`);
     try {
-      await sendCommand('SET_SCENE', { sceneName });
+      await sendCommand('SET_SCENE', { sceneName }).unsafeRunAsync();
     } finally {
       setLoadingAction(null);
     }
@@ -21,15 +21,15 @@ export function StreamControlsExtended({ stream, disabled }: StreamControlsExten
   const handleMuteToggle = async (inputName: string, currentMuted: boolean) => {
     setLoadingAction(`MUTE_${inputName}`);
     try {
-      await sendCommand('SET_MUTE', { inputName, muted: !currentMuted });
+      await sendCommand('SET_MUTE', { inputName, muted: !currentMuted }).unsafeRunAsync();
     } finally {
       setLoadingAction(null);
     }
   };
 
-  const scenes = stream.metadata?.scenes || [];
-  const currentScene = stream.metadata?.currentScene;
-  const inputs = stream.metadata?.inputs || [];
+  const scenes = (stream.metadata?.scenes as string[] | undefined) || [];
+  const currentScene = (stream.metadata?.currentScene as string | undefined);
+  const inputs = (stream.metadata?.inputs as StreamInput[] | undefined) || [];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -46,7 +46,7 @@ export function StreamControlsExtended({ stream, disabled }: StreamControlsExten
           <p className="text-slate-500 text-sm italic">No scenes detected from OBS.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {scenes.map((scene) => (
+            {scenes.map((scene: string) => (
               <button
                 key={scene}
                 onClick={() => handleSceneChange(scene)}
@@ -79,7 +79,7 @@ export function StreamControlsExtended({ stream, disabled }: StreamControlsExten
           <p className="text-slate-500 text-sm italic">No audio inputs detected from OBS.</p>
         ) : (
           <div className="space-y-3">
-            {inputs.map((input) => (
+            {inputs.map((input: StreamInput) => (
               <div key={input.name} className="flex items-center justify-between p-3 bg-slate-950/40 rounded-xl border border-white/5">
                 <span className="text-sm font-medium text-slate-300">{input.name}</span>
                 <button

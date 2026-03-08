@@ -21,7 +21,8 @@ import './App.css';
 type Tab = 'control' | 'reflections' | 'recordings' | 'help';
 
 function App() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
+  // Theme toggle is handled by setTheme in the button click
   // Initialize Stream ID from LocalStorage or Environment
   const [streamId, setStreamId] = useState<string>(() => {
     return localStorage.getItem('stream_id') || import.meta.env.VITE_STREAM_ID || '';

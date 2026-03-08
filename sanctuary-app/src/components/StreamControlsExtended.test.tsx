@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { StreamControlsExtended } from './StreamControlsExtended';
 import * as pbLib from '../lib/pocketbase';
+import { StreamRecord } from '../lib/pocketbase';
 
 // Mock the pocketbase library
 vi.mock('../lib/pocketbase', () => ({
-  sendCommand: vi.fn().mockResolvedValue({}),
+  sendCommand: vi.fn(() => ({
+    unsafeRunAsync: vi.fn().mockResolvedValue({}),
+  })),
 }));
 
 describe('StreamControlsExtended', () => {
-  const mockStream: any = {
+  const mockStream: StreamRecord = {
     id: 'stream-123',
+    status: 'live',
+    heartbeat: new Date().toISOString(),
     metadata: {
       scenes: ['Scene 1', 'Scene 2'],
       currentScene: 'Scene 1',
@@ -19,6 +24,8 @@ describe('StreamControlsExtended', () => {
         { name: 'Desktop Audio', muted: true, volume: 0 },
       ],
     },
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
   };
 
   beforeEach(() => {
@@ -58,7 +65,14 @@ describe('StreamControlsExtended', () => {
   });
 
   it('renders empty states when no data available', () => {
-    const emptyStream: any = { id: 'empty', metadata: {} };
+    const emptyStream: StreamRecord = {
+      id: 'empty',
+      status: 'idle',
+      heartbeat: new Date().toISOString(),
+      metadata: {},
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+    };
     render(<StreamControlsExtended stream={emptyStream} />);
     
     expect(screen.getByText('No scenes detected from OBS.')).toBeTruthy();

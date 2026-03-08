@@ -24,7 +24,9 @@ const getConfig = (key: string, defaultValue: string = ''): string => {
 };
 
 // Polyfill EventSource for Node.js (required by PocketBase SDK for realtime)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (typeof (global as any).EventSource === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (global as any).EventSource = EventSource;
 }
 
@@ -402,21 +404,25 @@ class SanctuaryBridge {
           };
         }
 
-        if (sceneListResult._tag === 'success') {
+        if (sceneListResult._tag === 'success' && sceneListResult.value && sceneListResult.value.scenes && Array.isArray(sceneListResult.value.scenes)) {
           const sceneList = sceneListResult.value;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           update.metadata.scenes = sceneList.scenes.map((s: any) => s.sceneName);
           update.metadata.currentScene = sceneList.currentProgramSceneName;
         }
 
-        if (inputListResult._tag === 'success') {
+        if (inputListResult._tag === 'success' && inputListResult.value && inputListResult.value.inputs && Array.isArray(inputListResult.value.inputs)) {
           const inputList = inputListResult.value;
-          const inputs = [];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const inputs: any[] = [];
           for (const input of inputList.inputs) {
-            if (['wasapi_input_capture', 'wasapi_output_capture', 'coreaudio_input_capture', 'coreaudio_output_capture'].includes(input.inputKind)) {
-               const muteStatus = await this.obs.call('GetInputMute', { inputName: input.inputName });
+            const inputKind = input.inputKind as string;
+            const inputName = input.inputName as string;
+            if (input && ['wasapi_input_capture', 'wasapi_output_capture', 'coreaudio_input_capture', 'coreaudio_output_capture'].includes(inputKind)) {
+               const muteStatus = await this.obs.call('GetInputMute', { inputName });
                inputs.push({
-                 name: input.inputName,
-                 muted: muteStatus.inputMuted,
+                 name: inputName,
+                 muted: muteStatus.inputMuted as boolean,
                  volume: 0 // We could also fetch volume if needed
                });
             }

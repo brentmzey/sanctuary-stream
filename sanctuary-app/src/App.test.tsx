@@ -4,6 +4,7 @@ import App from './App';
 import { useStream } from './lib/hooks';
 import { ThemeProvider } from './lib/ThemeContext';
 import { none, some } from '@shared/option';
+import { UserRecord } from './lib/pocketbase';
 
 vi.mock('./lib/pocketbase', () => ({
   pb: {
@@ -20,7 +21,7 @@ vi.mock('./lib/pocketbase', () => ({
 }));
 
 let mockIsValid = false;
-let mockModel: any = null;
+let mockModel: UserRecord | null = null;
 
 vi.mock('./lib/hooks', () => ({
   useStream: vi.fn()
@@ -29,7 +30,7 @@ vi.mock('./lib/hooks', () => ({
 const renderApp = () => render(<ThemeProvider><App /></ThemeProvider>);
 
 vi.mock('./components/SetupWizard', () => ({
-  SetupWizard: ({ onComplete }: any) => (
+  SetupWizard: ({ onComplete }: { onComplete: (id: string) => void }) => (
     <div data-testid="mock-setup-wizard">
       <button onClick={() => onComplete('new-stream-id')}>Complete Setup</button>
     </div>
@@ -59,7 +60,7 @@ describe('App', () => {
   it('renders main app if authenticated and has stream_id', () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ id: 'test-stream', status: 'idle', heartbeat: '', created: '', updated: '' }),
@@ -76,7 +77,7 @@ describe('App', () => {
   it('can switch tabs', async () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ id: 'test-stream', status: 'idle', heartbeat: '', created: '', updated: '' }),
@@ -104,7 +105,7 @@ describe('App', () => {
   it('can sign out', async () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     renderApp();
 
@@ -127,7 +128,7 @@ describe('App', () => {
 
     // Assuming pocketbase model gets set when authenticated
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ id: 'new-stream-id', status: 'idle', heartbeat: '', created: '', updated: '' }),
@@ -146,7 +147,7 @@ describe('App', () => {
   it('can toggle quality and settings panels', async () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ id: 'test-stream', status: 'live', heartbeat: '', created: '', updated: '' }),
@@ -173,7 +174,7 @@ describe('App', () => {
   it('renders permission notice for non-admin users', async () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'tech', name: 'Tech User' } as any;
+    mockModel = { role: 'tech', name: 'Tech User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ id: 'test-stream', status: 'live', heartbeat: '', created: '', updated: '' }),
@@ -189,7 +190,7 @@ describe('App', () => {
   it('shows error banner when error is present', async () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: none(),
@@ -205,7 +206,7 @@ describe('App', () => {
   it('shows stream metadata when present', async () => {
     localStorage.setItem('stream_id', 'test-stream');
     mockIsValid = true;
-    mockModel = { role: 'admin', name: 'Admin User' } as any;
+    mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ 
