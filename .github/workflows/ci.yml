@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install System Dependencies
@@ -66,12 +66,12 @@ jobs:
       - name: Setup PocketBase
         run: |
           mkdir -p pocketbase/local
-          wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip
-          unzip pocketbase_0.22.0_linux_amd64.zip -d pocketbase/local
+          wget https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_linux_amd64.zip
+          unzip pocketbase_0.25.0_linux_amd64.zip -d pocketbase/local
           chmod +x pocketbase/local/pocketbase
 
       - name: Run Setup
-        run: npm run setup
+        run: ./scripts/setup.sh
         env:
           CI: true
 

@@ -40,6 +40,9 @@ PB_BIN="pocketbase"
 if [ -f "pocketbase/local/pocketbase" ]; then
     PB_BIN="./pocketbase/local/pocketbase"
     echo -e "${GREEN}✅ Local PocketBase binary found${NC}"
+elif [ -f "pocketbase/local/pocketbase.exe" ]; then
+    PB_BIN="./pocketbase/local/pocketbase.exe"
+    echo -e "${GREEN}✅ Local PocketBase binary (Windows) found${NC}"
 elif command -v pocketbase &> /dev/null; then
     PB_BIN="pocketbase"
     echo -e "${GREEN}✅ PocketBase found in PATH${NC}"
@@ -49,14 +52,16 @@ else
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         if [[ $(uname -m) == 'arm64' ]]; then
-            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_darwin_arm64.zip"
+            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_darwin_arm64.zip"
         else
-            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_darwin_amd64.zip"
+            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_darwin_amd64.zip"
         fi
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        URL="https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip"
+        URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_linux_amd64.zip"
+    elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "win32"* ]]; then
+        URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_windows_amd64.zip"
     else
-        echo -e "${RED}❌ Unsupported OS for automatic PocketBase download.${NC}"
+        echo -e "${RED}❌ Unsupported OS: $OSTYPE. Automatic PocketBase download failed.${NC}"
         exit 1
     fi
     
@@ -100,7 +105,7 @@ cd ../..
 echo ""
 echo "🔐 Step 4: Creating admin account..."
 cd pocketbase/local
-../../$PB_BIN superuser upsert admin@local.dev admin123456 > /dev/null 2>&1
+../../$PB_BIN superuser upsert admin@local.dev admin123456
 cd ../..
 
 echo ""
