@@ -36,27 +36,39 @@ fi
 echo -e "${GREEN}✅ npm $(npm -v)${NC}"
 
 # Check for PocketBase
-if ! command -v pocketbase &> /dev/null; then
-    echo -e "${YELLOW}⚠️  PocketBase not found. Installing...${NC}"
+PB_BIN="pocketbase"
+if [ -f "pocketbase/local/pocketbase" ]; then
+    PB_BIN="./pocketbase/local/pocketbase"
+    echo -e "${GREEN}✅ Local PocketBase binary found${NC}"
+elif command -v pocketbase &> /dev/null; then
+    PB_BIN="pocketbase"
+    echo -e "${GREEN}✅ PocketBase found in PATH${NC}"
+else
+    echo -e "${YELLOW}⚠️  PocketBase not found. Installing locally...${NC}"
+    mkdir -p pocketbase/local
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        if command -v brew &> /dev/null; then
-            brew install pocketbase
+        # Check if it's Apple Silicon or Intel
+        if [[ $(uname -m) == 'arm64' ]]; then
+            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_darwin_arm64.zip"
         else
-            echo -e "${RED}❌ Homebrew not found. Install from https://brew.sh${NC}"
-            echo "   Then run: brew install pocketbase"
-            exit 1
+            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_darwin_amd64.zip"
         fi
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        echo "   Download from: https://pocketbase.io/docs/"
-        echo "   Or run: wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip"
-        exit 1
+        URL="https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip"
     else
-        echo "   Download from: https://pocketbase.io/docs/"
+        echo -e "${RED}❌ Unsupported OS for automatic PocketBase download.${NC}"
+        echo "Please download from: https://pocketbase.io/docs/"
         exit 1
     fi
+    
+    curl -L $URL -o pocketbase/local/pb.zip
+    unzip -o pocketbase/local/pb.zip -d pocketbase/local
+    rm pocketbase/local/pb.zip
+    chmod +x pocketbase/local/pocketbase
+    PB_BIN="./pocketbase/local/pocketbase"
+    echo -e "${GREEN}✅ PocketBase installed locally${NC}"
 fi
-echo -e "${GREEN}✅ PocketBase installed${NC}"
 
 echo ""
 echo "📦 Step 2: Installing Node.js dependencies..."
@@ -84,7 +96,7 @@ cd pocketbase/local
 
 # Start PocketBase in background
 echo "Starting PocketBase server..."
-nohup pocketbase serve --http=127.0.0.1:8090 > pb.log 2>&1 &
+nohup ../../$PB_BIN serve --http=127.0.0.1:8090 > pb.log 2>&1 &
 PB_PID=$!
 echo $PB_PID > pb.pid
 
@@ -110,26 +122,22 @@ echo "🔐 Step 4: Creating admin account..."
 echo ""
 
 # Create admin account automatically via CLI
-# We need to run it from where the pocketbase data will be
 cd pocketbase/local
-if pocketbase superuser upsert admin@local.dev admin123456 > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ Admin account created/updated automatically${NC}"
+if ../../$PB_BIN superuser upsert admin@local.dev admin123456 > /dev/null 2>&1; then
+    echo -e "${GREEN}✅ Admin account created/updated: admin@local.dev / admin123456${NC}"
 else
-    # Maybe it already exists?
-    echo -e "${YELLOW}⚠️  Could not create/update admin via CLI${NC}"
+    echo -e "${YELLOW}⚠️  Could not create/update admin via CLI. You might need to do it manually at http://127.0.0.1:8090/_/${NC}"
 fi
 cd ../..
 
 echo ""
-echo "🏗️ Step 5: Creating test users..."
-echo ""
-echo -e "${YELLOW}Note: Database schema (collections, fields, indexes) was created automatically by migrations!${NC}"
+echo "🏗️ Step 5: Initializing Database Schema..."
 echo ""
 
-# Set admin password
+# Set admin password for schema init
 export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL=admin123456
 
-# Run schema initialization (creates test users)
+# Run schema initialization
 npm run schema:init:local
 
 echo -e "${GREEN}✅ Schema initialized${NC}"
@@ -142,9 +150,8 @@ echo "Fetching Stream ID from PocketBase..."
 STREAM_ID=$(curl -s http://127.0.0.1:8090/api/collections/streams/records | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 
 if [ -z "$STREAM_ID" ]; then
-    echo -e "${YELLOW}⚠️  Could not auto-detect STREAM_ID${NC}"
-    echo "You'll need to get it from PocketBase UI and update the .env files"
-    STREAM_ID="your_stream_id_here"
+    echo -e "${YELLOW}⚠️  Could not auto-detect STREAM_ID. Using default 'default_stream'.${NC}"
+    STREAM_ID="default_stream"
 else
     echo -e "${GREEN}✅ Found Stream ID: $STREAM_ID${NC}"
 fi
@@ -176,7 +183,7 @@ mkdir -p sanctuary-bridge/logs
 
 echo ""
 echo "🔍 Step 7: Verifying installation..."
-./scripts/verify-complete.sh
+./scripts/validate.sh
 
 echo ""
 echo "✅ Setup Complete!"
@@ -185,44 +192,24 @@ echo "======================================"
 echo "🚀 Next Steps:"
 echo "======================================"
 echo ""
-echo "1. Start Mock OBS (in new terminal):"
-echo "   ${GREEN}npm run mock:obs${NC}"
+echo "1. Start everything in one go:"
+echo -e "   ${GREEN}npm run dev:full${NC}"
 echo ""
-echo "2. Build & start Bridge service:"
-echo "   ${GREEN}cd sanctuary-bridge && npm run dev${NC}"
+echo "2. Or start individual services:"
+echo -e "   - Mock OBS: ${GREEN}npm run mock:obs${NC}"
+echo -e "   - Bridge:   ${GREEN}cd sanctuary-bridge && npm run dev${NC}"
+echo -e "   - Frontend: ${GREEN}cd sanctuary-app && npm run dev${NC}"
 echo ""
-echo "3. Start Frontend app:"
-echo "   ${GREEN}cd sanctuary-app && npm run dev${NC}"
-echo ""
-echo "4. Login credentials:"
-echo "   Pastor: ${GREEN}pastor@local.dev / pastor123456${NC}"
-echo "   Admin:  ${GREEN}admin@local.dev / admin123456${NC}"
-echo "   Bridge: ${GREEN}bridge@local.dev / bridge123456${NC}"
-echo ""
-echo "======================================"
-echo "📚 Documentation:"
-echo "======================================"
-echo ""
-echo "• QUICKSTART.md - Detailed walkthrough"
-echo "• BUILD_AND_RUN.md - Schema & testing guide"
-echo "• ROADMAP.md - Implementation phases"
-echo "• docs/DEVELOPMENT.md - Development workflow"
+echo "3. Login credentials:"
+echo -e "   Email:    ${GREEN}admin@local.dev${NC}"
+echo -e "   Password: ${GREEN}admin123456${NC}"
 echo ""
 echo "======================================"
 echo "🛠️ Current Status:"
 echo "======================================"
 echo ""
 echo "✅ PocketBase running at http://127.0.0.1:8090"
-echo "✅ Schema initialized (users, commands, streams)"
-echo "✅ Test users created"
+echo "✅ Schema initialized"
 echo "✅ Environment files configured"
-echo "✅ Bridge service ready (TypeScript)"
-echo "✅ Frontend app ready (React + Vite)"
 echo ""
 echo "======================================"
-echo "🔧 To stop PocketBase later:"
-echo "======================================"
-echo ""
-echo "  lsof -ti:8090 | xargs kill -9"
-echo "  Or: kill \$(cat pocketbase/local/pb.pid)"
-echo ""

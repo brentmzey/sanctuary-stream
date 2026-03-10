@@ -13,7 +13,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Configuration
-SKIP_TESTS=false
+SKIP_VALIDATION=false
 SKIP_BUILD=false
 SKIP_DEPLOY=false
 DRY_RUN=false
@@ -22,8 +22,8 @@ VERSION=""
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --skip-tests)
-            SKIP_TESTS=true
+        --skip-validation)
+            SKIP_VALIDATION=true
             shift
             ;;
         --skip-build)
@@ -46,12 +46,12 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Options:"
-            echo "  --skip-tests     Skip running tests"
-            echo "  --skip-build     Skip local builds"
-            echo "  --skip-deploy    Skip deployment (commit/push/tag)"
-            echo "  --dry-run        Show what would be done without doing it"
-            echo "  --version VER    Specify version (e.g., v0.1.1)"
-            echo "  --help           Show this help message"
+            echo "  --skip-validation Skip running full validation (lint/typecheck/test)"
+            echo "  --skip-build      Skip local builds"
+            echo "  --skip-deploy     Skip deployment (commit/push/tag)"
+            echo "  --dry-run         Show what would be done without doing it"
+            echo "  --version VER     Specify version (e.g., v0.1.1)"
+            echo "  --help            Show this help message"
             exit 0
             ;;
         *)
@@ -149,106 +149,28 @@ if [ "$UNCOMMITTED_CHANGES" -ne 0 ] && [ "$SKIP_DEPLOY" = false ]; then
 fi
 echo ""
 
-# Install dependencies
-log_step "Installing dependencies..."
-if [ ! -d "node_modules" ] || [ ! -d "sanctuary-app/node_modules" ]; then
-    run_cmd npm install
-    run_cmd npm install --prefix sanctuary-app
-    log_success "Dependencies installed"
-else
-    log_info "Dependencies already installed (use 'npm ci' to reinstall)"
-fi
+# Automated Setup
+log_step "Running automated setup..."
+run_cmd npm run setup
+log_success "Setup and initial validation passed"
 echo ""
 
-# Run linting
-if [ "$SKIP_TESTS" = false ]; then
-    log_step "Running linters..."
-    
-    # Root project linting
-    if grep -q '"lint"' package.json; then
-        run_cmd npm run lint || log_warning "Root linting failed (non-critical)"
-    fi
-    
-    # sanctuary-app linting
-    if [ -f "sanctuary-app/package.json" ]; then
-        cd sanctuary-app
-        if grep -q '"lint"' package.json; then
-            run_cmd npm run lint || log_warning "sanctuary-app linting failed (non-critical)"
-        fi
-        cd ..
-    fi
-    
-    log_success "Linting completed"
+# Run Full Validation
+if [ "$SKIP_VALIDATION" = false ]; then
+    log_step "Running complete validation suite..."
+    run_cmd ./validate.sh
+    log_success "All validation checks passed"
     echo ""
 fi
-
-# Run type checking
-if [ "$SKIP_TESTS" = false ]; then
-    log_step "Running type checks..."
-    
-    # sanctuary-app type checking
-    if [ -f "sanctuary-app/tsconfig.json" ]; then
-        cd sanctuary-app
-        if grep -q '"typecheck"' package.json; then
-            run_cmd npm run typecheck
-            log_success "Type checking passed"
-        else
-            run_cmd npx tsc --noEmit
-            log_success "Type checking passed"
-        fi
-        cd ..
-    fi
-    echo ""
-fi
-
-# Run tests
-if [ "$SKIP_TESTS" = false ]; then
-    log_step "Running tests..."
-    
-    # Root tests
-    if grep -q '"test"' package.json; then
-        run_cmd npm test || log_warning "Root tests not found or failed"
-    fi
-    
-    # sanctuary-app tests
-    if [ -f "sanctuary-app/package.json" ]; then
-        cd sanctuary-app
-        if grep -q '"test"' package.json; then
-            run_cmd npm test || log_warning "sanctuary-app tests not found or failed"
-        fi
-        cd ..
-    fi
-    
-    log_success "Tests completed"
-    echo ""
-fi
-
-# Run platform verification
-log_step "Running platform verification..."
-if [ -f "scripts/verify-platform-support.sh" ]; then
-    run_cmd ./scripts/verify-platform-support.sh
-    log_success "Platform verification passed"
-else
-    log_warning "Platform verification script not found"
-fi
-echo ""
 
 # Build local (optional)
 if [ "$SKIP_BUILD" = false ]; then
-    log_step "Building applications locally (this may take a few minutes)..."
-    
-    # Build sanctuary-app
-    if [ -f "sanctuary-app/package.json" ]; then
-        cd sanctuary-app
-        log_info "Building sanctuary-app frontend..."
-        run_cmd npm run build
-        log_success "Frontend build completed"
-        cd ..
-    fi
+    log_step "Building all applications locally..."
+    run_cmd npm run build
+    log_success "Builds completed successfully"
     
     # Note about Tauri builds
-    log_info "Note: Full platform builds will run on GitHub Actions"
-    log_info "Local Tauri build: cd sanctuary-app && npm run tauri:build"
+    log_info "Note: Full platform binaries (DMG, MSI, etc.) are built on GitHub Actions"
     echo ""
 fi
 
@@ -260,12 +182,12 @@ if [ "$SKIP_DEPLOY" = false ] && [ "$UNCOMMITTED_CHANGES" -ne 0 ]; then
     echo ""
     
     if [ "$DRY_RUN" = false ]; then
-        read -p "Enter commit message: " COMMIT_MSG
+        read -p "Enter commit message (empty for default): " COMMIT_MSG
         if [ -z "$COMMIT_MSG" ]; then
-            COMMIT_MSG="Update: build and deployment"
+            COMMIT_MSG="Release: build and validation update"
         fi
     else
-        COMMIT_MSG="[DRY RUN] Update: build and deployment"
+        COMMIT_MSG="[DRY RUN] Release: build and validation update"
     fi
     
     run_cmd git add -A
@@ -309,7 +231,6 @@ if [ "$SKIP_DEPLOY" = false ] && [ -n "$VERSION" ]; then
             run_cmd git push origin "$VERSION"
             log_success "Release tag created and pushed"
             log_info "GitHub Actions will now build all platforms"
-            log_info "Monitor progress: https://github.com/brentmzey/sanctuary-stream/actions"
         else
             log_warning "Tag creation skipped by user"
         fi
@@ -320,7 +241,6 @@ if [ "$SKIP_DEPLOY" = false ] && [ -n "$VERSION" ]; then
     echo ""
 elif [ "$SKIP_DEPLOY" = false ]; then
     log_info "No version specified. Skipping release tag creation."
-    log_info "To create a release, run with: --version v0.1.1"
     echo ""
 fi
 
@@ -337,50 +257,21 @@ if [ "$DRY_RUN" = true ]; then
     echo ""
 fi
 
-if [ "$SKIP_TESTS" = false ]; then
-    log_success "Linting, type checking, and tests passed"
-fi
-
-if [ "$SKIP_BUILD" = false ]; then
-    log_success "Local build completed"
-fi
+log_success "Pipeline completed successfully!"
 
 if [ "$SKIP_DEPLOY" = false ]; then
-    log_success "Code committed and pushed to GitHub"
-    
     if [ -n "$VERSION" ]; then
-        log_success "Release tag created: $VERSION"
         echo ""
         echo "🚀 NEXT STEPS:"
         echo ""
         echo "1. GitHub Actions will build all platforms (~20 minutes)"
-        echo "   Monitor: https://github.com/brentmzey/sanctuary-stream/actions"
-        echo ""
         echo "2. Binaries will be attached to release:"
-        echo "   https://github.com/brentmzey/sanctuary-stream/releases/tag/$VERSION"
-        echo ""
-        echo "3. Web app will auto-deploy to Vercel"
-        echo "   https://sanctuary-stream.vercel.app"
-        echo ""
-        echo "4. Downloads available at:"
-        echo "   - macOS: Sanctuary-Stream-universal.dmg"
-        echo "   - Windows: Sanctuary-Stream-x64.msi"
-        echo "   - Linux: sanctuary-stream_amd64.deb + AppImage"
-        echo "   - iOS: Sanctuary-Stream.ipa (pending App Store)"
-        echo "   - Android: sanctuary-stream-release.apk/aab (pending Play Store)"
-        echo ""
+        echo "   https://github.com/sanctuary-stream/sanctuary-stream/releases/tag/$VERSION"
     else
         echo ""
-        echo "💡 TIP: Create a release with:"
-        echo "   $0 --version v0.1.1"
-        echo ""
+        echo "💡 TIP: Create a production release with:"
+        echo "   $0 --version v1.0.0"
     fi
-fi
-
-if [ "$SKIP_TESTS" = false ] && [ "$SKIP_BUILD" = false ] && [ "$SKIP_DEPLOY" = false ]; then
-    echo "✨ Pipeline completed successfully!"
-else
-    echo "✨ Partial pipeline completed (some steps were skipped)"
 fi
 
 echo ""

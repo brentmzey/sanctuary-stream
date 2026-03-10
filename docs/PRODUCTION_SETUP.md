@@ -34,7 +34,7 @@ Go to: `Settings` → `Secrets and variables` → `Actions` → `New repository 
 - `VERCEL_TOKEN`: Your Vercel API token.
 - `VERCEL_ORG_ID`: Your Vercel Organization ID.
 - `VERCEL_PROJECT_ID`: Your Vercel Project ID.
-- `VITE_POCKETBASE_URL`: The URL of your production backend (e.g., `https://api.your-sanctuary.com`).
+- `VITE_PB_URL`: The URL of your production backend (e.g., `https://api.your-sanctuary.com`).
 
 ### 🤖 Android Signing
 - `ANDROID_KEYSTORE_BASE64`: Base64-encoded `.jks` keystore file.
@@ -54,8 +54,8 @@ Go to: `Settings` → `Secrets and variables` → `Actions` → `New repository 
 ### Update Backend URL
 Ensure your production clients connect to your production backend.
 
-- **Web:** Set `VITE_POCKETBASE_URL` in your GitHub Secrets or `.env.production`.
-- **Desktop/Mobile:** Users can configure this in the **Settings** menu within the app.
+- **Web:** Set `VITE_PB_URL` in your GitHub Secrets or `.env.production`.
+- **Desktop/Mobile:** Users can configure this in the **Settings** menu within the app or during the initial **Setup Wizard**.
 
 ### Versioning
 Before a release, update the version number in:
@@ -71,37 +71,35 @@ Before a release, update the version number in:
 The easiest way to publish is using the included automation script:
 
 ```bash
-./scripts/build-test-deploy.sh --version v0.1.1
+./scripts/build-test-deploy.sh --version v1.0.0
 ```
 
 This script will:
-1.  Run all tests and linters.
-2.  Verify platform support.
-3.  Build the frontend locally.
-4.  Commit and push changes.
-5.  Create a git tag (`v0.1.1`).
-6.  Push the tag to GitHub, triggering the **Build and Release** workflow.
+1.  Run automated setup and dependency installation.
+2.  Run the full validation suite (lint, typecheck, tests).
+3.  Build all workspaces locally to ensure compilation.
+4.  Commit any changes.
+5.  Push to GitHub.
+6.  Create and push a git tag (`v1.0.0`), triggering the **Build and Release** workflow.
 
 ### Option B: Manual Tagging
 If you prefer manual control:
 
 ```bash
-git tag -a v0.1.1 -m "Release v0.1.1"
-git push origin v0.1.1
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
 ```
 
 ---
 
 ## 📦 4. Release Artifacts
 
-Once the GitHub Action completes (~15-20 minutes), artifacts will be available in the **Releases** section of your repository:
+Once the GitHub Action completes (~20 minutes), artifacts will be available in the **Releases** section of your repository:
 
 - `Sanctuary-Stream-universal.dmg` (macOS)
 - `Sanctuary-Stream-x64.msi` (Windows)
 - `sanctuary-stream_amd64.deb` (Linux)
 - `sanctuary-stream_amd64.AppImage` (Linux)
-- `Sanctuary-Stream.ipa` (iOS)
-- `sanctuary-stream-release.apk` (Android)
 
 ---
 
@@ -118,12 +116,12 @@ To rollback to a previous version:
 ## ❓ Troubleshooting
 
 - **Signing Errors:** Ensure your certificates are correctly base64-encoded and not expired.
-- **Tauri Build Failures:** Check the GitHub Actions logs. Most common issues are missing dependencies or environment variables.
+- **CI/CD Failures:** Check the GitHub Actions logs. Most common issues are missing secrets or environment variables.
 - **PocketBase Connection:** Ensure your backend has the correct CORS settings to allow connections from your web app domain.
 
 ---
 
 📚 **Documentation Links:**
-- [User Guide](USER_GUIDE.md)
-- [Architecture](archive/ARCHITECTURE_COMPLETE.md)
-- [Customization Guide](BUILD_AND_RUN.md)
+- [Developer Guide](../BUILD_TEST_RUN.md)
+- [Architecture](../SRVDD.md)
+- [Functional Style Guide](FUNCTIONAL_STYLE.md)

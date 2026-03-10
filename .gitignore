@@ -32,6 +32,7 @@ coverage/
 *.swp
 *.swo
 *.swn
+*.iml
 .DS_Store
 
 # Logs
@@ -59,6 +60,7 @@ temp/
 *.tmp
 
 # PocketBase local runtime
+pocketbase/local/pocketbase
 pocketbase/local/pb_data/
 pocketbase/local/auxiliary.db
 pocketbase/local/data.db
@@ -70,3 +72,14 @@ pocketbase/local/types.d.ts
 
 # PM2
 .pm2/
+
+# Playwright / Testing reports
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Archives
+*.zip
+*.tar.gz
+*.7z

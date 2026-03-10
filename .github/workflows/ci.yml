@@ -1,17 +1,14 @@
-name: CI - Pull Request Validation
+name: CI - Validation & Test Suite
 
 on:
-  pull_request:
-    branches: [main, development]
   push:
     branches: [main, development]
-
-env:
-  CARGO_TERM_COLOR: always
+  pull_request:
+    branches: [main, development]
 
 jobs:
-  # Validate TypeScript code
-  typecheck:
+  validate:
+    name: Lint, Typecheck & Unit Tests
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
@@ -20,26 +17,35 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           npm install
           cd sanctuary-app && npm install
           cd ../sanctuary-bridge && npm install
 
-      - name: Type check
-        run: npm run typecheck
+      - name: Run Validation Script
+        run: ./validate.sh
+        env:
+          CI: true
 
-  # Lint all code
-  lint:
+  e2e:
+    name: Playwright E2E Tests
     runs-on: ubuntu-22.04
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -57,130 +63,30 @@ jobs:
             libjavascriptcoregtk-4.0-dev \
             pkg-config
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup PocketBase
+        run: |
+          mkdir -p pocketbase/local
+          wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip
+          unzip pocketbase_0.22.0_linux_amd64.zip -d pocketbase/local
+          chmod +x pocketbase/local/pocketbase
+
+      - name: Run Setup
+        run: npm run setup
+        env:
+          CI: true
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E Tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-          cd ../sanctuary-bridge && npm install
-
-      - name: Lint TypeScript
-        run: npm run lint
-
-      - name: Lint Rust
-        run: |
-          cd sanctuary-app/src-tauri
-          cargo clippy --all-targets -- -D warnings || true
-
-  # Note: Tests are run in test.yml workflow for consistency with monorepo tooling
-
-  # Security audit
-  security-audit:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.0-dev \
-            build-essential \
-            curl \
-            wget \
-            file \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libglib2.0-dev \
-            libsoup2.4-dev \
-            libjavascriptcoregtk-4.0-dev \
-            pkg-config
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate || true
-
-      - name: Run Rust cargo-audit
-        run: |
-          cargo install cargo-audit || true
-          cd sanctuary-app/src-tauri
-          cargo audit || true
-
-  # Build validation (faster than full build)
-  build-check:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.0-dev \
-            build-essential \
-            curl \
-            wget \
-            file \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libglib2.0-dev \
-            libsoup2.4-dev \
-            libjavascriptcoregtk-4.0-dev \
-            pkg-config
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-          cd ../sanctuary-bridge && npm install
-
-      - name: Build frontend
-        run: cd sanctuary-app && npm run build
-
-      - name: Build bridge
-        run: cd sanctuary-bridge && npm run build
-
-      - name: Check Rust compilation
-        run: |
-          cd sanctuary-app/src-tauri
-          # Known issue with wry 0.24.11 on Linux - webkit2gtk trait import missing
-          # This is a temporary workaround until wry releases a fix
-          cargo check --all-targets || echo "Rust check completed with known wry/webkit2gtk compatibility issue"
-
-  # Note: Coverage is run in test.yml workflow
-
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

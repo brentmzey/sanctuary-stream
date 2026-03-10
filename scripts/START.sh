@@ -12,12 +12,21 @@ sleep 2
 # Create logs directory
 mkdir -p logs
 
+# Find PocketBase binary
+PB_BIN="pocketbase"
+if [ -f "pocketbase/local/pocketbase" ]; then
+    PB_BIN="pocketbase/local/pocketbase"
+elif command -v pocketbase &> /dev/null; then
+    PB_BIN="pocketbase"
+else
+    echo "❌ PocketBase binary not found. Please run 'npm run setup' first."
+    exit 1
+fi
+
 # Start PocketBase
 echo "🗄️  Starting PocketBase..."
-cd pocketbase
-pocketbase serve --http=127.0.0.1:8090 --migrationsDir=local/pb_migrations > ../logs/pocketbase.log 2>&1 &
+$PB_BIN serve --http=127.0.0.1:8090 --migrationsDir=pocketbase/local/pb_migrations > logs/pocketbase.log 2>&1 &
 PB_PID=$!
-cd ..
 
 # Wait for PocketBase
 echo "⏳ Waiting for PocketBase..."
@@ -26,15 +35,21 @@ for i in {1..20}; do
     sleep 1
 done
 
+if ! curl -s http://127.0.0.1:8090/api/health > /dev/null 2>&1; then
+    echo "❌ PocketBase failed to start. Check logs/pocketbase.log"
+    exit 1
+fi
+
 echo "✅ PocketBase running (PID: $PB_PID)"
 echo ""
 
 # Check if admin exists, create if not
+ADMIN_EMAIL="admin@local.dev"
+ADMIN_PASS="admin123456"
+
 echo "🔐 Setting up admin user..."
-cd pocketbase
-pocketbase superuser upsert brentmzey4795@gmail.com sanctuary123456 > /dev/null 2>&1
-cd ..
-echo "✅ Admin created: brentmzey4795@gmail.com / sanctuary123456"
+$PB_BIN superuser upsert $ADMIN_EMAIL $ADMIN_PASS --dir=pocketbase/local/pb_data > /dev/null 2>&1
+echo "✅ Admin verified: $ADMIN_EMAIL / $ADMIN_PASS"
 echo ""
 
 # Start Vite
@@ -62,8 +77,8 @@ echo "📍 Open in browser:"
 echo "   http://localhost:5173"
 echo ""
 echo "🔐 Login Credentials:"
-echo "   Email:    brentmzey4795@gmail.com"
-echo "   Password: sanctuary123456"
+echo "   Email:    $ADMIN_EMAIL"
+echo "   Password: $ADMIN_PASS"
 echo ""
 echo "🗄️  PocketBase Admin:"
 echo "   http://127.0.0.1:8090/_/"

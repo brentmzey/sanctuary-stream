@@ -3,12 +3,9 @@ name: Build and Release - All Platforms
 on:
   push:
     branches:
-      - main # Auto-build on every push to main
+      - main
     tags:
-      - "v*" # Also build on version tags
-  pull_request:
-    branches:
-      - main # Test builds on PRs (no release)
+      - "v*"
   workflow_dispatch:
     inputs:
       version:
@@ -31,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
 
       - name: Setup Rust
@@ -39,13 +36,10 @@ jobs:
         with:
           targets: universal-apple-darwin
 
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-
-      - name: Build frontend
-        run: cd sanctuary-app && npm run build
+      - name: Run Setup
+        run: npm run setup
+        env:
+          CI: true
 
       - name: Build macOS app (Universal)
         run: cd sanctuary-app && npm run tauri build -- --target universal-apple-darwin
@@ -75,19 +69,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-
-      - name: Build frontend
-        run: cd sanctuary-app && npm run build
+      - name: Run Setup
+        shell: bash
+        run: npm run setup
+        env:
+          CI: true
 
       - name: Build Windows app
         run: cd sanctuary-app && npm run tauri build
@@ -131,19 +123,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-
-      - name: Build frontend
-        run: cd sanctuary-app && npm run build
+      - name: Run Setup
+        run: npm run setup
+        env:
+          CI: true
 
       - name: Build Linux app
         run: cd sanctuary-app && npm run tauri build
@@ -156,274 +145,13 @@ jobs:
             sanctuary-app/src-tauri/target/release/bundle/deb/*.deb
             sanctuary-app/src-tauri/target/release/bundle/appimage/*.AppImage
 
-  # Build Web App
-  build-web:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-
-      - name: Build web app
-        run: cd sanctuary-app && npm run build
-        env:
-          VITE_POCKETBASE_URL: ${{ secrets.VITE_POCKETBASE_URL }}
-
-      - name: Upload web artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-dist
-          path: sanctuary-app/dist/
-
-      - name: Deploy to Vercel
-        if: github.ref == 'refs/heads/main' || github.ref_type == 'tag'
-        run: |
-          npm install -g vercel
-          cd sanctuary-app
-
-          if [ "${{ github.ref_type }}" == "tag" ]; then
-            # Production deployment for tags
-            vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
-            echo "✅ Deployed to production: https://sanctuary-stream.vercel.app"
-          else
-            # Preview deployment for main branch
-            vercel --token=${{ secrets.VERCEL_TOKEN }} --yes
-            echo "✅ Deployed to preview: https://sanctuary-stream-git-main.vercel.app"
-          fi
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        continue-on-error: true # Don't fail if Vercel already auto-deployed
-
-  # Build iOS App
-  build-ios:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios,aarch64-apple-ios-sim
-
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Setup Capacitor (fallback for non-Tauri iOS)
-        run: |
-          cd sanctuary-app
-          if [ ! -d "ios" ]; then
-            npx cap init --web-dir=dist
-            npx cap add ios
-          fi
-
-      - name: Build iOS app (Tauri primary, Capacitor fallback)
-        run: |
-          cd sanctuary-app
-          # Try Tauri first (native performance)
-          if command -v tauri &> /dev/null; then
-            npm run tauri:ios:build -- --release || npm run cap:build:ios
-          else
-            # Fallback to Capacitor (web-based)
-            npm run cap:build:ios
-          fi
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
-
-      - name: Upload iOS artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-app
-          path: |
-            sanctuary-app/gen/apple/**/*.ipa
-            sanctuary-app/ios/App/build/Sanctuary*.ipa
-            sanctuary-app/ios/App/build/Sanctuary*.app
-
-      - name: Deploy to App Store (TestFlight)
-        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
-        run: |
-          # Install fastlane
-          gem install fastlane
-
-          cd sanctuary-app
-
-          # Check if IPA exists (Tauri build)
-          if [ -f "gen/apple/release/Sanctuary-Stream.ipa" ]; then
-            IPA_PATH="gen/apple/release/Sanctuary-Stream.ipa"
-          elif [ -f "ios/App/build/Sanctuary-Stream.ipa" ]; then
-            IPA_PATH="ios/App/build/Sanctuary-Stream.ipa"
-          else
-            echo "No IPA found, skipping App Store deployment"
-            exit 0
-          fi
-
-          # Upload to TestFlight using fastlane
-          fastlane pilot upload \
-            --ipa "$IPA_PATH" \
-            --skip_submission \
-            --skip_waiting_for_build_processing \
-            --apple_id "${{ secrets.APPLE_ID }}" \
-            --username "${{ secrets.APPLE_ID }}" \
-            --team_id "${{ secrets.APPLE_TEAM_ID }}" \
-            --app_identifier "com.sanctuary.stream"
-
-          echo "✅ Uploaded to TestFlight successfully"
-        env:
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
-        continue-on-error: true # Don't fail build if TestFlight upload fails
-
-  # Build Android App
-  build-android:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install NDK
-        run: |
-          sdkmanager --install "ndk;25.1.8937393"
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.1.8937393" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-app && npm install
-
-      - name: Setup Capacitor (fallback for non-Tauri Android)
-        run: |
-          cd sanctuary-app
-          if [ ! -d "android" ]; then
-            npx cap init --web-dir=dist
-            npx cap add android
-          fi
-
-      - name: Decode keystore
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android-keystore.jks
-
-      - name: Build Android app (Tauri primary, Capacitor fallback)
-        run: |
-          cd sanctuary-app
-          # Try Tauri first (native performance)
-          if command -v tauri &> /dev/null; then
-            npm run tauri:android:build -- --release || npm run cap:build:android
-          else
-            # Fallback to Capacitor (web-based)
-            npm run cap:build:android
-          fi
-        env:
-          ANDROID_KEYSTORE_PATH: ../android-keystore.jks
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-      - name: Upload Android artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-app
-          path: |
-            sanctuary-app/gen/android/**/release/*.apk
-            sanctuary-app/gen/android/**/release/*.aab
-            sanctuary-app/android/app/build/outputs/**/*.apk
-            sanctuary-app/android/app/build/outputs/**/*.aab
-
-      - name: Deploy to Google Play (Internal Track)
-        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
-        run: |
-          cd sanctuary-app
-
-          # Check if AAB exists (required for Play Store)
-          if [ -f "gen/android/app/build/outputs/bundle/release/sanctuary-stream-release.aab" ]; then
-            AAB_PATH="gen/android/app/build/outputs/bundle/release/sanctuary-stream-release.aab"
-          elif [ -f "android/app/build/outputs/bundle/release/app-release.aab" ]; then
-            AAB_PATH="android/app/build/outputs/bundle/release/app-release.aab"
-          else
-            echo "No AAB found, skipping Google Play deployment"
-            exit 0
-          fi
-
-          # Install fastlane
-          gem install fastlane
-
-          # Upload to Google Play Internal Track using fastlane
-          fastlane supply \
-            --track internal \
-            --aab "$AAB_PATH" \
-            --skip_upload_metadata \
-            --skip_upload_images \
-            --skip_upload_screenshots \
-            --json_key_data "${{ secrets.GOOGLE_PLAY_JSON_KEY }}" \
-            --package_name "com.sanctuary.stream"
-
-          echo "✅ Uploaded to Google Play Internal Track successfully"
-        continue-on-error: true # Don't fail build if Play Store upload fails
-
   # Create GitHub Release
   create-release:
-    needs:
-      [
-        build-macos,
-        build-windows,
-        build-linux,
-        build-web,
-        build-ios,
-        build-android,
-        deploy-backend,
-      ]
+    needs: [build-macos, build-windows, build-linux]
     runs-on: ubuntu-22.04
-    # Only create release on tags or main branch
     if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
     permissions:
-      contents: write # Required for creating public releases from private repo
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -455,217 +183,20 @@ jobs:
           draft: false
           prerelease: ${{ steps.version.outputs.is_prerelease }}
           generate_release_notes: true
-          make_latest: ${{ github.ref_type == 'tag' }}
           body: |
             ## Sanctuary Stream ${{ steps.version.outputs.version }}
+            **Secure church streaming control system**
 
-            **Universal church streaming control system**
-
-            ${{ github.ref_type == 'tag' && '### 🚀 Production Release' || '### ⚠️ Development Build (Auto-generated from main branch)' }}
-
-            ### Downloads (Public - No GitHub Account Required)
-
-            Choose your platform:
-
-            #### Desktop
-            - 🍎 **macOS** (Universal - Intel + Apple Silicon): [Download DMG](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-universal.dmg)
-            - 🪟 **Windows** (10/11): [Download MSI](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/Sanctuary-Stream-x64.msi)
-            - 🐧 **Linux** (Ubuntu/Debian): [Download DEB](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.deb)
-            - 🐧 **Linux** (Any distro): [Download AppImage](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/${{ steps.version.outputs.version }}/sanctuary-stream_amd64.AppImage)
-
-            #### Mobile
-            - 📱 **iOS**: ${{ github.ref_type == 'tag' && '[Download IPA](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/Sanctuary-Stream.ipa)' || 'Dev build available' }}
-            - 🤖 **Android**: ${{ github.ref_type == 'tag' && '[Download APK](https://github.com/sanctuary-stream/sanctuary-stream/releases/download/' + steps.version.outputs.version + '/sanctuary-stream-release.apk)' || 'Dev build available' }}
-
-            #### Web
-            - 🌐 **Web App**: [sanctuary-stream.vercel.app](https://sanctuary-stream.vercel.app)
-
-            ### What's New
-
-            ${{ github.ref_type == 'tag' && 'See [CHANGELOG.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/CHANGELOG.md) for details.' || 'Latest development changes from main branch.' }}
+            ### Downloads
+            Download for your platform below.
 
             ### Installation & Setup
-
-            📚 Complete guide: [docs/USER_GUIDE.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
-
-            **Quick Start:**
-            1. Download for your platform above
-            2. Install the application
-            3. Install OBS Studio (if not already installed)
-            4. Configure OBS WebSocket (Tools → WebSocket Server Settings)
-            5. Launch Sanctuary Stream
-            6. Login and start streaming!
-
-            ### Support
-
-            - 📖 [User Guide](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/docs/USER_GUIDE.md)
-            - ❓ [Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues)
-            - 💬 [Discussions](https://github.com/sanctuary-stream/sanctuary-stream/discussions)
-
-            ---
-
-            **Built with ❤️ for churches worldwide**
+            📚 Complete guide: [BUILD_TEST_RUN.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/BUILD_TEST_RUN.md)
           files: |
             artifacts/**/*.dmg
             artifacts/**/*.msi
             artifacts/**/*.exe
             artifacts/**/*.deb
             artifacts/**/*.AppImage
-            artifacts/**/*.ipa
-            artifacts/**/*.apk
-            artifacts/**/*.aab
-            backend-deploy/**/*
-            artifacts/**/*.AppImage
-            artifacts/**/*.ipa
-            artifacts/**/*.apk
-            artifacts/**/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Deploy Web to Vercel
-  deploy-web-vercel:
-    needs: build-web
-    runs-on: ubuntu-22.04
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download web artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: web-dist
-          path: sanctuary-app/dist/
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: sanctuary-app
-          vercel-args: "--prod"
-
-  # Submit to App Stores (Manual Approval Required)
-  submit-ios-appstore:
-    needs: build-ios
-    runs-on: macos-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - name: Download iOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-app
-          path: ios-artifacts/
-
-      - name: Upload to App Store Connect
-        run: |
-          xcrun altool --upload-app \
-            --type ios \
-            --file ios-artifacts/**/*.ipa \
-            --username "${{ secrets.APPLE_ID }}" \
-            --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}"
-
-  submit-android-playstore:
-    needs: build-android
-    runs-on: ubuntu-22.04
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - name: Download Android artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: android-app
-          path: android-artifacts/
-
-      - name: Upload to Google Play
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.sanctuary.stream
-          releaseFiles: android-artifacts/**/*.aab
-          track: production
-          status: completed
-
-  # Deploy Backend Configuration
-  deploy-backend:
-    runs-on: ubuntu-22.04
-    if: github.ref == 'refs/heads/main' || github.ref_type == 'tag'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Package PocketBase Schema
-        run: |
-          echo "📦 Packaging PocketBase configuration..."
-
-          # Create deployment package
-          mkdir -p backend-deploy
-
-          # Copy PocketBase schema and migrations
-          if [ -d "pocketbase" ]; then
-            cp -r pocketbase backend-deploy/
-            echo "✅ PocketBase schema packaged"
-          fi
-
-          # Copy documentation
-          cp -r docs backend-deploy/
-
-          # Create deployment instructions
-          cat > backend-deploy/DEPLOY.md << 'DEPLOY_EOF'
-          # PocketBase Backend Deployment
-
-          ## Quick Start
-
-          1. Download PocketBase for your platform:
-             - https://pocketbase.io/docs/
-
-          2. Extract and run:
-             ```bash
-             ./pocketbase serve
-             ```
-
-          3. Open admin UI:
-             - http://127.0.0.1:8090/_/
-
-          4. Import schema:
-             - Use the schema files in this directory
-
-          ## Cloud Deployment Options
-
-          ### PocketHost (Recommended - Easiest)
-          1. Sign up: https://pockethost.io
-          2. Create new instance
-          3. Import schema
-          4. Done! (Auto-scaling, backups included)
-
-          ### Self-Hosted
-          1. Deploy to your server (VPS, AWS, etc.)
-          2. Configure reverse proxy (nginx/caddy)
-          3. Set up SSL certificate
-          4. Configure backups
-
-          ## Configuration
-
-          Users configure backend URL in clients:
-          - Desktop: Settings → Backend URL
-          - Mobile: Settings → Backend URL
-          - Web: URL parameter ?pb=https://your-backend.com
-
-          ## Support
-
-          See docs/ for complete documentation.
-          DEPLOY_EOF
-          sed -i 's/^ \{10\}//' backend-deploy/DEPLOY.md
-
-          echo "✅ Backend deployment package created"
-
-      - name: Upload Backend Package
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-config
-          path: backend-deploy/
-
-      - name: Create Backend Documentation Release
-        run: |
-          echo "📚 Backend configuration available in release artifacts"
-          echo "Users can deploy their own PocketBase instance using the included schema"

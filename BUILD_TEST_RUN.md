@@ -20,6 +20,30 @@ git --version     # Any recent version
 
 ---
 
+## 🚀 Quick Start (Recommended)
+
+To go from zero to a working local environment in one command:
+
+```bash
+git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+cd sanctuary-stream
+npm run setup
+```
+
+**What this does:**
+- Installs all dependencies (Root, App, Bridge, CLI)
+- Downloads/Verifies local **PocketBase** binary
+- Initializes the database schema and test users
+- Creates `.env` files for the App and Bridge
+- Runs a full validation check
+
+Once complete, start the environment:
+```bash
+npm run dev:full
+```
+
+---
+
 ## 🏗️ Building
 
 ### Quick Build (All Workspaces)
@@ -178,8 +202,13 @@ cd sanctuary-app && npm run dev
 
 When all services start, you can login at http://localhost:5173:
 
-- **Email:** `support@sanctuarystream.com`
-- **Password:** `sanctuary123456`
+- **Email:** `admin@local.dev`
+- **Password:** `admin123456`
+
+Alternative test users created during setup:
+- **Pastor:** `pastor@local.dev` / `pastor123456`
+- **Tech/Bridge:** `bridge@local.dev` / `bridge123456`
+- **Support:** `support@sanctuarystream.com` / `sanctuary123456`
 
 ---
 

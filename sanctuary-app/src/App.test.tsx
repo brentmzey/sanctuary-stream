@@ -40,6 +40,7 @@ vi.mock('./components/SetupWizard', () => ({
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv('VITE_STREAM_ID', '');
     localStorage.clear();
     mockIsValid = false;
     mockModel = null;

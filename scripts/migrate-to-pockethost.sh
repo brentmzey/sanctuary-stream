@@ -18,7 +18,7 @@
 #
 # PocketHost FTP details:
 #   Host: ftp.pockethost.io  Port: 21
-#   Username: brentmzey4795@gmail.com (Google account email — yes, the full email)
+#   Username: Your PocketHost account email
 #   Password: your PocketHost account password
 #
 # Directories available on the FTP server:
@@ -43,10 +43,11 @@ fi
 : "${POCKETHOST_URL:?POCKETHOST_URL is required. Set it in .env or the environment.}"
 : "${PB_ADMIN_EMAIL:?PB_ADMIN_EMAIL is required.}"
 : "${PB_ADMIN_PASS:?PB_ADMIN_PASS is required.}"
+: "${POCKETHOST_FTP_USER:?POCKETHOST_FTP_USER is required. This is your PocketHost account email.}"
 : "${POCKETHOST_FTP_PASS:?POCKETHOST_FTP_PASS is required. This is your PocketHost account password.}"
 
-# FTP credentials — PocketHost uses your Google email as the FTP username
-FTP_USER="brentmzey4795@gmail.com"
+# FTP credentials
+FTP_USER="${POCKETHOST_FTP_USER}"
 FTP_PASS="${POCKETHOST_FTP_PASS}"
 FTP_HOST="ftp.pockethost.io"
 FTP_PORT="21"

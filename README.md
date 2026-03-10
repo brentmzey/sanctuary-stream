@@ -28,40 +28,20 @@ Sanctuary Stream is designed for two distinct audiences. Choose the path that fi
 👉 **[Read the Developer Documentation](BUILD_TEST_RUN.md)** or follow the quickstart below:
 
 #### Prerequisites
-- Node.js 18+ or Bun (Recommended)
+- Node.js 18+
 
 #### Installation
 
-**Option A: With Bun (⚡ 10-25x faster!)**
 ```bash
 # 1. Clone repository
 git clone https://github.com/sanctuary-stream/sanctuary-stream.git
 cd sanctuary-stream
 
-# 2. Install dependencies (535ms!)
-bun install
+# 2. Automated Setup (Dependencies, PocketBase, Schema, .env)
+npm run setup
 
-# 3. Build everything (25 seconds)
-bun run build
-
-# 4. Start everything (10 seconds)
-./scripts/START-BUN.sh
-```
-
-**Option B: With npm (Traditional)**
-```bash
-# 1. Clone repository
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
-cd sanctuary-stream
-
-# 2. Install dependencies (5 minutes)
-npm install
-
-# 3. Build everything (30 seconds)
-npm run build
-
-# 4. Start everything (10 seconds)
-./scripts/START.sh
+# 3. Start everything (PocketBase, App, Bridge, Mock OBS)
+npm run dev:full
 ```
 
 ### First Login (Developer Mode)
@@ -69,8 +49,8 @@ npm run build
 **Open:** http://localhost:5173
 
 **Credentials:**
-- Email: `support@sanctuarystream.com`
-- Password: `sanctuary123456`
+- Email: `admin@local.dev`
+- Password: `admin123456`
 
 **That's it!** You're streaming! 🎉
 

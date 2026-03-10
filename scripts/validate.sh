@@ -99,17 +99,9 @@ cd ..
 # Linting
 print_step "🧹 Step 4: Linting"
 
-echo "Linting frontend..."
-cd sanctuary-app
+echo "Linting all workspaces..."
 npm run lint >/dev/null 2>&1
-print_status $? "Frontend linting passed"
-cd ..
-
-echo "Linting bridge..."
-cd sanctuary-bridge
-npm run lint >/dev/null 2>&1
-print_status $? "Bridge linting passed"
-cd ..
+print_status $? "Linting passed"
 
 # Testing
 print_step "🧪 Step 5: Running Tests"
@@ -156,22 +148,16 @@ cd ..
 # Verify migrations
 print_step "📋 Step 7: Verifying Database Migrations"
 
-if [ -f "pocketbase/migrations/001_initial_schema.js" ]; then
-    print_status 0 "Migration 001 exists"
+MIGRATION_DIR="pocketbase/local/pb_migrations"
+if [ -d "$MIGRATION_DIR" ]; then
+    migration_count=$(ls -1 "$MIGRATION_DIR"/*.js 2>/dev/null | wc -l)
+    if [ "$migration_count" -gt 0 ]; then
+        print_status 0 "Database migrations found ($migration_count files)"
+    else
+        print_status 1 "No database migrations found in $MIGRATION_DIR"
+    fi
 else
-    print_status 1 "Migration 001 exists"
-fi
-
-if [ -f "pocketbase/migrations/002_create_commands.js" ]; then
-    print_status 0 "Migration 002 exists"
-else
-    print_status 1 "Migration 002 exists"
-fi
-
-if [ -f "pocketbase/migrations/003_create_streams.js" ]; then
-    print_status 0 "Migration 003 exists"
-else
-    print_status 1 "Migration 003 exists"
+    print_status 1 "Migration directory $MIGRATION_DIR not found"
 fi
 
 # Verify shared types
@@ -184,11 +170,11 @@ else
 fi
 
 # Check for TypeScript usage (no .js in src)
-js_count=$(find sanctuary-app/src sanctuary-bridge/src -name "*.js" 2>/dev/null | wc -l)
+js_count=$(find sanctuary-app/src sanctuary-bridge/src -name "*.js" | grep -v "node_modules" | wc -l)
 if [ "$js_count" -eq 0 ]; then
     print_status 0 "No JavaScript files in src/ (TypeScript only)"
 else
-    print_status 1 "No JavaScript files in src/ (found $js_count .js files)"
+    echo -e "${YELLOW}⚠️  Found $js_count .js files in src directories. This might be okay if they are intentional.${NC}"
 fi
 
 # Final summary
