@@ -45,6 +45,9 @@ test.describe('Sanctuary Stream E2E Flow', () => {
     // 4. Verify Main Dashboard
     // Header should contain user name
     await expect(page.getByText('Signed in as')).toBeVisible();
+
+    // Wait for stream status to load
+    await expect(page.getByText('Loading stream status...')).not.toBeVisible({ timeout: 15000 });
     
     // 5. Verify Stream Control Tab is active and showing status
     await expect(page.getByRole('button', { name: 'Stream Control' })).toBeVisible();

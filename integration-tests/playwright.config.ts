@@ -57,5 +57,9 @@ export default defineConfig({
     stdout: 'pipe',
     stderr: 'pipe',
     timeout: 120 * 1000, // 2 minutes to startup everything
+    env: {
+      VITE_STREAM_ID: 'defaultstream01',
+      VITE_PB_URL: 'http://127.0.0.1:8090',
+    }
   },
 });

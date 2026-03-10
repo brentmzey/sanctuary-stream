@@ -142,8 +142,10 @@ echo -e "${GREEN}✅ Schema initialized${NC}"
 
 echo ""
 echo "📝 Step 6: Creating environment files..."
+# Get the first stream ID from the database using curl and clean it up
 STREAM_ID=$(curl -s http://127.0.0.1:8090/api/collections/streams/records | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-STREAM_ID=${STREAM_ID:-"default_stream"}
+# Use 'defaultstream01' as fallback to match schema-init.ts
+STREAM_ID=${STREAM_ID:-"defaultstream01"}
 
 # Kill PocketBase after setup so it doesn't block other processes (like Playwright's dev server)
 if [ -f "pocketbase/local/pb.pid" ]; then
