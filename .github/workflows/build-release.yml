@@ -145,9 +145,148 @@ jobs:
             sanctuary-app/src-tauri/target/release/bundle/deb/*.deb
             sanctuary-app/src-tauri/target/release/bundle/appimage/*.AppImage
 
+  # Build Web App
+  build-web:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Run Setup
+        run: npm run setup
+        env:
+          CI: true
+
+      - name: Build web app
+        run: cd sanctuary-app && npm run build
+        env:
+          VITE_PB_URL: ${{ secrets.VITE_PB_URL }}
+
+      - name: Upload web artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: sanctuary-app/dist/
+
+  # Build iOS App
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - name: Run Setup
+        run: npm run setup
+        env:
+          CI: true
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build iOS app (Capacitor)
+        run: |
+          cd sanctuary-app
+          npm run build
+          npx cap sync ios
+          npx cap build ios --no-open
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app
+          path: |
+            sanctuary-app/ios/App/build/**/*.ipa
+            sanctuary-app/ios/App/build/**/*.app
+
+  # Build Android App
+  build-android:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Run Setup
+        run: npm run setup
+        env:
+          CI: true
+
+      - name: Build Android app (Capacitor)
+        run: |
+          cd sanctuary-app
+          npm run build
+          npx cap sync android
+          npx cap build android --no-open
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-app
+          path: |
+            sanctuary-app/android/app/build/outputs/**/*.apk
+            sanctuary-app/android/app/build/outputs/**/*.aab
+
+  # Package Backend Configuration
+  package-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package PocketBase configuration
+        run: |
+          mkdir -p backend-deploy/pocketbase
+          cp -r pocketbase/local/pb_migrations backend-deploy/pocketbase/ 2>/dev/null || mkdir -p backend-deploy/pocketbase/pb_migrations
+          cp -r pocketbase/pb_hooks backend-deploy/pocketbase/ 2>/dev/null || mkdir -p backend-deploy/pocketbase/pb_hooks
+          cp docs/PRODUCTION_SETUP.md backend-deploy/README.md
+          
+      - name: Upload Backend Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-config
+          path: backend-deploy/
+
   # Create GitHub Release
   create-release:
-    needs: [build-macos, build-windows, build-linux]
+    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android, package-backend]
     runs-on: ubuntu-22.04
     if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
     permissions:
@@ -185,18 +324,28 @@ jobs:
           generate_release_notes: true
           body: |
             ## Sanctuary Stream ${{ steps.version.outputs.version }}
-            **Secure church streaming control system**
+            **Secure-by-Design church streaming control system**
 
-            ### Downloads
-            Download for your platform below.
-
-            ### Installation & Setup
+            ### 🚀 Installation & Setup
             📚 Complete guide: [BUILD_TEST_RUN.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/BUILD_TEST_RUN.md)
+
+            ### 📦 Download Assets
+            Choose your platform below:
+            - 🍎 **macOS**: .dmg (Universal)
+            - 🪟 **Windows**: .msi
+            - 🐧 **Linux**: .deb or .AppImage
+            - 🤖 **Android**: .apk
+            - 📱 **iOS**: .ipa (Internal use)
+            - 🗄️ **Backend**: PocketBase configuration package
           files: |
             artifacts/**/*.dmg
             artifacts/**/*.msi
             artifacts/**/*.exe
             artifacts/**/*.deb
             artifacts/**/*.AppImage
+            artifacts/**/*.ipa
+            artifacts/**/*.apk
+            artifacts/**/*.aab
+            artifacts/backend-config/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
