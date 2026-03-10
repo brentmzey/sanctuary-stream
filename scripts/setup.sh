@@ -68,8 +68,13 @@ else
     curl -L $URL -o pocketbase/local/pb.zip
     unzip -o pocketbase/local/pb.zip -d pocketbase/local
     rm pocketbase/local/pb.zip
-    chmod +x pocketbase/local/pocketbase
-    PB_BIN="./pocketbase/local/pocketbase"
+    
+    if [ -f "pocketbase/local/pocketbase" ]; then
+        chmod +x pocketbase/local/pocketbase
+        PB_BIN="./pocketbase/local/pocketbase"
+    elif [ -f "pocketbase/local/pocketbase.exe" ]; then
+        PB_BIN="./pocketbase/local/pocketbase.exe"
+    fi
     echo -e "${GREEN}✅ PocketBase installed locally${NC}"
 fi
 
