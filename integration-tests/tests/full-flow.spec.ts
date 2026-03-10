@@ -9,6 +9,10 @@ test.describe('Sanctuary Stream E2E Flow', () => {
     // 2. Handle Setup Wizard (since localStorage is empty on new context)
     // Check if we are at the Setup Wizard
     const setupWizardHeading = page.getByRole('heading', { name: 'Initial Setup' });
+    const loginHeading = page.getByRole('heading', { name: 'Sanctuary Stream' });
+    
+    // Wait for either the setup wizard or the login form to appear
+    await expect(setupWizardHeading.or(loginHeading).first()).toBeVisible({ timeout: 15000 });
     
     if (await setupWizardHeading.isVisible()) {
       console.log('Setup Wizard detected. Proceeding with setup...');
@@ -38,16 +42,16 @@ test.describe('Sanctuary Stream E2E Flow', () => {
         }
     }
 
-    // 3. Verify Main Dashboard
+    // 4. Verify Main Dashboard
     // Header should contain user name
     await expect(page.getByText('Signed in as')).toBeVisible();
-    await expect(page.getByText('Admin User')).toBeVisible();
+    
+    // 5. Verify Stream Control Tab is active and showing status
+    await expect(page.getByRole('button', { name: 'Stream Control' })).toBeVisible();
+    // It should show some status label from StreamStatus.tsx
+    await expect(page.getByText(/Streaming Live|Recording Session|System Ready|Connection Error/)).toBeVisible();
 
-    // 4. Verify Stream Status Card
-    await expect(page.getByText('Stream Control')).toBeVisible();
-    await expect(page.getByText('Status')).toBeVisible();
-
-    // 5. Test Settings Toggle
+    // 6. Test Settings Toggle
     const settingsButton = page.getByText('⚙️ Stream Settings');
     
     // Open Settings

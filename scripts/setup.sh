@@ -156,7 +156,7 @@ fi
 cat > sanctuary-bridge/.env << EOF
 PB_URL=http://127.0.0.1:8090
 BRIDGE_EMAIL=bridge@local.dev
-BRIDGE_PASS=bridge123
+BRIDGE_PASS=bridge123456
 OBS_URL=ws://127.0.0.1:4455
 STREAM_ID=${STREAM_ID}
 EOF
