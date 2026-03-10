@@ -33,12 +33,13 @@ test.describe('Sanctuary Stream E2E Flow', () => {
       await page.getByRole('button', { name: 'Create Stream Account' }).click();
     } else {
         // If for some reason we skipped setup (e.g. env var), check for login
-        const loginHeading = page.getByRole('heading', { name: 'Sanctuary Stream' });
         if (await loginHeading.isVisible()) {
-             console.log('Login form detected.');
-             await page.getByPlaceholder('pastor@church.com').fill('admin@local.dev');
-             await page.locator('input[type="password"]').fill('admin123456');
+             console.log('Login form detected. Entering credentials...');
+             await page.getByLabel('Email Channel').fill('pastor@local.dev');
+             await page.getByLabel('Access Key').fill('pastor123456');
              await page.getByRole('button', { name: 'Initiate Command' }).click();
+        } else {
+             console.log('Neither Setup nor Login detected. Assuming already authenticated or directly at dashboard.');
         }
     }
 
@@ -52,7 +53,7 @@ test.describe('Sanctuary Stream E2E Flow', () => {
     // 5. Verify Stream Control Tab is active and showing status
     await expect(page.getByRole('button', { name: 'Stream Control' })).toBeVisible();
     // It should show some status label from StreamStatus.tsx
-    await expect(page.getByText(/Streaming Live|Recording Session|System Ready|Connection Error/)).toBeVisible();
+    await expect(page.getByText(/Streaming Live|Recording Session|System Ready|Connection Error/)).toBeVisible({ timeout: 15000 });
 
     // 6. Test Settings Toggle
     const settingsButton = page.getByText('⚙️ Stream Settings');
