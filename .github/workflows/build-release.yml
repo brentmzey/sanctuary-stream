@@ -45,14 +45,16 @@ jobs:
         run: |
           cd sanctuary-app
           npm install @tauri-apps/cli
+          # Only set signing env vars if they are available
+          if [ -n "${{ secrets.APPLE_CERTIFICATE }}" ]; then
+            export APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
+            export APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
+            export APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
+            export APPLE_ID="${{ secrets.APPLE_ID }}"
+            export APPLE_PASSWORD="${{ secrets.APPLE_PASSWORD }}"
+            export APPLE_TEAM_ID="${{ secrets.APPLE_TEAM_ID }}"
+          fi
           npx tauri build --target universal-apple-darwin
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
@@ -88,10 +90,12 @@ jobs:
         run: |
           cd sanctuary-app
           npm install @tauri-apps/cli
+          # Only set signing env vars if they are available
+          if [ -n "${{ secrets.WINDOWS_CERTIFICATE }}" ]; then
+            export WINDOWS_CERTIFICATE="${{ secrets.WINDOWS_CERTIFICATE }}"
+            export WINDOWS_CERTIFICATE_PASSWORD="${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}"
+          fi
           npx tauri build
-        env:
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -145,13 +149,20 @@ jobs:
           # Fetch the wry crate to ensure it's in the cargo registry
           cd sanctuary-app/src-tauri
           cargo fetch
-          # Find the wry-0.24.11 source and apply the patch
-          WRY_PATH=$(find ~/.cargo/registry/src -name "wry-0.24.11" | head -n 1)
-          if [ -n "$WRY_PATH" ]; then
+          # Find the wry-0.24.11 source more robustly
+          WRY_PATH=$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "wry" and .version == "0.24.11") | .manifest_path' | sed 's/Cargo.toml//')
+          if [ -n "$WRY_PATH" ] && [ -d "$WRY_PATH" ]; then
             echo "Patching wry at $WRY_PATH"
-            patch -p1 -d "$WRY_PATH" < ../../patches/wry-webkit-settings-ext.patch
+            # Apply the patch using absolute path
+            PATCH_FILE=$(realpath ../../patches/wry-webkit-settings-ext.patch)
+            patch -p1 -d "$WRY_PATH" < "$PATCH_FILE"
           else
-            echo "wry-0.24.11 not found in registry yet, skipping patch (will fail build if not patched)"
+            echo "wry-0.24.11 not found in registry via metadata, trying find fallback..."
+            WRY_PATH=$(find ~/.cargo/registry/src -name "wry-0.24.11" -type d | head -n 1)
+            if [ -n "$WRY_PATH" ]; then
+              PATCH_FILE=$(realpath ../../patches/wry-webkit-settings-ext.patch)
+              patch -p1 -d "$WRY_PATH" < "$PATCH_FILE"
+            fi
           fi
 
       - name: Build Linux app
@@ -230,12 +241,14 @@ jobs:
           cd sanctuary-app
           npm run build
           npx cap sync ios
-          # Bypass signing for CI build if certificate isn't available, 
-          # or provide team ID if it is.
+          
           if [ -n "${{ secrets.APPLE_TEAM_ID }}" ]; then
             npx cap build ios --scheme App --target generic/platform=iOS --team ${{ secrets.APPLE_TEAM_ID }}
           else
-            npx cap build ios --scheme App --target generic/platform=iOS
+            # Unsigned build for CI verification
+            cd ios/App
+            xcodebuild -workspace App.xcworkspace -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+            cd ../..
           fi
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -248,6 +261,7 @@ jobs:
           path: |
             sanctuary-app/ios/App/build/**/*.ipa
             sanctuary-app/ios/App/build/**/*.app
+            sanctuary-app/ios/App/*.xcarchive
 
   # Build Android App
   build-android:
@@ -281,12 +295,15 @@ jobs:
           cd sanctuary-app
           npm run build
           npx cap sync android
-          # If secrets are available, use them for signing. 
-          # Otherwise, build unsigned/debug for verification.
+          
           if [ -n "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ]; then
-            npx cap build android --androidreleasetype apk
+             # We use the cap build command only if we have signing info
+             npx cap build android --androidreleasetype apk
           else
-            cd android && ./gradlew assembleDebug && cd ..
+             # Direct gradle call for unsigned debug build
+             cd android
+             ./gradlew assembleDebug
+             cd ..
           fi
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
