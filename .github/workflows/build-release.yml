@@ -429,18 +429,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Package PocketBase configuration
+      - name: Package Backend Configuration
         run: |
           mkdir -p backend-deploy/pocketbase
           cp -r pocketbase/local/pb_migrations backend-deploy/pocketbase/ 2>/dev/null || mkdir -p backend-deploy/pocketbase/pb_migrations
           cp -r pocketbase/pb_hooks backend-deploy/pocketbase/ 2>/dev/null || mkdir -p backend-deploy/pocketbase/pb_hooks
           cp docs/PRODUCTION_SETUP.md backend-deploy/README.md
+          cd backend-deploy && zip -r ../backend-config.zip . && cd ..
           
       - name: Upload Backend Package
         uses: actions/upload-artifact@v4
         with:
           name: backend-config
-          path: backend-deploy/
+          path: backend-config.zip
 
   # Create GitHub Release
   create-release:
@@ -504,6 +505,6 @@ jobs:
             artifacts/**/*.ipa
             artifacts/**/*.apk
             artifacts/**/*.aab
-            artifacts/backend-config/**/*
+            artifacts/backend-config/backend-config.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

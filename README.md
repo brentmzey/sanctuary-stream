@@ -16,6 +16,12 @@ Sanctuary Stream is designed for two distinct audiences. Choose the path that fi
 ### 🌟 Path A: The "No-Code" Default (For Parishes & Volunteers)
 **Best for:** Churches that want a ready-to-use, secure streaming controller without touching code.
 
+**One-Command Install (macOS/Linux):**
+```bash
+curl -sSL https://raw.githubusercontent.com/sanctuary-stream/sanctuary-stream/main/install.sh | bash
+```
+
+**Manual Download:**
 1. **Download:** Go to the [Releases page](https://github.com/sanctuary-stream/sanctuary-stream/releases) and download the pre-compiled executable for your platform.
 2. **Configure:** Place a simple `config.json` next to the bridge to link it to your PocketBase instance.
 3. **Stream:** Open the app on your iPad or PC and start streaming!
