@@ -140,6 +140,20 @@ jobs:
         env:
           CI: true
 
+      - name: Patch wry for Linux build
+        run: |
+          # Fetch the wry crate to ensure it's in the cargo registry
+          cd sanctuary-app/src-tauri
+          cargo fetch
+          # Find the wry-0.24.11 source and apply the patch
+          WRY_PATH=$(find ~/.cargo/registry/src -name "wry-0.24.11" | head -n 1)
+          if [ -n "$WRY_PATH" ]; then
+            echo "Patching wry at $WRY_PATH"
+            patch -p1 -d "$WRY_PATH" < ../../patches/wry-webkit-settings-ext.patch
+          else
+            echo "wry-0.24.11 not found in registry yet, skipping patch (will fail build if not patched)"
+          fi
+
       - name: Build Linux app
         run: |
           cd sanctuary-app
@@ -216,7 +230,13 @@ jobs:
           cd sanctuary-app
           npm run build
           npx cap sync ios
-          npx cap build ios --scheme App
+          # Bypass signing for CI build if certificate isn't available, 
+          # or provide team ID if it is.
+          if [ -n "${{ secrets.APPLE_TEAM_ID }}" ]; then
+            npx cap build ios --scheme App --target generic/platform=iOS --team ${{ secrets.APPLE_TEAM_ID }}
+          else
+            npx cap build ios --scheme App --target generic/platform=iOS
+          fi
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -261,7 +281,13 @@ jobs:
           cd sanctuary-app
           npm run build
           npx cap sync android
-          npx cap build android
+          # If secrets are available, use them for signing. 
+          # Otherwise, build unsigned/debug for verification.
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ]; then
+            npx cap build android --androidreleasetype apk
+          else
+            cd android && ./gradlew assembleDebug && cd ..
+          fi
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
 
