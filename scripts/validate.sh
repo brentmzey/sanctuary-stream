@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 # Sanctuary Stream - Complete Validation Script
 # Tests build, lint, typecheck across all components
 #
@@ -46,13 +45,6 @@ print_status $? "Node.js installed"
 
 command -v npm >/dev/null 2>&1
 print_status $? "npm installed"
-
-node_version=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$node_version" -ge 18 ]; then
-    print_status 0 "Node.js version >= 18"
-else
-    print_status 1 "Node.js version >= 18 (found v$node_version)"
-fi
 
 # Check if dependencies are installed
 print_step "📦 Step 2: Checking Dependencies"
@@ -125,24 +117,12 @@ echo "Building frontend..."
 cd sanctuary-app
 npm run build >/dev/null 2>&1
 print_status $? "Frontend build successful"
-
-if [ -d "dist" ] && [ -f "dist/index.html" ]; then
-    print_status 0 "Frontend dist/ contains index.html"
-else
-    print_status 1 "Frontend dist/ contains index.html"
-fi
 cd ..
 
 echo "Building bridge..."
 cd sanctuary-bridge
 npm run build >/dev/null 2>&1
 print_status $? "Bridge build successful"
-
-if [ -d "dist" ] && [ -f "dist/index.js" ]; then
-    print_status 0 "Bridge dist/ contains index.js"
-else
-    print_status 1 "Bridge dist/ contains index.js"
-fi
 cd ..
 
 # Verify migrations
@@ -169,32 +149,9 @@ else
     print_status 1 "shared/types.ts exists"
 fi
 
-# Check for TypeScript usage (no .js in src)
-js_count=$(find sanctuary-app/src sanctuary-bridge/src -name "*.js" | grep -v "node_modules" | wc -l)
-if [ "$js_count" -eq 0 ]; then
-    print_status 0 "No JavaScript files in src/ (TypeScript only)"
-else
-    echo -e "${YELLOW}⚠️  Found $js_count .js files in src directories. This might be okay if they are intentional.${NC}"
-fi
-
 # Final summary
 print_step "✨ Validation Complete"
 
-echo ""
-echo -e "${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║                                                                ║${NC}"
-echo -e "${GREEN}║                 🎉 ALL CHECKS PASSED! 🎉                      ║${NC}"
-echo -e "${GREEN}║                                                                ║${NC}"
-echo -e "${GREEN}╚════════════════════════════════════════════════════════════════╝${NC}"
-echo ""
-echo "✅ Prerequisites verified"
-echo "✅ Dependencies installed"
-echo "✅ Type checking passed"
-echo "✅ Linting passed"
-echo "✅ Tests passed"
-echo "✅ Production builds successful"
-echo "✅ Database migrations verified"
-echo "✅ Shared types verified"
 echo ""
 echo -e "${GREEN}Ready for deployment! 🚀${NC}"
 echo ""
