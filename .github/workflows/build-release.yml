@@ -87,6 +87,7 @@ jobs:
           CI: true
 
       - name: Build Windows app
+        shell: bash
         run: |
           cd sanctuary-app
           npm install @tauri-apps/cli
@@ -246,8 +247,9 @@ jobs:
             npx cap build ios --scheme App --target generic/platform=iOS --team ${{ secrets.APPLE_TEAM_ID }}
           else
             # Unsigned build for CI verification
+            # Capacitor 8+ uses project-based structure by default
             cd ios/App
-            xcodebuild -workspace App.xcworkspace -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+            xcodebuild -project App.xcodeproj -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
             cd ../..
           fi
         env:
