@@ -66,6 +66,7 @@ else
     fi
     
     curl -L $URL -o pocketbase/local/pb.zip
+    rm -f pocketbase/local/pocketbase 2>/dev/null || true
     unzip -o pocketbase/local/pb.zip -d pocketbase/local
     rm pocketbase/local/pb.zip
     
@@ -86,31 +87,51 @@ echo -e "${GREEN}✅ Dependencies installed${NC}"
 echo ""
 echo "🗄️ Step 3: Setting up PocketBase..."
 
-if lsof -Pi :8090 -sTCP:LISTEN -t >/dev/null 2>&1; then
-    lsof -ti:8090 | xargs kill -9 2>/dev/null || true
-    sleep 2
+# Ensure any existing PB is killed
+if command -v lsof >/dev/null 2>&1; then
+    if lsof -Pi :8090 -sTCP:LISTEN -t >/dev/null 2>&1; then
+        echo "Killing existing process on 8090..."
+        lsof -ti:8090 | xargs kill -9 2>/dev/null || true
+        sleep 2
+    fi
+else
+    echo "⚠️  lsof not found, skipping port check"
 fi
 
 mkdir -p pocketbase/local
 cd pocketbase/local
-nohup ../../$PB_BIN serve --http=127.0.0.1:8090 > pb.log 2>&1 &
+# Use absolute path to binary for reliability (portable version)
+if [[ "$PB_BIN" == "./"* ]]; then
+    ROOT_DIR=$(cd ../.. && pwd)
+    ABS_PB_BIN="${ROOT_DIR}/${PB_BIN#./}"
+else
+    ABS_PB_BIN="$PB_BIN"
+fi
+nohup "$ABS_PB_BIN" serve --http=127.0.0.1:8090 > pb.log 2>&1 &
 PB_PID=$!
 echo $PB_PID > pb.pid
 
 echo "Waiting for PocketBase to start..."
-for i in {1..30}; do
-    if curl -s http://127.0.0.1:8090/api/health > /dev/null 2>&1; then
-        echo -e "${GREEN}✅ PocketBase started${NC}"
-        break
-    fi
+MAX_RETRIES=30
+COUNT=0
+while ! curl -s http://127.0.0.1:8090/api/health > /dev/null 2>&1; do
     sleep 1
+    COUNT=$((COUNT+1))
+    if [ $COUNT -ge $MAX_RETRIES ]; then
+        echo -e "${RED}❌ PocketBase failed to start. Check pocketbase/local/pb.log${NC}"
+        cat pb.log
+        kill -9 $PB_PID 2>/dev/null || true
+        exit 1
+    fi
 done
+echo -e "${GREEN}✅ PocketBase started${NC}"
 cd ../..
 
 echo ""
 echo "🔐 Step 4: Creating admin account..."
+# We need to be in the right directory for some pb commands or use absolute paths
 cd pocketbase/local
-../../$PB_BIN superuser upsert admin@local.dev admin123456
+../../$PB_BIN superuser upsert admin@local.dev admin123456 || true
 cd ../..
 
 echo ""
@@ -123,6 +144,14 @@ echo ""
 echo "📝 Step 6: Creating environment files..."
 STREAM_ID=$(curl -s http://127.0.0.1:8090/api/collections/streams/records | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 STREAM_ID=${STREAM_ID:-"default_stream"}
+
+# Kill PocketBase after setup so it doesn't block other processes (like Playwright's dev server)
+if [ -f "pocketbase/local/pb.pid" ]; then
+    PID=$(cat pocketbase/local/pb.pid)
+    kill $PID 2>/dev/null || true
+    rm pocketbase/local/pb.pid
+    echo "PocketBase stopped after setup."
+fi
 
 cat > sanctuary-bridge/.env << EOF
 PB_URL=http://127.0.0.1:8090

@@ -81,13 +81,6 @@ jobs:
             libjavascriptcoregtk-4.0-dev \
             pkg-config
 
-      - name: Setup PocketBase
-        run: |
-          mkdir -p pocketbase/local
-          wget https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_linux_amd64.zip
-          unzip pocketbase_0.25.0_linux_amd64.zip -d pocketbase/local
-          chmod +x pocketbase/local/pocketbase
-
       - name: Run Setup
         run: ./scripts/setup.sh
         env:
@@ -486,7 +479,7 @@ jobs:
             **Secure-by-Design church streaming control system**
 
             ### 🚀 Installation & Setup
-            📚 Complete guide: [BUILD_TEST_RUN.md](https://github.com/sanctuary-stream/sanctuary-stream/blob/main/BUILD_TEST_RUN.md)
+            📚 Complete guide: [BUILD_TEST_RUN.md](https://github.com/brentmzey/sanctuary-stream/blob/main/BUILD_TEST_RUN.md)
 
             ### 📦 Download Assets
             Choose your platform below:
