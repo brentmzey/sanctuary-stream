@@ -44,8 +44,8 @@ jobs:
       - name: Build macOS app (Universal)
         run: |
           cd sanctuary-app
-          npm install
-          npm run tauri build -- --target universal-apple-darwin
+          npm install @tauri-apps/cli
+          npx tauri build --target universal-apple-darwin
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -87,8 +87,8 @@ jobs:
       - name: Build Windows app
         run: |
           cd sanctuary-app
-          npm install
-          npm run tauri build
+          npm install @tauri-apps/cli
+          npx tauri build
         env:
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
@@ -143,8 +143,8 @@ jobs:
       - name: Build Linux app
         run: |
           cd sanctuary-app
-          npm install
-          npm run tauri build
+          npm install @tauri-apps/cli
+          npx tauri build
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
@@ -216,7 +216,7 @@ jobs:
           cd sanctuary-app
           npm run build
           npx cap sync ios
-          npx cap build ios
+          npx cap build ios --scheme App
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -246,7 +246,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version: "21"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
