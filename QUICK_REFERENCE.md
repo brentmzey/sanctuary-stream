@@ -50,6 +50,16 @@ npm run dev:bridge      # Backend service
 ```
 ---
 
+## 🚢 Release
+
+```bash
+# Automated release (from development branch)
+# Bumps versions, merges to main, tags, and pushes
+npm run release -- 0.1.1
+```
+
+---
+
 ## 🧹 Clean Up
 
 ```bash
