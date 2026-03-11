@@ -9,7 +9,7 @@
 
 ---
 
-## 🚀 Latest Stable Releases (TRUE Releases)
+## 🚀 Latest Stable Release (PROD build -- non-dev CI/CD build)
 
 For a ready-to-use version of Sanctuary Stream, download the official artifacts for your platform:
 

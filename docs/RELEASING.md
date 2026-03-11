@@ -77,7 +77,7 @@ When distributing a "Default" version to a parish, provide them with a **Sanctua
 
 ## 4. The Standard Release Workflow
 
-To ensure stability and a "True" release (rather than a development/nightly build), follow this strictly:
+To ensure stability and the Latest Stable Release (PROD build -- non-dev CI/CD build), follow this strictly:
 
 1.  **Feature/Fix Branch:** All work begins on `<feature-branch>`.
 2.  **Merge to Development:** Pull Request into `development`. This triggers a "Development Build" in GitHub Actions for internal testing.
