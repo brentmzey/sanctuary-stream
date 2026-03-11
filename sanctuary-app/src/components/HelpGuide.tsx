@@ -58,7 +58,7 @@ export function HelpGuide() {
         </p>
         <div className="flex justify-center gap-4">
           <a 
-            href="https://github.com/your-org/sanctuary-stream/docs" 
+            href="https://github.com/brentmzey/sanctuary-stream/docs" 
             target="_blank" 
             rel="noopener noreferrer"
             className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20 uppercase tracking-widest text-xs"

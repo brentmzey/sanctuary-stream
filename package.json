@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/sanctuary-stream.git"
+    "url": "https://github.com/brentmzey/sanctuary-stream.git"
   },
   "workspaces": [
     "sanctuary-app",

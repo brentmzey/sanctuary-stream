@@ -9,7 +9,7 @@ Complete guide for local development: building, testing, running, and smoke test
 To go from zero to a working local environment in one command:
 
 ```bash
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 npm run setup
 ```

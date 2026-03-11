@@ -82,7 +82,7 @@ Press `Ctrl+C`
 
 After pushing, GitHub Actions runs automatically:
 
-1. Go to: https://github.com/your-org/sanctuary-stream/actions
+1. Go to: https://github.com/brentmzey/sanctuary-stream/actions
 2. Watch these jobs complete with ✅:
    - typecheck
    - lint

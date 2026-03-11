@@ -5,7 +5,7 @@ This document outlines the procedures for moving Sanctuary Stream between enviro
 ## 🛠️ Installation (Fresh Install)
 
 1.  **Dependencies:** Ensure Node.js v20+ and npm v9+ are installed.
-2.  **Clone:** `git clone https://github.com/your-org/sanctuary-stream`
+2.  **Clone:** `git clone https://github.com/brentmzey/sanctuary-stream`
 3.  **Setup:** Run `./scripts/setup.sh` to install deps and init PocketBase.
 4.  **Config:** Update `.env` files with your local/cloud `PB_URL` and `STREAM_ID`.
 

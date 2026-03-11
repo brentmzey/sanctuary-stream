@@ -191,8 +191,8 @@ docs/
 
 - **Questions about code?** → See [CONTRIBUTING.md](../CONTRIBUTING.md)
 - **Architecture questions?** → See [SRVDD.md](../SRVDD.md)
-- **Bugs or issues?** → Go to [GitHub Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues)
-- **Discussions?** → Go to [GitHub Discussions](https://github.com/sanctuary-stream/sanctuary-stream/discussions)
+- **Bugs or issues?** → Go to [GitHub Issues](https://github.com/brentmzey/sanctuary-stream/issues)
+- **Discussions?** → Go to [GitHub Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
 - **Contact us?** → Email: support@sanctuarystream.com
 
 ---

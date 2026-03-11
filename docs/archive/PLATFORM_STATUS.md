@@ -177,7 +177,7 @@ localStorage.setItem('pb_debug', 'true');
 
 ### Release Artifacts
 ```
-https://github.com/sanctuary-stream/sanctuary-stream/releases/tag/v0.1.0
+https://github.com/brentmzey/sanctuary-stream/releases/tag/v0.1.0
 ├── Sanctuary-Stream-universal.dmg (macOS)
 ├── Sanctuary-Stream-x64.msi (Windows)
 ├── sanctuary-stream_amd64.deb (Linux)
@@ -290,9 +290,9 @@ $ ./scripts/verify-platform-support.sh
 - 📖 [API Reference](docs/API_REFERENCE.md) - Developer documentation
 
 ### Quick Links
-- 🔗 [GitHub Releases](https://github.com/sanctuary-stream/sanctuary-stream/releases)
+- 🔗 [GitHub Releases](https://github.com/brentmzey/sanctuary-stream/releases)
 - 🔗 [Web App](https://sanctuary-stream.vercel.app)
-- 🔗 [Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues)
+- 🔗 [Issues](https://github.com/brentmzey/sanctuary-stream/issues)
 
 ---
 

@@ -183,7 +183,7 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 
 # Wait ~20 minutes
-# Download from: github.com/sanctuary-stream/sanctuary-stream/releases
+# Download from: github.com/brentmzey/sanctuary-stream/releases
 ```
 
 **Status:** 🟡 **READY TO BUILD** - Just push tag

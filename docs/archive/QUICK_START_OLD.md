@@ -84,10 +84,10 @@ cd sanctuary-app && npm run tauri:ios:build
 After push to `main` completes (~25 minutes):
 
 **Automatic development builds:**
-https://github.com/sanctuary-stream/sanctuary-stream/releases
+https://github.com/brentmzey/sanctuary-stream/releases
 
 **Production releases (tags):**
-https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 - 🍎 macOS: `Sanctuary-Stream-universal.dmg`
 - 🪟 Windows: `Sanctuary-Stream-x64.msi`
@@ -140,8 +140,8 @@ Expected output:
 ## 🆘 Need Help?
 
 - **Troubleshooting:** See [docs/BUILD_DEPLOY_GUIDE.md](docs/BUILD_DEPLOY_GUIDE.md#-troubleshooting)
-- **GitHub Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues
-- **GitHub Actions:** https://github.com/sanctuary-stream/sanctuary-stream/actions
+- **GitHub Issues:** https://github.com/brentmzey/sanctuary-stream/issues
+- **GitHub Actions:** https://github.com/brentmzey/sanctuary-stream/actions
 
 ---
 
@@ -159,7 +159,7 @@ git push origin main
 # 3. Wait ~25 minutes - everything builds automatically!
 
 # 4. Download from:
-#    https://github.com/sanctuary-stream/sanctuary-stream/releases
+#    https://github.com/brentmzey/sanctuary-stream/releases
 
 # 5. Test on all platforms
 ```

@@ -2,7 +2,7 @@
 
 **Current Status:** ✅ Production-ready code pushed to `development` branch  
 **Last Commit:** `274a930`  
-**Repository:** https://github.com/sanctuary-stream/sanctuary-stream
+**Repository:** https://github.com/brentmzey/sanctuary-stream
 
 ---
 
@@ -22,11 +22,11 @@ git tag -a v0.1.0 -m "Release v0.1.0: Production-ready streaming system"
 git push origin v0.1.0
 
 # 3. Monitor GitHub Actions
-# Visit: https://github.com/sanctuary-stream/sanctuary-stream/actions
+# Visit: https://github.com/brentmzey/sanctuary-stream/actions
 # Wait ~20 minutes for builds to complete
 
 # 4. Verify release
-# Visit: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+# Visit: https://github.com/brentmzey/sanctuary-stream/releases/latest
 ```
 
 ### Option 2: Test First (Conservative)
@@ -53,7 +53,7 @@ npm run dev:full
 ## 📋 Pre-Release Checklist
 
 ### Required GitHub Secrets (For Code Signing)
-Go to: https://github.com/sanctuary-stream/sanctuary-stream/settings/secrets/actions
+Go to: https://github.com/brentmzey/sanctuary-stream/settings/secrets/actions
 
 #### For macOS Builds:
 - [ ] `APPLE_CERTIFICATE` - Base64 encoded .p12 certificate

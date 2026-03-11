@@ -1,10 +1,10 @@
 #!/bin/bash
 # Sanctuary Stream - One-Command Installer
-# Usage: curl -sSL https://raw.githubusercontent.com/sanctuary-stream/sanctuary-stream/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/brentmzey/sanctuary-stream/main/install.sh | bash
 
 set -e
 
-REPO="sanctuary-stream/sanctuary-stream"
+REPO="brentmzey/sanctuary-stream"
 API_URL="https://api.github.com/repos/$REPO/releases/latest"
 
 echo "🏛️ Sanctuary Stream - Automated Installer"

@@ -377,7 +377,7 @@ git push origin v1.0.0
 
 # GitHub Actions builds all platforms automatically
 # Wait ~20 minutes
-# Download from: https://github.com/YOUR-ORG/sanctuary-stream/releases
+# Download from: https://github.com/brentmzey/sanctuary-stream/releases
 ```
 
 **Users get:**

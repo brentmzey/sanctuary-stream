@@ -265,7 +265,7 @@ git commit -m "feat: Complete production-ready streaming system with 245+ backen
 
 # Add remote
 git branch -M main
-git remote add origin git@github.com:sanctuary-stream/sanctuary-stream.git
+git remote add origin git@github.com:brentmzey/sanctuary-stream.git
 
 # Push
 git push -u origin main
@@ -273,7 +273,7 @@ git push -u origin main
 
 ### Step 2: Make Repository Private
 
-1. Go to: https://github.com/sanctuary-stream/sanctuary-stream/settings
+1. Go to: https://github.com/brentmzey/sanctuary-stream/settings
 2. Scroll to "Danger Zone"
 3. Click "Change repository visibility"
 4. Select "Make private"
@@ -301,7 +301,7 @@ git push origin v0.1.0
 
 ```bash
 # Check release page
-open https://github.com/sanctuary-stream/sanctuary-stream/releases/tag/v0.1.0
+open https://github.com/brentmzey/sanctuary-stream/releases/tag/v0.1.0
 ```
 
 **Should see:**
@@ -317,7 +317,7 @@ open https://github.com/sanctuary-stream/sanctuary-stream/releases/tag/v0.1.0
 ### macOS
 ```bash
 # Users visit:
-https://github.com/sanctuary-stream/sanctuary-stream/releases
+https://github.com/brentmzey/sanctuary-stream/releases
 
 # Download: Sanctuary-Stream.dmg
 # Double-click to install
@@ -328,7 +328,7 @@ https://github.com/sanctuary-stream/sanctuary-stream/releases
 ### Windows
 ```bash
 # Users visit:
-https://github.com/sanctuary-stream/sanctuary-stream/releases
+https://github.com/brentmzey/sanctuary-stream/releases
 
 # Download: Sanctuary-Stream.msi
 # Double-click to install
@@ -339,11 +339,11 @@ https://github.com/sanctuary-stream/sanctuary-stream/releases
 ### Linux
 ```bash
 # Debian/Ubuntu:
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.deb
+wget https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.deb
 sudo dpkg -i sanctuary-stream_0.1.0_amd64.deb
 
 # Universal (AppImage):
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.AppImage
+wget https://github.com/brentmzey/sanctuary-stream/releases/download/v0.1.0/sanctuary-stream_0.1.0_amd64.AppImage
 chmod +x sanctuary-stream_0.1.0_amd64.AppImage
 ./sanctuary-stream_0.1.0_amd64.AppImage
 ```
@@ -394,9 +394,9 @@ git tag v0.1.0 && git push origin v0.1.0
 
 ## 📞 Support
 
-- **Documentation:** https://github.com/sanctuary-stream/sanctuary-stream/tree/main/docs
-- **Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues
-- **Releases:** https://github.com/sanctuary-stream/sanctuary-stream/releases
+- **Documentation:** https://github.com/brentmzey/sanctuary-stream/tree/main/docs
+- **Issues:** https://github.com/brentmzey/sanctuary-stream/issues
+- **Releases:** https://github.com/brentmzey/sanctuary-stream/releases
 
 ---
 

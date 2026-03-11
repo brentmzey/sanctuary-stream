@@ -269,10 +269,10 @@
 
 **Documentation not enough?**
 
-- 🐛 **Bug Reports:** https://github.com/sanctuary-stream/sanctuary-stream/issues
-- 💬 **Discussions:** https://github.com/sanctuary-stream/sanctuary-stream/discussions
+- 🐛 **Bug Reports:** https://github.com/brentmzey/sanctuary-stream/issues
+- 💬 **Discussions:** https://github.com/brentmzey/sanctuary-stream/discussions
 - 📧 **Email:** support@sanctuary-stream.com
-- 📖 **Wiki:** https://github.com/sanctuary-stream/sanctuary-stream/wiki
+- 📖 **Wiki:** https://github.com/brentmzey/sanctuary-stream/wiki
 
 **Before asking:**
 1. Check [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)

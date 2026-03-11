@@ -205,7 +205,7 @@ git push origin v1.0.0
 # 3. Upload all binaries
 
 # Users download from:
-# https://github.com/YOUR-ORG/sanctuary-stream/releases
+# https://github.com/brentmzey/sanctuary-stream/releases
 ```
 
 **Cost:** $0 (GitHub free tier)

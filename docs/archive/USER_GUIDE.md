@@ -44,7 +44,7 @@ Sanctuary Stream is a **zero-trust church streaming control system** that lets y
 #### macOS
 ```bash
 # Download the Universal DMG (works on Intel and Apple Silicon)
-# From: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+# From: https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 # 1. Download Sanctuary-Stream-universal.dmg
 # 2. Open the DMG file
@@ -57,7 +57,7 @@ Sanctuary Stream is a **zero-trust church streaming control system** that lets y
 #### Windows
 ```bash
 # Download the MSI installer
-# From: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+# From: https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 # 1. Download Sanctuary-Stream-x64.msi
 # 2. Double-click to run installer
@@ -70,7 +70,7 @@ Sanctuary Stream is a **zero-trust church streaming control system** that lets y
 #### Linux (Ubuntu/Debian)
 ```bash
 # Download DEB package
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.deb
+wget https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.deb
 
 # Install
 sudo dpkg -i sanctuary-stream_amd64.deb
@@ -85,7 +85,7 @@ sanctuary-stream
 #### Linux (Any Distribution - AppImage)
 ```bash
 # Download AppImage
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.AppImage
+wget https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.AppImage
 
 # Make executable
 chmod +x sanctuary-stream_amd64.AppImage
@@ -167,7 +167,7 @@ chmod +x sanctuary-stream_amd64.AppImage
 
 ```bash
 # 1. Clone repository (or download release source)
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # 2. Install dependencies
@@ -554,8 +554,8 @@ curl http://127.0.0.1:8090/api/health
 - 🌍 [Multi-Platform Deployment](./MULTI_PLATFORM_CLOUD.md)
 
 ### Support Channels
-- 🐛 **Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues
-- 💬 **Discussions:** https://github.com/sanctuary-stream/sanctuary-stream/discussions
+- 🐛 **Issues:** https://github.com/brentmzey/sanctuary-stream/issues
+- 💬 **Discussions:** https://github.com/brentmzey/sanctuary-stream/discussions
 - 📧 **Email:** support@sanctuary-stream.com
 
 ### Community

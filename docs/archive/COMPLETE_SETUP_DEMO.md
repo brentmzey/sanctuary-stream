@@ -10,7 +10,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # Run automated setup

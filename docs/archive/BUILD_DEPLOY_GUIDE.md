@@ -227,7 +227,7 @@ git push origin v0.1.1
 
 ```bash
 # Open in browser
-open https://github.com/sanctuary-stream/sanctuary-stream/actions
+open https://github.com/brentmzey/sanctuary-stream/actions
 
 # OR watch from terminal
 gh run list --limit 5
@@ -282,12 +282,12 @@ vim sanctuary-app/package.json
 ./scripts/build-test-deploy.sh --version v0.1.1
 
 # 3. Monitor GitHub Actions
-open https://github.com/sanctuary-stream/sanctuary-stream/actions
+open https://github.com/brentmzey/sanctuary-stream/actions
 
 # 4. Wait for builds to complete (~20 min)
 
 # 5. Download and test binaries
-open https://github.com/sanctuary-stream/sanctuary-stream/releases
+open https://github.com/brentmzey/sanctuary-stream/releases
 ```
 
 ### Hotfix Workflow
@@ -496,7 +496,7 @@ gh run list --limit 5
 gh run view <run-id> --log
 
 # Or visit:
-# https://github.com/sanctuary-stream/sanctuary-stream/actions
+# https://github.com/brentmzey/sanctuary-stream/actions
 ```
 
 **Common issues:**

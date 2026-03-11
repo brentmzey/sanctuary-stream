@@ -14,7 +14,7 @@
 
 **Public Download Page:**
 ```
-https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+https://github.com/brentmzey/sanctuary-stream/releases/latest
 ```
 
 **Anyone can:**
@@ -31,7 +31,7 @@ https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
 ### macOS (Universal - Intel + Apple Silicon)
 ```bash
 # Download
-https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/Sanctuary-Stream-universal.dmg
+https://github.com/brentmzey/sanctuary-stream/releases/latest/download/Sanctuary-Stream-universal.dmg
 
 # Install
 1. Open DMG file
@@ -46,7 +46,7 @@ Drag Sanctuary Stream from Applications to Trash
 ### Windows (10/11)
 ```bash
 # Download
-https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/Sanctuary-Stream-x64.msi
+https://github.com/brentmzey/sanctuary-stream/releases/latest/download/Sanctuary-Stream-x64.msi
 
 # Install
 1. Double-click MSI file
@@ -60,7 +60,7 @@ Settings → Apps → Sanctuary Stream → Uninstall
 ### Linux (Ubuntu/Debian)
 ```bash
 # Download
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.deb
+wget https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.deb
 
 # Install
 sudo dpkg -i sanctuary-stream_amd64.deb
@@ -78,7 +78,7 @@ sudo apt-get remove sanctuary-stream
 ### Linux (Any Distribution - AppImage)
 ```bash
 # Download
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.AppImage
+wget https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.AppImage
 
 # Make executable
 chmod +x sanctuary-stream_amd64.AppImage
@@ -111,7 +111,7 @@ Coming Soon: Google Play Store
 Search for "Sanctuary Stream"
 
 Or Download APK:
-https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream.apk
+https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream.apk
 
 Requirements:
 - Android 7.0 (API 24) or later
@@ -143,7 +143,7 @@ Requirements:
 
 ### 1. GitHub Releases (Primary)
 ```
-https://github.com/sanctuary-stream/sanctuary-stream/releases
+https://github.com/brentmzey/sanctuary-stream/releases
 
 ✅ Public downloads from private repo
 ✅ Direct links (no login required)
@@ -196,10 +196,10 @@ Category: Utilities
 
 | Platform | Status | Download | Size | Auto-Update |
 |----------|--------|----------|------|-------------|
-| **macOS (Universal)** | ✅ Ready | [DMG](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) | 8 MB | ✅ Yes |
-| **Windows** | ✅ Ready | [MSI](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) | 9 MB | ✅ Yes |
-| **Linux (DEB)** | ✅ Ready | [DEB](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) | 10 MB | ✅ Yes |
-| **Linux (AppImage)** | ✅ Ready | [AppImage](https://github.com/sanctuary-stream/sanctuary-stream/releases/latest) | 10 MB | ✅ Yes |
+| **macOS (Universal)** | ✅ Ready | [DMG](https://github.com/brentmzey/sanctuary-stream/releases/latest) | 8 MB | ✅ Yes |
+| **Windows** | ✅ Ready | [MSI](https://github.com/brentmzey/sanctuary-stream/releases/latest) | 9 MB | ✅ Yes |
+| **Linux (DEB)** | ✅ Ready | [DEB](https://github.com/brentmzey/sanctuary-stream/releases/latest) | 10 MB | ✅ Yes |
+| **Linux (AppImage)** | ✅ Ready | [AppImage](https://github.com/brentmzey/sanctuary-stream/releases/latest) | 10 MB | ✅ Yes |
 | **iOS** | 🔄 Coming | App Store | 15 MB | ✅ Yes |
 | **Android** | 🔄 Coming | Google Play | 18 MB | ✅ Yes |
 | **Web** | ✅ Ready | [Launch](https://sanctuary-stream.vercel.app) | 300 KB | ✅ Auto |
@@ -342,7 +342,7 @@ git push origin v1.0.0
 
 **View at:**
 ```
-https://github.com/sanctuary-stream/sanctuary-stream/releases
+https://github.com/brentmzey/sanctuary-stream/releases
 ```
 
 ---
@@ -386,8 +386,8 @@ https://github.com/sanctuary-stream/sanctuary-stream/releases
 ### For Users
 - 📖 [User Guide](./docs/USER_GUIDE.md) - Complete installation guide
 - ❓ [FAQ](./docs/FAQ.md) - Common questions
-- 🐛 [Issues](https://github.com/sanctuary-stream/sanctuary-stream/issues) - Bug reports
-- 💬 [Discussions](https://github.com/sanctuary-stream/sanctuary-stream/discussions) - Community
+- 🐛 [Issues](https://github.com/brentmzey/sanctuary-stream/issues) - Bug reports
+- 💬 [Discussions](https://github.com/brentmzey/sanctuary-stream/discussions) - Community
 
 ### For Churches
 - 📧 Email: support@sanctuary-stream.com
@@ -561,4 +561,4 @@ Web app: Refresh page
 
 **📦 Installation is simple. Distribution is automatic. Users are happy!**
 
-**Download now:** https://github.com/sanctuary-stream/sanctuary-stream/releases
+**Download now:** https://github.com/brentmzey/sanctuary-stream/releases

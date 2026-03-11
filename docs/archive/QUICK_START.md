@@ -21,7 +21,7 @@ npm --version     # Should be 9+
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # Install all dependencies

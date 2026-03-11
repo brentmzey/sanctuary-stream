@@ -266,7 +266,7 @@ if [ "$SKIP_DEPLOY" = false ]; then
         echo ""
         echo "1. GitHub Actions will build all platforms (~20 minutes)"
         echo "2. Binaries will be attached to release:"
-        echo "   https://github.com/sanctuary-stream/sanctuary-stream/releases/tag/$VERSION"
+        echo "   https://github.com/brentmzey/sanctuary-stream/releases/tag/$VERSION"
     else
         echo ""
         echo "💡 TIP: Create a production release with:"

@@ -56,7 +56,7 @@ If you see errors about missing collections:
 
 If you encounter issues that aren't covered here:
 
-1.  **Submit a GitHub Issue:** [Create New Issue](https://github.com/your-org/sanctuary-stream/issues) (Preferred for bugs)
+1.  **Submit a GitHub Issue:** [Create New Issue](https://github.com/brentmzey/sanctuary-stream/issues) (Preferred for bugs)
 2.  **Email Support:** [brent@example.com](mailto:brent@example.com) (For private inquiries)
 3.  **Documentation:** Check the [Full Installation Guide](./COMPLETE_INSTALLATION.md) for platform-specific details.
 

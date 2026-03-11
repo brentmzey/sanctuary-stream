@@ -2,9 +2,9 @@
 
 **Secure-by-Design church streaming control system - Control OBS from ANY device**
 
-[![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
-[![Tests](https://img.shields.io/badge/tests-99.3%25-brightgreen)]()
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)]()
+[![Build and Release](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/brentmzey/sanctuary-stream/actions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
 [![Cost](https://img.shields.io/badge/cost-$0-success)]()
 
 ---
@@ -18,11 +18,11 @@ Sanctuary Stream is designed for two distinct audiences. Choose the path that fi
 
 **One-Command Install (macOS/Linux):**
 ```bash
-curl -sSL https://raw.githubusercontent.com/sanctuary-stream/sanctuary-stream/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/brentmzey/sanctuary-stream/main/install.sh | bash
 ```
 
 **Manual Download:**
-1. **Download:** Go to the [Releases page](https://github.com/sanctuary-stream/sanctuary-stream/releases) and download the pre-compiled executable for your platform.
+1. **Download:** Go to the [Releases page](https://github.com/brentmzey/sanctuary-stream/releases) and download the pre-compiled executable for your platform.
 2. **Configure:** Place a simple `config.json` next to the bridge to link it to your PocketBase instance.
 3. **Stream:** Open the app on your iPad or PC and start streaming!
 
@@ -37,8 +37,9 @@ curl -sSL https://raw.githubusercontent.com/sanctuary-stream/sanctuary-stream/ma
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
+```
 
 # 2. Automated Setup (Dependencies, PocketBase, Schema, .env)
 npm run setup

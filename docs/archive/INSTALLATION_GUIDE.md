@@ -82,7 +82,7 @@ npm --version     # Should show 9.x.x or higher
 # Open PowerShell or Command Prompt
 
 # Clone repository
-git clone https://github.com/your-org/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # Install dependencies (takes 2-5 minutes)
@@ -168,7 +168,7 @@ git --version
 # Open Terminal
 
 # Clone repository
-git clone https://github.com/your-org/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # Install dependencies (takes 2-5 minutes)
@@ -268,7 +268,7 @@ sudo apt install -y \
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # Install dependencies (takes 2-5 minutes)
@@ -340,10 +340,10 @@ npm run dev
 
 ```bash
 # Using HTTPS
-git clone https://github.com/your-org/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 
 # OR using SSH (if you have SSH keys set up)
-git clone git@github.com:your-org/sanctuary-stream.git
+git clone git@github.com:brentmzey/sanctuary-stream.git
 
 # Navigate to directory
 cd sanctuary-stream

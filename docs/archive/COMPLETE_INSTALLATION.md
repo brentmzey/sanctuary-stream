@@ -24,7 +24,7 @@
 
 **Installation:**
 1. Download: `Sanctuary-Stream-universal.dmg`
-   - From: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+   - From: https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 2. Open the DMG file (double-click)
 
@@ -55,7 +55,7 @@
 
 **Installation:**
 1. Download: `Sanctuary-Stream-x64.msi`
-   - From: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+   - From: https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 2. Double-click the MSI installer
 
@@ -94,7 +94,7 @@
 **Installation:**
 ```bash
 # Download DEB package
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.deb
+wget https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.deb
 
 # Install
 sudo dpkg -i sanctuary-stream_amd64.deb
@@ -115,7 +115,7 @@ sanctuary-stream
 **Installation:**
 ```bash
 # Download AppImage
-wget https://github.com/sanctuary-stream/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.AppImage
+wget https://github.com/brentmzey/sanctuary-stream/releases/latest/download/sanctuary-stream_amd64.AppImage
 
 # Make executable
 chmod +x sanctuary-stream_amd64.AppImage
@@ -173,7 +173,7 @@ EOF
 **Option C: Build from Source**
 ```bash
 # Requires Xcode and Apple Developer account
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream/sanctuary-app
 npm install
 npm run capacitor:sync:ios
@@ -201,7 +201,7 @@ npx cap open ios
 
 **Option B: Direct APK Install**
 1. Download: `sanctuary-stream-release.apk`
-   - From: https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+   - From: https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 2. **Enable Unknown Sources:**
    - Settings → Security → Unknown Sources → Enable
@@ -214,7 +214,7 @@ npx cap open ios
 
 **Option C: Build from Source**
 ```bash
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream/sanctuary-app
 npm install
 npm run capacitor:sync:android
@@ -283,7 +283,7 @@ You can "install" the web app for offline access:
 # Download from: https://obsproject.com/
 
 # 2. Clone Sanctuary Stream
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 
 # 3. Install dependencies
@@ -583,7 +583,7 @@ npm run setup
 ## 🎯 Quick Reference
 
 ### Installation URLs
-- **Desktop Releases:** https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+- **Desktop Releases:** https://github.com/brentmzey/sanctuary-stream/releases/latest
 - **Web App:** https://sanctuary-stream.vercel.app
 - **PocketHost:** https://pockethost.io
 - **OBS Studio:** https://obsproject.com/download
@@ -597,8 +597,8 @@ npm run setup
 - **User Guide:** [USER_GUIDE.md](./USER_GUIDE.md)
 
 ### Support
-- **GitHub Issues:** https://github.com/sanctuary-stream/sanctuary-stream/issues
-- **Documentation:** https://github.com/sanctuary-stream/sanctuary-stream/tree/main/docs
+- **GitHub Issues:** https://github.com/brentmzey/sanctuary-stream/issues
+- **Documentation:** https://github.com/brentmzey/sanctuary-stream/tree/main/docs
 
 ---
 

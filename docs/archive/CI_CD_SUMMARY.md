@@ -88,7 +88,7 @@ git push origin v1.0.0
 
 **3. Monitor Build:**
 ```
-https://github.com/your-org/sanctuary-stream/actions
+https://github.com/brentmzey/sanctuary-stream/actions
 ```
 
 **4. Download Artifacts:**
@@ -345,7 +345,7 @@ git push origin v1.0.0
 ### 3. Monitor CI/CD
 ```
 # Watch builds:
-https://github.com/your-org/sanctuary-stream/actions
+https://github.com/brentmzey/sanctuary-stream/actions
 
 # Expected duration: ~20 minutes
 # Parallel builds for all platforms

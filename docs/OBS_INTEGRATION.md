@@ -768,8 +768,8 @@ Solution:
 
 ### Sanctuary Stream Support
 - User Guide: docs/USER_GUIDE.md
-- Issues: https://github.com/sanctuary-stream/sanctuary-stream/issues
-- Discussions: https://github.com/sanctuary-stream/sanctuary-stream/discussions
+- Issues: https://github.com/brentmzey/sanctuary-stream/issues
+- Discussions: https://github.com/brentmzey/sanctuary-stream/discussions
 
 ---
 
@@ -826,4 +826,4 @@ Solution:
 
 **🎥 Professional streaming. Free software. Churches worldwide.**
 
-**Questions? Check [docs/USER_GUIDE.md](./USER_GUIDE.md) or open an [issue](https://github.com/sanctuary-stream/sanctuary-stream/issues)!**
+**Questions? Check [docs/USER_GUIDE.md](./USER_GUIDE.md) or open an [issue](https://github.com/brentmzey/sanctuary-stream/issues)!**

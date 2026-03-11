@@ -3,7 +3,7 @@
 **Status:** 🟢 PRODUCTION-READY  
 **Date:** February 9, 2026  
 **Latest Commit:** `274a930` on `development` branch  
-**Repository:** https://github.com/sanctuary-stream/sanctuary-stream
+**Repository:** https://github.com/brentmzey/sanctuary-stream
 
 ---
 
@@ -122,7 +122,7 @@ GitHub Actions will automatically:
 5. Deploy web app to Vercel
 
 Monitor progress:
-https://github.com/sanctuary-stream/sanctuary-stream/actions
+https://github.com/brentmzey/sanctuary-stream/actions
 ```
 
 ---
@@ -291,7 +291,7 @@ git push origin v0.1.0
 
 ### Result:
 **Public downloads available in ~20 minutes at:**
-https://github.com/sanctuary-stream/sanctuary-stream/releases/latest
+https://github.com/brentmzey/sanctuary-stream/releases/latest
 
 ---
 

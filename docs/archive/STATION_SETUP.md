@@ -17,7 +17,7 @@ The **Station** is your powerful PC or Mac in the tech booth. With the new **Rus
 ## 🚀 Installation (The Easy Way)
 
 1. **Download the App:**
-   - Go to [Releases](https://github.com/sanctuary-stream/sanctuary-stream/releases)
+   - Go to [Releases](https://github.com/brentmzey/sanctuary-stream/releases)
    - Download the installer for your OS (`.dmg` for Mac, `.msi` for Windows, `.deb` for Linux)
 2. **Install OBS Studio:**
    - Download from [obsproject.com](https://obsproject.com/)
@@ -70,7 +70,7 @@ If you want to build the Station app yourself:
 # 2. Install Node.js (for the frontend UI)
 
 # 3. Clone and build
-git clone https://github.com/sanctuary-stream/sanctuary-stream.git
+git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
 npm install
 cd sanctuary-app
