@@ -65,24 +65,26 @@ section "1. Repository Structure"
 # ============================================
 # 2. Documentation Completeness
 # ============================================
-section "2. Documentation (14 files)"
-
 DOCS=(
+  "README.md"
+  "BUILD_TEST_RUN.md"
+  "SRVDD.md"
+  "DIBR.md"
+  "agents.md"
+  "CONTRIBUTING.md"
+  "CHANGELOG.md"
   "docs/INDEX.md"
+  "docs/MANIFEST.md"
   "docs/QUICK_REFERENCE.md"
-  "docs/QUICKSTART.md"
-  "docs/USER_GUIDE.md"
-  "docs/OBS_INTEGRATION.md"
+  "docs/RELEASING.md"
   "docs/FUNCTIONAL_STYLE.md"
-  "docs/BUILD_AND_RUN.md"
-  "docs/MULTI_BACKEND.md"
-  "docs/CI_CD_SUMMARY.md"
-  "docs/GITHUB_SETUP.md"
-  "docs/MULTI_PLATFORM_CLOUD.md"
-  "docs/INSTALLATION_DISTRIBUTION.md"
-  "docs/PRODUCTION_READY.md"
-  "docs/USER_ACCEPTANCE_TESTING.md"
+  "docs/OBS_INTEGRATION.md"
+  "docs/PRODUCTION_SETUP.md"
+  "docs/PROFESSIONAL_VIDEO_GUIDE.md"
+  "docs/SUPER_USER_CONFIGURATION.md"
 )
+
+section "2. Documentation (${#DOCS[@]} files)"
 
 for doc in "${DOCS[@]}"; do
   if [ -f "$doc" ]; then

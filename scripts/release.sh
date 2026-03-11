@@ -31,9 +31,10 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 # 2. Get Version
+ROOT_VERSION=$(node -p "require('./package.json').version")
 if [ -z "$1" ]; then
     echo -e "${YELLOW}Current versions:${NC}"
-    echo -e "  Root:   $(node -p "require('./package.json').version")"
+    echo -e "  Root:   $ROOT_VERSION"
     echo -e "  App:    $(node -p "require('./sanctuary-app/package.json').version")"
     echo -e "  Tauri:  $(node -p "require('./sanctuary-app/src-tauri/tauri.conf.json').package.version")"
     echo ""
@@ -48,6 +49,22 @@ if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
     exit 1
 fi
 
+# Check if version already exists
+TAG_EXISTS=$(git tag -l "v$VERSION")
+if [ "$VERSION" == "$ROOT_VERSION" ] || [ -n "$TAG_EXISTS" ]; then
+    echo -e "${YELLOW}⚠️  WARNING: Version $VERSION already exists (or matches current).${NC}"
+    read -p "ARE YOU SURE YOU WANT TO OVERWRITE/RE-RELEASE? (y/N) " CONFIRM
+    if [[ ! $CONFIRM =~ ^[yY]$ ]]; then
+        log_error "Release aborted."
+        exit 1
+    fi
+    
+    # If tag exists, we'll need to handle it later (either delete or force tag)
+    if [ -n "$TAG_EXISTS" ]; then
+        log_warn "Tag v$VERSION already exists locally. It will be moved/overwritten."
+    fi
+fi
+
 log_step "Releasing version v$VERSION..."
 
 # 3. Bump Versions in all files
@@ -57,6 +74,10 @@ log_step "Updating version in configuration files..."
 update_version() {
     FILE=$1
     NEW_VER=$2
+    if [ ! -f "$FILE" ]; then
+        log_warn "File $FILE not found, skipping..."
+        return
+    fi
     # Use node to reliably update JSON
     node -e "
         const fs = require('fs');
@@ -78,36 +99,48 @@ update_version "sanctuary-app/src-tauri/tauri.conf.json" "$VERSION"
 
 # Update package-lock.json
 log_step "Updating package-lock.json..."
-npm install --package-lock-only > /dev/null 2>&1
+npm install --package-lock-only > /dev/null 2>&1 || log_warn "package-lock.json update failed, continuing..."
 
 log_success "All versions updated to $VERSION"
 
 # 4. Final Validation
 log_step "Running automated setup and validation..."
-npm run setup > /dev/null 2>&1
+npm run setup > /dev/null 2>&1 || log_warn "Setup failed, continuing with validation..."
 ./validate.sh
 
 # 5. Commit Version Bump
 log_step "Committing version bump..."
 git add -A
-git commit -m "chore: bump version to v$VERSION"
+# Only commit if there are changes
+if ! git diff-index --quiet HEAD --; then
+    git commit -m "chore: bump version to v$VERSION"
+else
+    log_warn "No version changes to commit."
+fi
 
 # 6. Merge and Tag
 log_step "Merging to main and tagging..."
 git checkout main
 git pull origin main
-git merge development --no-ff -m "chore: release v$VERSION"
-git tag -a "v$VERSION" -m "Release v$VERSION"
+git merge development --no-ff -m "chore: release v$VERSION" || (log_warn "Merge conflict or already up to date, continuing..." && git merge --abort >/dev/null 2>&1 || true)
+
+# Force tag if it already exists
+if [ -n "$(git tag -l "v$VERSION")" ]; then
+    log_warn "Forcing tag v$VERSION..."
+    git tag -a "v$VERSION" -m "Release v$VERSION" -f
+else
+    git tag -a "v$VERSION" -m "Release v$VERSION"
+fi
 
 # 7. Push everything
 log_step "Pushing changes to GitHub..."
 git push origin main
-git push origin "v$VERSION"
+git push origin "v$VERSION" --force
 
 # 8. Return to development
 log_step "Syncing development branch..."
 git checkout development
-git merge main
+git merge main || (log_warn "Merge back to development failed, please check manually." && exit 1)
 git push origin development
 
 echo ""

@@ -55,7 +55,7 @@ npm run dev:bridge      # Backend service
 ```bash
 # Automated release (from development branch)
 # Bumps versions, merges to main, tags, and pushes
-npm run release -- 0.1.1
+npm run release
 ```
 
 ---
@@ -130,12 +130,13 @@ npm run typecheck && npm run lint && npm test
 
 | Need | Document |
 |------|----------|
-| Detailed build/test guide | [BUILD_TEST_RUN.md](BUILD_TEST_RUN.md) |
-| Contributing guidelines | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Code style | [docs/FUNCTIONAL_STYLE.md](docs/FUNCTIONAL_STYLE.md) |
-| Architecture | [SRVDD.md](SRVDD.md) |
-| Deployment | [docs/PRODUCTION_SETUP.md](docs/PRODUCTION_SETUP.md) |
-| All docs | [docs/INDEX.md](docs/INDEX.md) |
+| Detailed build/test guide | [DEVELOPMENT.md](DEVELOPMENT.md) |
+| Contributing guidelines | [../CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Operations/Deployment | [OPERATIONS.md](OPERATIONS.md) |
+| Production Setup | [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) |
+| Code style | [FUNCTIONAL_STYLE.md](FUNCTIONAL_STYLE.md) |
+| All docs | [INDEX.md](INDEX.md) |
 
 ---
 

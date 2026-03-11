@@ -122,6 +122,8 @@ To rollback to a previous version:
 ---
 
 📚 **Documentation Links:**
-- [Developer Guide](../BUILD_TEST_RUN.md)
-- [Architecture](../SRVDD.md)
+- [Developer Guide](DEVELOPMENT.md)
+- [Architecture](ARCHITECTURE.md)
+- [Operations Guide](OPERATIONS.md)
 - [Functional Style Guide](FUNCTIONAL_STYLE.md)
+- [Full Index](INDEX.md)

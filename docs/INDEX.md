@@ -15,7 +15,7 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 - Troubleshooting
 
 ### For Developers (Path B: SDK)
-👉 **[Build, Test, Run Guide](../BUILD_TEST_RUN.md)** (at root level)
+👉 **[Build, Test, Run Guide](../BUILD_TEST_RUN.md)** ⭐
 - Local development setup
 - Building all workspaces
 - Running tests and smoke tests
@@ -32,7 +32,7 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 - What we accept/don't accept
 
 ### Contributing
-📖 **[Contributing Guidelines](../CONTRIBUTING.md)** (at root level)
+📖 **[Contributing Guidelines](../CONTRIBUTING.md)**
 - How to fork and set up development
 - Pull request process
 - Code of conduct
@@ -42,7 +42,7 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 ## 🏗️ Architecture & Design
 
 ### System Architecture
-📖 **[Service Runtime & Visual Design (SRVDD)](../SRVDD.md)** (at root level)
+📖 **[Service Runtime & Visual Design (SRVDD)](../SRVDD.md)**
 - Component diagrams
 - Service interactions
 - Zero-trust design principles
@@ -85,8 +85,8 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 - Version naming conventions
 - Release checklist
 
-### Deployment, Backout, Rollback
-📖 **[DIBR Guide](../DIBR.md)** (at root level)
+### Deployment & Operations
+📖 **[Deployment, Installation, Backout, Rollback (DIBR)](../DIBR.md)**
 - Fresh installation
 - Environment promotion
 - Emergency backout procedures
@@ -97,17 +97,17 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 ## 📋 Other Resources
 
 ### Change Log
-📖 **[CHANGELOG](../CHANGELOG.md)** (at root level)
+📖 **[CHANGELOG](../CHANGELOG.md)**
 - Version history
 - Breaking changes
 - What's new
 
 ### License
-📖 **[LICENSE](../LICENSE)** (at root level)
+📖 **[LICENSE](../LICENSE)**
 - MIT License
 
 ### Compliance & AI Policy
-📖 **[agents.md](../agents.md)** (at root level)
+📖 **[AI & Agents Policy](../agents.md)**
 - AI and bot interaction policy
 - Crawling rules
 
@@ -119,12 +119,11 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 ```
 ├── README.md                 # Main project README
 ├── BUILD_TEST_RUN.md         # Developer build/test/run guide ⭐
-├── CONTRIBUTING.md           # Contributing guidelines
-├── CHANGELOG.md              # Version history
 ├── SRVDD.md                  # Architecture & design
 ├── DIBR.md                   # Deployment procedures
+├── CONTRIBUTING.md           # Contributing guidelines
+├── CHANGELOG.md              # Version history
 ├── agents.md                 # AI policy
-├── robots.txt                # Web crawler directives
 └── LICENSE                   # MIT License
 ```
 
@@ -138,9 +137,7 @@ docs/
 ├── PRODUCTION_SETUP.md               # Production deployment
 ├── PROFESSIONAL_VIDEO_GUIDE.md       # Video encoding guide
 ├── OBS_INTEGRATION.md                # OBS WebSocket integration
-├── RELEASING.md                      # CI/CD & release process
-├── archive/                          # Archived/deprecated docs
-│   └── (31 docs from development history)
+└── RELEASING.md                      # CI/CD & release process
 ```
 
 ---
@@ -177,25 +174,7 @@ docs/
 - 🔄 Rollback/recovery → DIBR.md
 - 📊 Video optimization → PROFESSIONAL_VIDEO_GUIDE.md
 
-**By Technology:**
-- React/Frontend → FUNCTIONAL_STYLE.md
-- TypeScript → FUNCTIONAL_STYLE.md
-- PocketBase → SUPER_USER_CONFIGURATION.md, PRODUCTION_SETUP.md
-- OBS → OBS_INTEGRATION.md, PROFESSIONAL_VIDEO_GUIDE.md
-- CI/CD → RELEASING.md
-- Docker/Containers → PRODUCTION_SETUP.md
-
 ---
 
-## 📞 Getting Help
-
-- **Questions about code?** → See [CONTRIBUTING.md](../CONTRIBUTING.md)
-- **Architecture questions?** → See [SRVDD.md](../SRVDD.md)
-- **Bugs or issues?** → Go to [GitHub Issues](https://github.com/brentmzey/sanctuary-stream/issues)
-- **Discussions?** → Go to [GitHub Discussions](https://github.com/brentmzey/sanctuary-stream/discussions)
-- **Contact us?** → Email: support@sanctuarystream.com
-
----
-
-**Last Updated:** 2026-03-08  
+**Last Updated:** 2026-03-11  
 **Documentation Status:** ✅ Organized & Current
