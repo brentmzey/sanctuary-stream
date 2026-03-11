@@ -2,14 +2,29 @@
 
 **Secure-by-Design church streaming control system - Control OBS from ANY device**
 
+[![Latest Release](https://img.shields.io/github/v/release/brentmzey/sanctuary-stream?color=green&label=Latest%20Release)](https://github.com/brentmzey/sanctuary-stream/releases/latest)
 [![Build and Release](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/brentmzey/sanctuary-stream/actions)
+[![Tests Status](https://github.com/brentmzey/sanctuary-stream/actions/workflows/ci.yml/badge.svg)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
-[![Cost](https://img.shields.io/badge/cost-$0-success)]()
 
 ---
 
-## 🚀 Quick Start & Installation Paths
+## 🚀 Latest Stable Releases (TRUE Releases)
+
+For a ready-to-use version of Sanctuary Stream, download the official artifacts for your platform:
+
+| Platform | Installer | Notes |
+| :--- | :--- | :--- |
+| **Windows** | [Download .msi](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Installer with auto-update |
+| **macOS** | [Download .dmg (Universal)](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Intel & Apple Silicon support |
+| **Linux** | [Download .AppImage / .deb](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Universal Linux Support |
+| **Android** | [Download .apk](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Sideload to your control tablet |
+
+> **💡 Looking for development builds?** See all [Nightly Releases](https://github.com/brentmzey/sanctuary-stream/releases).
+
+---
+
+## 📖 Quick Start & Installation Paths
 
 Sanctuary Stream is designed for two distinct audiences. Choose the path that fits your technical comfort level:
 

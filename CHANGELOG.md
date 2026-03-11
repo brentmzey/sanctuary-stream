@@ -19,9 +19,12 @@ The project follows **RC-based release naming** (x.xx.xx-RCx) until ready for fu
 - **Env:** Missing `STREAM_ID` and `PB_URL` in local `.env` files.
 - **Tauri:** CSP (Content Security Policy) updated for PocketHost cloud connectivity.
 
----
+## [0.1.1] - 2026-03-11
+### ✨ Added
+- **Infrastructure:** Formal 4-step Release Workflow (Feature -> Dev -> Main -> Tag).
+- **Automation:** Version bumping in `tauri.conf.json` and all workspace packages via `npm run release`.
+- **Docs:** Full RELEASING guide and documentation for production environments.
 
-## [0.1.0] - Upcoming Release
-- Initial stable release for church deployment.
-- Full multi-backend support (Local, Staging, Production).
-- Integrated OBS health monitoring.
+### 🔧 Fixed
+- **Versioning:** Synchronized versions across App, Bridge, and CLI to v0.1.1.
+- **CI/CD:** Automated "Full Release" vs "Pre-release" logic based on Git tags.

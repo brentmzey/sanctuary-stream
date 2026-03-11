@@ -75,7 +75,22 @@ When distributing a "Default" version to a parish, provide them with a **Sanctua
 }
 ```
 
-## 4. Automation Roadmap
+## 4. The Standard Release Workflow
+
+To ensure stability and a "True" release (rather than a development/nightly build), follow this strictly:
+
+1.  **Feature/Fix Branch:** All work begins on `<feature-branch>`.
+2.  **Merge to Development:** Pull Request into `development`. This triggers a "Development Build" in GitHub Actions for internal testing.
+3.  **Merge to Main:** Once `development` is stable and tested, run the release script.
+4.  **Tag & Cut Release:** Run `npm run release` from the `development` branch. 
+
+The `npm run release` script automates steps 3 and 4 by:
+- Bumping versions in all `package.json` and `tauri.conf.json` files.
+- Merging `development` into `main`.
+- Tagging the commit on `main` with `vX.Y.Z`.
+- Pushing the tag, which triggers the CI to create a **Full Production Release**.
+
+## 5. Automation Roadmap
 - [ ] **GitHub Actions:** Automate the Tauri and Capacitor builds on every tag.
 - [ ] **Code Signing:** Set up Apple/Microsoft developer certificates in CI secrets to avoid "Unidentified Developer" warnings.
 - [ ] **Auto-Updates:** Enable the Tauri updater so Path A users get fixes automatically.
