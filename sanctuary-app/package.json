@@ -1,6 +1,6 @@
 {
   "name": "sanctuary-app",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Desktop control application for Sanctuary Stream",
   "type": "module",
   "scripts": {
