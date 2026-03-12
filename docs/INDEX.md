@@ -47,6 +47,12 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 - Service interactions
 - Zero-trust design principles
 
+### Performance & Optimization
+📖 **[Performance: Bun vs npm](PERFORMANCE.md)** ⚡
+- Benchmark comparisons
+- Why we use Bun for high performance
+- How to switch to Bun
+
 ### Distribution Paths
 📖 **[Distribution Paths](DISTRIBUTION_PATHS.md)**
 - Path A: No-Code (for parishes)

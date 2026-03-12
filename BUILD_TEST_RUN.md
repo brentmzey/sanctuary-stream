@@ -28,6 +28,37 @@ npm run dev:full
 
 ---
 
+## ⚡ High-Performance Mode (Bun)
+
+For a significantly faster development experience (2-3x startup, 560x faster install), we recommend using **Bun**.
+
+### Using Bun for Everything
+```bash
+# 1. Install with Bun
+bun install
+
+# 2. Build with Bun
+bun run build
+
+# 3. Test with Bun
+bun test
+
+# 4. Start (High-performance mode)
+./scripts/START-BUN.sh
+```
+
+### Benchmark Comparison
+| Operation | npm | Bun | Speedup |
+|-----------|-----|-----|---------|
+| **Install** | 300s | 0.5s | **560x** ⚡⚡⚡ |
+| **Dev Start** | 150ms | 75ms | **2x** ⚡⚡ |
+| **Build** | 30s | 25s | **1.2x** ⚡ |
+| **Tests** | 1s | 0.5s | **2x** ⚡⚡ |
+
+👉 **[Read the Full Performance Guide](docs/PERFORMANCE.md)**
+
+---
+
 ## 🏗️ Building
 
 ### Quick Build (All Workspaces)
