@@ -6,7 +6,7 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/brentmzey/sanctuary-stream/build-release.yml?branch=main&label=Build%20%26%20Release&style=flat-square)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/brentmzey/sanctuary-stream/build-release.yml?branch=main&label=Tests&style=flat-square)](https://github.com/brentmzey/sanctuary-stream/actions/workflows/build-release.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square)](https://www.typescriptlang.org/)
-[![Support Brent Zey](https://img.shields.io/badge/Support-Brent%20Zey-orange?style=for-the-badge&logo=github-sponsors)](https://brentzey.com)
+[![Support Brent Zey](https://img.shields.io/badge/Support-Brent%20Zey-orange?style=for-the-badge&logo=buymeacoffee)](https://buymeacoffee.com/brentmzey)
 
 ---
 
@@ -88,4 +88,4 @@ npm run dev:full
 
 **Made with ❤️ for churches worldwide by [Brent Zey](https://brentzey.com)**
 
-[![Support Me](https://img.shields.io/badge/Support-Me-orange?style=for-the-badge&logo=github-sponsors)](https://brentzey.com)
+[![Support Me](https://img.shields.io/badge/Support-Me-orange?style=for-the-badge&logo=buymeacoffee)](https://buymeacoffee.com/brentmzey)
