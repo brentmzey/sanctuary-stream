@@ -1,6 +1,6 @@
 {
   "name": "sanctuary-cli",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Project management CLI for Sanctuary Stream",
   "main": "src/index.ts",
   "type": "module",
