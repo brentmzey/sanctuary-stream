@@ -142,8 +142,16 @@ echo -e "${GREEN}✅ Schema initialized${NC}"
 
 echo ""
 echo "📝 Step 6: Creating environment files..."
-# Get the first stream ID from the database using curl and clean it up
-STREAM_ID=$(curl -s http://127.0.0.1:8090/api/collections/streams/records | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+# Get admin token for authentication
+TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/collections/_superusers/auth-with-password \
+  -H "Content-Type: application/json" \
+  -d '{"identity":"admin@local.dev", "password":"admin123456"}' | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+# Get the first stream ID using the admin token
+STREAM_ID=$(curl -s http://127.0.0.1:8090/api/collections/streams/records \
+  -H "Authorization: Bearer $TOKEN" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+
 # Use 'defaultstream01' as fallback to match schema-init.ts
 STREAM_ID=${STREAM_ID:-"defaultstream01"}
 
