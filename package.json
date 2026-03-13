@@ -1,6 +1,6 @@
 {
   "name": "sanctuary-stream",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Secure-by-Design church streaming control system with real-time remote management",
   "author": "Sanctuary Stream Contributors",
   "license": "MIT",
