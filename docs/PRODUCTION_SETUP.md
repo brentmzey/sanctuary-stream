@@ -100,6 +100,8 @@ Once the GitHub Action completes (~20 minutes), artifacts will be available in t
 - `Sanctuary-Stream-x64.msi` (Windows)
 - `sanctuary-stream_amd64.deb` (Linux)
 - `sanctuary-stream_amd64.AppImage` (Linux)
+- `app-release.apk` (Android)
+- `App.xcarchive` / `.ipa` (iOS - for Internal TestFlight)
 
 ---
 

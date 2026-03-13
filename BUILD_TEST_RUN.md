@@ -66,9 +66,24 @@ bun test
 npm run build
 ```
 
+### Mobile Builds (iOS & Android)
+Requires **Xcode** (iOS) and **Android Studio** (Android) installed.
+
+```bash
+# Build iOS
+cd sanctuary-app
+npm run cap:build:ios
+
+# Build Android
+cd sanctuary-app
+npm run cap:build:android
+```
+
 **Output:**
 - `sanctuary-app/dist/` - Production-ready frontend
 - `sanctuary-bridge/dist/` - Bridge service bundle
+- `sanctuary-app/ios/` - iOS Xcode project
+- `sanctuary-app/android/` - Android Studio project
 
 ---
 

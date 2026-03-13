@@ -14,12 +14,22 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 - Configuration options
 - Troubleshooting
 
+👉 **[Complete User Guide](USER_GUIDE.md)** ⭐
+- Full installation guide
+- OBS setup instructions
+- Step-by-step first stream
+
 ### For Developers (Path B: SDK)
 👉 **[Build, Test, Run Guide](../BUILD_TEST_RUN.md)** ⭐
 - Local development setup
-- Building all workspaces
+- Building all workspaces (Desktop, Mobile, Web)
 - Running tests and smoke tests
 - Complete pre-commit checklist
+
+👉 **[Platform Support Verification](PLATFORM_SUPPORT.md)**
+- Real-time WebSocket details
+- Mobile (iOS/Android) support details
+- Multi-backend architecture
 
 ---
 
@@ -137,6 +147,8 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 ```
 docs/
 ├── INDEX.md (this file)              # Documentation index
+├── USER_GUIDE.md                     # Full end-user installation ⭐
+├── PLATFORM_SUPPORT.md               # Details on iOS/Android/Web
 ├── FUNCTIONAL_STYLE.md               # Code style & patterns
 ├── DISTRIBUTION_PATHS.md             # Path A vs B strategy
 ├── SUPER_USER_CONFIGURATION.md       # No-code setup
@@ -153,6 +165,8 @@ docs/
 | I want to... | Read this |
 |--------------|-----------|
 | Set up locally for development | [BUILD_TEST_RUN.md](../BUILD_TEST_RUN.md) |
+| Follow a complete user guide | [USER_GUIDE.md](USER_GUIDE.md) |
+| Check platform support (iOS/Android) | [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md) |
 | Contribute code | [CONTRIBUTING.md](../CONTRIBUTING.md) + [FUNCTIONAL_STYLE.md](FUNCTIONAL_STYLE.md) |
 | Deploy to production | [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) + [DIBR.md](../DIBR.md) |
 | Configure without coding | [SUPER_USER_CONFIGURATION.md](SUPER_USER_CONFIGURATION.md) |

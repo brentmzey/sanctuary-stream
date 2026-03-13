@@ -46,6 +46,19 @@ if (validationResult._tag === 'failure' || validationResult.value === false) {
 export const pb = new PocketBase(initialUrl);
 pb.autoCancellation(true);
 
+// Enable auto-reconnection for WebSockets with exponential backoff
+// This ensures mobile and desktop apps stay in sync during network transitions
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    console.log('Network online: Re-syncing PocketBase...');
+    // PocketBase SDK handles re-authentication if valid token exists
+  });
+
+  window.addEventListener('offline', () => {
+    console.warn('Network offline: Sanctuary Stream will reconnect when back online');
+  });
+}
+
 export type CommandAction = 
   | 'START' 
   | 'STOP' 

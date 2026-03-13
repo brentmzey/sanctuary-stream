@@ -20,6 +20,7 @@ For a ready-to-use version of Sanctuary Stream, download the official artifacts 
 | **macOS** | [Download .dmg (Universal)](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Intel & Apple Silicon support |
 | **Linux** | [Download .AppImage / .deb](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Universal Linux Support |
 | **Android** | [Download .apk](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Sideload to your control tablet |
+| **iOS** | [TestFlight / .ipa](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Mobile control for iPhone/iPad |
 
 > **💡 Looking for development builds?** See all [Nightly Releases](https://github.com/brentmzey/sanctuary-stream/releases).
 
