@@ -1,6 +1,6 @@
 {
   "name": "sanctuary-bridge",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "OBS WebSocket bridge service for Sanctuary Stream",
   "main": "dist/index.js",
   "scripts": {
