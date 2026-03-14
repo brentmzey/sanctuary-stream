@@ -28,6 +28,7 @@ coverage/
 
 # IDE
 .vscode/
+!.idea/runConfigurations/
 .idea/
 *.swp
 *.swo
