@@ -16,6 +16,7 @@ dist/
 build/
 out/
 *.tsbuildinfo
+/target/
 
 # Tauri
 sanctuary-app/src-tauri/target/

@@ -5075,7 +5075,7 @@ dependencies = [
 
 [[package]]
 name = "sanctuary-cli"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "anyhow",
  "clap",
@@ -5091,7 +5091,7 @@ dependencies = [
 
 [[package]]
 name = "sanctuary-core"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -5119,8 +5119,9 @@ dependencies = [
 
 [[package]]
 name = "sanctuary-stream"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
+ "anyhow",
  "chrono",
  "cocoa 0.25.0",
  "dotenvy",

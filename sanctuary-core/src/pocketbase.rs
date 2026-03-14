@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use reqwest::{Client as HttpClient, RequestBuilder};
 use anyhow::{Result, anyhow};
 use crate::types::*;
@@ -38,10 +38,11 @@ impl PocketBaseClient {
 
     /// Monadic composition: Builds a request and applies auth if present.
     fn authenticated_request(&self, builder: RequestBuilder) -> RequestBuilder {
-        self.auth_token
-            .as_ref()
-            .map(|t| builder.header("Authorization", format!("Bearer {}", t)))
-            .unwrap_or(builder)
+        if let Some(token) = &self.auth_token {
+            builder.header("Authorization", format!("Bearer {}", token))
+        } else {
+            builder
+        }
     }
 
     /// Pure transformation: List records using monadic chaining.

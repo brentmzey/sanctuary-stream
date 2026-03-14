@@ -161,7 +161,7 @@ async fn get_stream_status(state: tauri::State<'_, AppState>) -> Result<StreamSt
     let url = format!("{}/api/collections/streams/records/{}", pb.base_url(), *stream_id);
     let client = reqwest::Client::new();
     
-    to_tauri_res(
+    let res = async {
         client.get(&url)
             .send()
             .await
@@ -171,7 +171,9 @@ async fn get_stream_status(state: tauri::State<'_, AppState>) -> Result<StreamSt
             .json::<StreamStatus>()
             .await
             .map_err(|e| anyhow::anyhow!("JSON: {}", e))
-    )
+    }.await;
+
+    to_tauri_res(res)
 }
 
 #[tauri::command]
@@ -193,7 +195,7 @@ async fn send_command(
     });
     
     let client = reqwest::Client::new();
-    to_tauri_res(
+    let res = async {
         client.post(&url)
             .header("Authorization", format!("Bearer {}", token))
             .json(&payload)
@@ -203,7 +205,9 @@ async fn send_command(
             .error_for_status()
             .map_err(|e| anyhow::anyhow!("Status: {}", e))
             .map(|_| correlation_id)
-    )
+    }.await;
+
+    to_tauri_res(res)
 }
 
 #[tauri::command]

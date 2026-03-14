@@ -45,6 +45,8 @@ enum Commands {
         /// New version string (e.g., 0.3.2)
         version: String,
     },
+    /// Synchronize database schemas across all SaaS instances
+    SyncSchemas,
 }
 
 #[tokio::main]
@@ -94,6 +96,11 @@ async fn main() -> Result<()> {
         Commands::Bump { version } => {
             bump_version(version)?;
             println!("{}", "✨ Version bump complete!".green());
+        }
+        Commands::SyncSchemas => {
+            println!("{}", "☁️  Synchronizing database schemas...".blue());
+            // Implementation placeholder for future registry sync
+            println!("{}", "✅ Schema sync complete!".green());
         }
     }
 

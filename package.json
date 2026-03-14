@@ -1,45 +1,11 @@
 {
-  "name": "sanctuary-stream",
-  "version": "0.3.3",
-  "description": "Secure-by-Design church streaming control system with real-time remote management",
   "author": "Sanctuary Stream Contributors",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/brentmzey/sanctuary-stream.git"
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "pocketbase": "^0.26.8",
+    "vite": "7.3.1"
   },
-  "workspaces": [
-    "sanctuary-app",
-    "sanctuary-cli"
-  ],
-  "scripts": {
-    "sanctuary": "cargo run -p sanctuary-cli --",
-    "dev": "concurrently \"npm run dev:pocketbase\" \"npm run dev:bridge\" \"npm run dev:app\"",
-    "dev:all": "concurrently -n \"obs,bridge,app\" -c \"yellow,cyan,green\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
-    "dev:full": "concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
-    "dev:app": "npm run dev --workspace=sanctuary-app",
-    "dev:bridge": "cargo run -p sanctuary-cli -- bridge",
-    "dev:pocketbase": "cd pocketbase/local && ./pocketbase serve --http=127.0.0.1:8090",
-    "build": "npm run build:app",
-    "build:app": "cd sanctuary-app && npm run build",
-    "test": "npm run test:app && cargo test --workspace",
-    "test:app": "cd sanctuary-app && npm test",
-    "test:e2e": "playwright test -c integration-tests/playwright.config.ts",
-    "test:coverage": "cd sanctuary-app && npm run test:coverage",
-    "lint": "eslint . --ext .ts,.tsx --ignore-path .eslintignore",
-    "lint:app": "cd sanctuary-app && npm run lint",
-    "typecheck": "npm run typecheck:app",
-    "typecheck:app": "cd sanctuary-app && npm run typecheck",
-    "validate": "./scripts/validate.sh",
-    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
-    "prepare": "husky install",
-    "setup": "./scripts/setup.sh",
-    "release": "./scripts/release.sh",
-    "schema:init:local": "tsx pocketbase/schema-init.ts local",
-    "mock:obs": "tsx scripts/mock-obs.ts",
-    "clean": "rm -rf sanctuary-app/dist pocketbase/local/pb_data",
-    "clean:all": "npm run clean && rm -rf node_modules sanctuary-app/node_modules"
-  },
+  "description": "Secure-by-Design church streaming control system with real-time remote management",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.2.2",
@@ -63,9 +29,43 @@
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
-  "dependencies": {
-    "dotenv": "^17.2.3",
-    "pocketbase": "^0.26.8",
-    "vite": "7.3.1"
-  }
+  "license": "MIT",
+  "name": "sanctuary-stream",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brentmzey/sanctuary-stream.git"
+  },
+  "scripts": {
+    "build": "npm run build:app",
+    "build:app": "cd sanctuary-app && npm run build",
+    "clean": "rm -rf sanctuary-app/dist pocketbase/local/pb_data",
+    "clean:all": "npm run clean && rm -rf node_modules sanctuary-app/node_modules",
+    "dev": "concurrently \"npm run dev:pocketbase\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:all": "concurrently -n \"obs,bridge,app\" -c \"yellow,cyan,green\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:app": "npm run dev --workspace=sanctuary-app",
+    "dev:bridge": "cargo run -p sanctuary-cli -- bridge",
+    "dev:full": "concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
+    "dev:pocketbase": "cd pocketbase/local && ./pocketbase serve --http=127.0.0.1:8090",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "lint": "eslint . --ext .ts,.tsx --ignore-path .eslintignore",
+    "lint:app": "cd sanctuary-app && npm run lint",
+    "mock:obs": "tsx scripts/mock-obs.ts",
+    "prepare": "husky install",
+    "release": "./scripts/release.sh",
+    "sanctuary": "cargo run -p sanctuary-cli --",
+    "schema:init:local": "tsx pocketbase/schema-init.ts local",
+    "setup": "./scripts/setup.sh",
+    "test": "npm run test:app && cargo test --workspace",
+    "test:app": "cd sanctuary-app && npm test",
+    "test:coverage": "cd sanctuary-app && npm run test:coverage",
+    "test:e2e": "playwright test -c integration-tests/playwright.config.ts",
+    "typecheck": "npm run typecheck:app",
+    "typecheck:app": "cd sanctuary-app && npm run typecheck",
+    "validate": "./scripts/validate.sh"
+  },
+  "version": "0.3.4",
+  "workspaces": [
+    "sanctuary-app",
+    "sanctuary-cli"
+  ]
 }

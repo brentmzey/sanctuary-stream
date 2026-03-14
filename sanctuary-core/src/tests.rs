@@ -18,7 +18,7 @@ mod tests {
         });
 
         let record: Command = serde_json::from_value(data).unwrap();
-        assert_eq!(record.id, "test_id");
+        assert_eq!(record.id.0, "test_id");
         assert_eq!(record.action, CommandAction::START);
         assert!(!record.executed);
     }

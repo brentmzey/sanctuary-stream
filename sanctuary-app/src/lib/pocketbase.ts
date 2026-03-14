@@ -1,4 +1,4 @@
-import PocketBase from 'pocketbase';
+import PocketBase, { RecordModel } from 'pocketbase';
 import { invoke } from '@tauri-apps/api/tauri';
 import { AsyncIO } from '@shared/io';
 import { fromNullable } from '@shared/option';
@@ -218,7 +218,7 @@ export function unsubscribeFromStream(streamId: string) {
 
 export async function loginToPocketBase(email: string, password: string): Promise<UserRecord> {
     const auth = await invoke<{ token: string, user: UserRecord }>('discover_and_login', { email, password });
-    pb.authStore.save(auth.token, auth.user);
+    pb.authStore.save(auth.token, auth.user as unknown as RecordModel);
     return auth.user;
 }
 
