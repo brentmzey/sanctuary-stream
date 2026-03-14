@@ -1,33 +1,29 @@
 {
   "build": {
-    "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:5173",
     "distDir": "../dist",
     "withGlobalTauri": false
   },
   "package": {
     "productName": "Sanctuary Stream",
-    "version": "0.3.1"
+    "version": "0.3.3"
   },
   "tauri": {
     "allowlist": {
       "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
       "dialog": {
         "all": true
       },
       "fs": {
         "all": false,
-        "readFile": true,
-        "writeFile": true,
         "readDir": true,
+        "readFile": true,
         "scope": [
           "$APPDATA/*"
-        ]
+        ],
+        "writeFile": true
       },
       "http": {
         "all": true,
@@ -45,17 +41,35 @@
       "notification": {
         "all": true
       },
+      "shell": {
+        "all": false,
+        "open": true
+      },
       "window": {
         "all": false,
         "close": true,
         "hide": true,
-        "show": true,
         "maximize": true,
-        "minimize": true
+        "minimize": true,
+        "show": true
       }
     },
     "bundle": {
       "active": true,
+      "category": "Utility",
+      "copyright": "Copyright © 2026 Sanctuary Stream Contributors",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.sanctuary.stream",
+      "longDescription": "Secure-by-Design church streaming control system",
+      "macOS": {
+        "minimumSystemVersion": "10.13"
+      },
+      "shortDescription": "Church streaming control",
       "targets": [
         "app",
         "dmg",
@@ -63,20 +77,6 @@
         "deb",
         "appimage"
       ],
-      "identifier": "com.sanctuary.stream",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "copyright": "Copyright © 2026 Sanctuary Stream Contributors",
-      "category": "Utility",
-      "shortDescription": "Church streaming control",
-      "longDescription": "Secure-by-Design church streaming control system",
-      "macOS": {
-        "minimumSystemVersion": "10.13"
-      },
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256"
@@ -90,11 +90,11 @@
     },
     "windows": [
       {
-        "title": "Sanctuary Stream",
-        "width": 1200,
+        "fullscreen": false,
         "height": 800,
         "resizable": true,
-        "fullscreen": false
+        "title": "Sanctuary Stream",
+        "width": 1200
       }
     ]
   }

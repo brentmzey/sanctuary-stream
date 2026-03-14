@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'com.sanctuary'
+version '0.3.3'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Placeholder for future Java/GraalVM native logic if needed
+    testImplementation 'org.junit.jupiter:maven-central:5.8.1'
+}
+
+// Ensure IntelliJ sees this as a Java module alongside Rust/TS
+sourceSets {
+    main {
+        java {
+            srcDirs = ['java/src']
+        }
+    }
+}

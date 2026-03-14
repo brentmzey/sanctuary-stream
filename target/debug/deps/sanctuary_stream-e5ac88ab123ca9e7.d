@@ -1,0 +1,14 @@
+/Users/brentzey/sanctuary-stream/target/debug/deps/sanctuary_stream-e5ac88ab123ca9e7.d: sanctuary-app/src-tauri/src/main.rs /Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/assets/index-BoWWOOou.css /Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/17853b4d275c637bcae20adf75cc626f5baee52238884a529151f0d4cd4d1fbd.css /Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/assets/index-8ws_dawJ.js /Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/c42164e38892e2f7d07fa9dfc85364d0a770093b41d72f4452924221cbfabcbc.js /Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/index.html /Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/b4c1f95836ea0a9af9afaef169d85d82afb4b1e6b325bf31a56a12ef32dd1571.html
+
+/Users/brentzey/sanctuary-stream/target/debug/deps/sanctuary_stream-e5ac88ab123ca9e7: sanctuary-app/src-tauri/src/main.rs /Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/assets/index-BoWWOOou.css /Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/17853b4d275c637bcae20adf75cc626f5baee52238884a529151f0d4cd4d1fbd.css /Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/assets/index-8ws_dawJ.js /Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/c42164e38892e2f7d07fa9dfc85364d0a770093b41d72f4452924221cbfabcbc.js /Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/index.html /Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/b4c1f95836ea0a9af9afaef169d85d82afb4b1e6b325bf31a56a12ef32dd1571.html
+
+sanctuary-app/src-tauri/src/main.rs:
+/Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/assets/index-BoWWOOou.css:
+/Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/17853b4d275c637bcae20adf75cc626f5baee52238884a529151f0d4cd4d1fbd.css:
+/Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/assets/index-8ws_dawJ.js:
+/Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/c42164e38892e2f7d07fa9dfc85364d0a770093b41d72f4452924221cbfabcbc.js:
+/Users/brentzey/sanctuary-stream/sanctuary-app/src-tauri/../dist/index.html:
+/Users/brentzey/sanctuary-stream/target/debug/build/sanctuary-stream-ab53d534d237e904/out/tauri-codegen-assets/b4c1f95836ea0a9af9afaef169d85d82afb4b1e6b325bf31a56a12ef32dd1571.html:
+
+# env-dep:CARGO_PKG_AUTHORS=Sanctuary Stream Contributors
+# env-dep:CARGO_PKG_DESCRIPTION=Secure-by-Design church streaming control system

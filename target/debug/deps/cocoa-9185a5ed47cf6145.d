@@ -1,0 +1,12 @@
+/Users/brentzey/sanctuary-stream/target/debug/deps/cocoa-9185a5ed47cf6145.d: /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/lib.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/appkit.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/base.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/foundation.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/quartzcore.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/macros.rs
+
+/Users/brentzey/sanctuary-stream/target/debug/deps/libcocoa-9185a5ed47cf6145.rlib: /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/lib.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/appkit.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/base.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/foundation.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/quartzcore.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/macros.rs
+
+/Users/brentzey/sanctuary-stream/target/debug/deps/libcocoa-9185a5ed47cf6145.rmeta: /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/lib.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/appkit.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/base.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/foundation.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/quartzcore.rs /Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/macros.rs
+
+/Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/lib.rs:
+/Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/appkit.rs:
+/Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/base.rs:
+/Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/foundation.rs:
+/Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/quartzcore.rs:
+/Users/brentzey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cocoa-0.25.0/src/macros.rs:

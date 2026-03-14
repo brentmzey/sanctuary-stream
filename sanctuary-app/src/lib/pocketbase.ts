@@ -171,45 +171,33 @@ export interface ResourceRecord {
 
 export function sendCommand(action: CommandAction, payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
   return new AsyncIO(async () => {
-    const userOption = fromNullable(pb.authStore.model);
-    if (userOption._tag === 'none') {
-      throw new Error('Not authenticated');
-    }
-    const user = userOption.value;
-    const maybePayload = fromNullable(payload);
-
-    if (maybePayload._tag === 'none') {
-      try {
-        await invoke('send_command', {
-          pocketbaseUrl: pb.baseUrl,
-          action,
-          authToken: pb.authStore.token,
-          userId: user.id,
-        });
+    try {
+        await invoke('send_command', { action });
         return;
-      } catch (rustError) {
+    } catch (rustError) {
         console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
-      }
+        const userOption = fromNullable(pb.authStore.model);
+        if (userOption._tag === 'none') {
+          throw new Error('Not authenticated');
+        }
+        const user = userOption.value;
+        const maybePayload = fromNullable(payload);
+        const correlationId = crypto.randomUUID();
+        return await pb.collection('commands').create<CommandRecord>({
+          action,
+          executed: false,
+          correlation_id: correlationId,
+          created_by: user.id,
+          payload: maybePayload._tag === 'some' ? maybePayload.value : undefined
+        });
     }
-
-    const correlationId = crypto.randomUUID();
-    return await pb.collection('commands').create<CommandRecord>({
-      action,
-      executed: false,
-      correlation_id: correlationId,
-      created_by: user.id,
-      payload: maybePayload._tag === 'some' ? maybePayload.value : undefined
-    });
   });
 }
 
 export function getStreamStatus(streamId: string): AsyncIO<StreamRecord> {
   return new AsyncIO(async () => {
     try {
-      const status = await invoke<StreamRecord>('get_stream_status', {
-        pocketbaseUrl: pb.baseUrl,
-        streamId,
-      });
+      const status = await invoke<StreamRecord>('get_stream_status');
       return status;
     } catch (rustError) {
       console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
@@ -228,6 +216,12 @@ export function unsubscribeFromStream(streamId: string) {
   pb.collection('streams').unsubscribe(streamId);
 }
 
+export async function loginToPocketBase(email: string, password: string): Promise<UserRecord> {
+    const auth = await invoke<{ token: string, user: UserRecord }>('discover_and_login', { email, password });
+    pb.authStore.save(auth.token, auth.user);
+    return auth.user;
+}
+
 export function setPocketBaseUrl(url: string): Result<void, Error> {
   const validationResult = validatePocketBaseUrl(url);
   if (validationResult._tag === 'failure' || validationResult.value === false) {
@@ -236,29 +230,43 @@ export function setPocketBaseUrl(url: string): Result<void, Error> {
   localStorage.setItem('pb_url', url);
   pb.baseUrl = url;
   pb.authStore.clear();
+  
+  // Update Rust state
+  invoke('set_pocketbase_url', { url }).catch(e => console.error('Failed to update Rust PB URL:', e));
+  
   return success(undefined);
 }
 
 export function testConnection(url?: string): AsyncIO<boolean> {
   return new AsyncIO(async () => {
-    const parsedUrl = fromNullable(url);
-    const testUrl = parsedUrl._tag === 'some' ? parsedUrl.value : pb.baseUrl;
     try {
-      const response = await fetch(`${testUrl}/api/health`);
-      return response.ok;
-    } catch {
-      return false;
+      return await invoke<boolean>('test_connection', { url: url || null });
+    } catch (e) {
+      console.warn('Rust test_connection failed, falling back to fetch:', e);
+      const parsedUrl = fromNullable(url);
+      const testUrl = parsedUrl._tag === 'some' ? parsedUrl.value : pb.baseUrl;
+      try {
+        const response = await fetch(`${testUrl}/api/health`);
+        return response.ok;
+      } catch {
+        return false;
+      }
     }
   });
 }
 
 export function getRecordings(streamId: string): AsyncIO<RecordingRecord[]> {
-  return new AsyncIO(() =>
-    pb.collection('recordings').getList<RecordingRecord>(1, 50, {
-      filter: `stream_id = '${streamId}'`,
-      sort: '-created',
-    }).then((r) => r.items)
-  );
+  return new AsyncIO(async () => {
+    try {
+      return await invoke<RecordingRecord[]>('list_recordings', { streamId });
+    } catch (e) {
+      console.warn('Rust list_recordings failed, falling back to JS SDK:', e);
+      return pb.collection('recordings').getList<RecordingRecord>(1, 50, {
+        filter: `stream_id = '${streamId}'`,
+        sort: '-created',
+      }).then((r) => r.items);
+    }
+  });
 }
 
 export function getAnnouncements(): AsyncIO<AnnouncementRecord[]> {
@@ -287,8 +295,12 @@ export function getResources(category?: string): AsyncIO<ResourceRecord[]> {
   );
 }
 
-export function getFileUrl(collectionId: string, recordId: string, fileName: string): string {
-  return `${pb.baseUrl}/api/files/${collectionId}/${recordId}/${fileName}`;
+export async function getFileUrl(collectionId: string, recordId: string, fileName: string): Promise<string> {
+  try {
+    return await invoke<string>('get_file_url', { collection: collectionId, recordId, fileName });
+  } catch (e) {
+    return `${pb.baseUrl}/api/files/${collectionId}/${recordId}/${fileName}`;
+  }
 }
 
 export function getCurrentPocketBaseUrl(): string {

@@ -1,6 +1,6 @@
 [package]
 name = "sanctuary-stream"
-version = "0.1.0"
+version = "0.3.3"
 description = "Secure-by-Design church streaming control system"
 authors = ["Sanctuary Stream Contributors"]
 license = "MIT"
@@ -11,6 +11,7 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
+sanctuary-core = { path = "../../sanctuary-core" }
 tauri = { version = "1.6", features = ["dialog-all", "fs-read-dir", "fs-read-file", "fs-write-file", "http-all", "notification-all", "shell-open", "window-close", "window-hide", "window-maximize", "window-minimize", "window-show"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -19,30 +20,16 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 uuid = { version = "1.6", features = ["v4"] }
-obws = "0.12"
-eventsource-client = "0.12"
-futures-util = "0.3"
 dotenvy = "0.15"
 chrono = "0.4"
-google-drive3 = "5.0"
-yup-oauth2 = "9.0"
-hyper-rustls = { version = "0.25", features = ["native-tokio", "http1", "tls12", "logging", "rustls-native-certs"] }
-tokio-util = { version = "0.7", features = ["io"] }
-
-# Cloud integrations (optional, enable as needed)
-aws-config = { version = "1.1", optional = true }
-aws-sdk-s3 = { version = "1.15", optional = true }
-aws-sdk-sqs = { version = "1.13", optional = true }
-lapin = { version = "2.3", optional = true }
-redis = { version = "0.24", optional = true }
 
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
-cloud-aws = ["aws-config", "aws-sdk-s3", "aws-sdk-sqs"]
-cloud-rabbitmq = ["lapin"]
-cloud-redis = ["redis"]
-all-integrations = ["cloud-aws", "cloud-rabbitmq", "cloud-redis"]
+cloud-aws = ["sanctuary-core/cloud-aws"]
+cloud-rabbitmq = ["sanctuary-core/cloud-rabbitmq"]
+cloud-redis = ["sanctuary-core/cloud-redis"]
+all-integrations = ["sanctuary-core/all-integrations"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.25"

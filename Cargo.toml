@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "sanctuary-app/src-tauri", "sanctuary-cli-rs", "sanctuary-core",
+]
+resolver = "2"

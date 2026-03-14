@@ -11,7 +11,7 @@ To go from zero to a working local environment in one command:
 ```bash
 git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
-npm run setup
+just setup
 ```
 
 **What this does:**
@@ -23,7 +23,7 @@ npm run setup
 
 Once complete, start the environment:
 ```bash
-npm run dev:full
+just dev
 ```
 
 ---

@@ -1,98 +1,209 @@
 // Prevents additional console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod bridge;
-mod drive;
-#[cfg(test)]
-mod bridge_tests;
-
-use bridge::SanctuaryBridge;
+use sanctuary_core::{
+    SanctuaryBridge, StreamStatusValue, StreamMetadata, PocketBaseClient,
+    Sermon, Announcement, Resource, User
+};
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{info, error};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct StreamQualityMetrics {
-    fps: Option<f64>,
-    bitrate: Option<u64>,
-    dropped_frames: Option<u64>,
-    cpu_usage: Option<f64>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct StreamMetadata {
-    #[serde(rename = "outputActive")]
-    output_active: Option<bool>,
-    #[serde(rename = "outputDuration")]
-    output_duration: Option<u64>,
-    #[serde(rename = "outputBytes")]
-    output_bytes: Option<u64>,
-    quality: Option<StreamQualityMetrics>,
+struct AppState {
+    pb: Arc<Mutex<PocketBaseClient>>,
+    stream_id: Arc<Mutex<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct StreamStatus {
-    status: String,
+    status: StreamStatusValue,
     youtube_url: Option<String>,
     metadata: Option<StreamMetadata>,
 }
 
-// Tauri commands
+#[derive(Debug, Serialize, Deserialize)]
+struct AuthResponse {
+    token: String,
+    user: User,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Recording {
+    id: String,
+    title: String,
+    file_id: String,
+    stream_id: String,
+    duration: Option<f64>,
+    size: Option<u64>,
+    created: String,
+    updated: String,
+}
+
+// --- Monadic Helpers ---
+
+/// Converts a Result to a Tauri-compatible String error.
+fn to_tauri_res<T, E: std::fmt::Display>(res: Result<T, E>) -> Result<T, String> {
+    res.map_err(|e| e.to_string())
+}
+
 #[tauri::command]
-async fn get_stream_status(pocketbase_url: String, stream_id: String) -> Result<StreamStatus, String> {
-    let client = reqwest::Client::new();
-    let url = format!("{}/api/collections/streams/records/{}", pocketbase_url, stream_id);
+async fn discover_and_login(
+    state: tauri::State<'_, AppState>,
+    email: String,
+    password: String,
+) -> Result<AuthResponse, String> {
+    let mut pb = state.pb.lock().await;
     
-    client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| format!("Request failed: {}", e))
-        .and_then(|response| {
-            if response.status().is_success() {
-                Ok(response)
-            } else {
-                Err(format!("API error: {}", response.status()))
-            }
-        })?
-        .json::<StreamStatus>()
-        .await
-        .map_err(|e| format!("JSON parse failed: {}", e))
+    // 1. Discover the parish instance URL from master registry
+    let instance_url = pb.discover_parish(&email).await.map_err(|e| e.to_string())?;
+    info!("🚀 Discovered parish instance: {}", instance_url);
+    
+    // 2. Switch the client to that specific instance
+    pb.set_base_url(instance_url);
+    
+    // 3. Perform the actual login on the parish instance
+    to_tauri_res(
+        pb.login(&email, &password)
+            .await
+            .map(|(token, user)| AuthResponse { token, user })
+    )
+}
+
+#[tauri::command]
+async fn set_pocketbase_url(
+    state: tauri::State<'_, AppState>,
+    url: String,
+) -> Result<(), String> {
+    let mut pb = state.pb.lock().await;
+    pb.set_base_url(url);
+    Ok(())
+}
+
+#[tauri::command]
+async fn test_connection(
+    state: tauri::State<'_, AppState>,
+    url: Option<String>,
+) -> Result<bool, String> {
+    let pb = state.pb.lock().await;
+    let test_url = url.unwrap_or_else(|| pb.base_url().to_string());
+    
+    // Functional check using reqwest status
+    let client = reqwest::Client::new();
+    match client.get(format!("{}/api/health", test_url)).send().await {
+        Ok(resp) => Ok(resp.status().is_success()),
+        Err(_) => Ok(false),
+    }
+}
+
+// --- CMS Commands ---
+
+#[tauri::command]
+async fn list_sermons(
+    state: tauri::State<'_, AppState>,
+    filter: Option<String>,
+    sort: Option<String>,
+    page: u32,
+    per_page: u32,
+) -> Result<Vec<Sermon>, String> {
+    let pb = state.pb.lock().await;
+    to_tauri_res(pb.list::<Sermon>("sermons", page, per_page, filter, sort).await)
+}
+
+#[tauri::command]
+async fn list_announcements(
+    state: tauri::State<'_, AppState>,
+    filter: Option<String>,
+    sort: Option<String>,
+    page: u32,
+    per_page: u32,
+) -> Result<Vec<Announcement>, String> {
+    let pb = state.pb.lock().await;
+    to_tauri_res(pb.list::<Announcement>("announcements", page, per_page, filter, sort).await)
+}
+
+#[tauri::command]
+async fn list_resources(
+    state: tauri::State<'_, AppState>,
+    filter: Option<String>,
+    sort: Option<String>,
+    page: u32,
+    per_page: u32,
+) -> Result<Vec<Resource>, String> {
+    let pb = state.pb.lock().await;
+    to_tauri_res(pb.list::<Resource>("resources", page, per_page, filter, sort).await)
+}
+
+#[tauri::command]
+async fn list_recordings(
+    state: tauri::State<'_, AppState>,
+    stream_id: String,
+) -> Result<Vec<Recording>, String> {
+    let pb = state.pb.lock().await;
+    to_tauri_res(
+        pb.list::<Recording>(
+            "recordings", 
+            1, 
+            50, 
+            Some(format!("stream_id = '{}'", stream_id)), 
+            Some("-created".to_string())
+        ).await
+    )
+}
+
+// --- Core App Commands ---
+
+#[tauri::command]
+async fn get_stream_status(state: tauri::State<'_, AppState>) -> Result<StreamStatus, String> {
+    let pb = state.pb.lock().await;
+    let stream_id = state.stream_id.lock().await;
+    
+    let url = format!("{}/api/collections/streams/records/{}", pb.base_url(), *stream_id);
+    let client = reqwest::Client::new();
+    
+    to_tauri_res(
+        client.get(&url)
+            .send()
+            .await
+            .map_err(|e| anyhow::anyhow!("Network: {}", e))?
+            .error_for_status()
+            .map_err(|e| anyhow::anyhow!("Status: {}", e))?
+            .json::<StreamStatus>()
+            .await
+            .map_err(|e| anyhow::anyhow!("JSON: {}", e))
+    )
 }
 
 #[tauri::command]
 async fn send_command(
-    pocketbase_url: String,
+    state: tauri::State<'_, AppState>,
     action: String,
-    auth_token: String,
-    user_id: String,
 ) -> Result<String, String> {
-    let client = reqwest::Client::new();
-    let url = format!("{}/api/collections/commands/records", pocketbase_url);
+    let pb = state.pb.lock().await;
+    let url = format!("{}/api/collections/commands/records", pb.base_url());
     
+    // Monadic check for token
+    let token = pb.get_token().ok_or_else(|| "Not authenticated".to_string())?;
     let correlation_id = uuid::Uuid::new_v4().to_string();
     
     let payload = serde_json::json!({
         "action": action,
         "executed": false,
-        "correlation_id": correlation_id,
-        "created_by": user_id,
+        "correlation_id": &correlation_id,
     });
     
-    client
-        .post(&url)
-        .header("Authorization", auth_token)
-        .json(&payload)
-        .send()
-        .await
-        .map_err(|e| format!("Request failed: {}", e))
-        .and_then(|response| {
-            if response.status().is_success() {
-                Ok(correlation_id)
-            } else {
-                Err(format!("API error: {}", response.status()))
-            }
-        })
+    let client = reqwest::Client::new();
+    to_tauri_res(
+        client.post(&url)
+            .header("Authorization", format!("Bearer {}", token))
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| anyhow::anyhow!("Network: {}", e))?
+            .error_for_status()
+            .map_err(|e| anyhow::anyhow!("Status: {}", e))
+            .map(|_| correlation_id)
+    )
 }
 
 #[tauri::command]
@@ -101,69 +212,10 @@ fn show_notification(message: String) -> Result<(), String> {
     Ok(())
 }
 
-// Cloud AWS integration (optional feature)
-#[cfg(feature = "cloud-aws")]
 #[tauri::command]
-async fn upload_to_s3(bucket: String, key: String, data: Vec<u8>) -> Result<String, String> {
-    use aws_sdk_s3::Client;
-    let config = aws_config::load_from_env().await;
-    let client = Client::new(&config);
-    
-    client
-        .put_object()
-        .bucket(bucket)
-        .key(key)
-        .body(data.into())
-        .send()
-        .await
-        .map_err(|e| format!("S3 upload failed: {}", e))?;
-    
-    Ok("Uploaded successfully".to_string())
-}
-
-#[cfg(feature = "cloud-aws")]
-#[tauri::command]
-async fn send_to_sqs(queue_url: String, message: String) -> Result<String, String> {
-    use aws_sdk_sqs::Client;
-    let config = aws_config::load_from_env().await;
-    let client = Client::new(&config);
-    
-    client
-        .send_message()
-        .queue_url(queue_url)
-        .message_body(message)
-        .send()
-        .await
-        .map_err(|e| format!("SQS send failed: {}", e))?;
-    
-    Ok("Sent to SQS successfully".to_string())
-}
-
-// RabbitMQ integration (optional feature)
-#[cfg(feature = "cloud-rabbitmq")]
-#[tauri::command]
-async fn publish_to_rabbitmq(url: String, exchange: String, routing_key: String, message: String) -> Result<String, String> {
-    use lapin::{Connection, ConnectionProperties, options::*, types::FieldTable};
-    
-    let conn = Connection::connect(&url, ConnectionProperties::default())
-        .await
-        .map_err(|e| format!("RabbitMQ connection failed: {}", e))?;
-    
-    let channel = conn.create_channel().await
-        .map_err(|e| format!("Channel creation failed: {}", e))?;
-    
-    channel
-        .basic_publish(
-            &exchange,
-            &routing_key,
-            BasicPublishOptions::default(),
-            message.as_bytes(),
-            lapin::BasicProperties::default(),
-        )
-        .await
-        .map_err(|e| format!("Publish failed: {}", e))?;
-    
-    Ok("Published to RabbitMQ successfully".to_string())
+async fn get_file_url(state: tauri::State<'_, AppState>, collection: String, record_id: String, file_name: String) -> Result<String, String> {
+    let pb = state.pb.lock().await;
+    Ok(format!("{}/api/files/{}/{}/{}", pb.base_url(), collection, record_id, file_name))
 }
 
 fn main() {
@@ -177,10 +229,17 @@ fn main() {
     let pb_url = std::env::var("VITE_PB_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
     let stream_id = std::env::var("VITE_STREAM_ID").unwrap_or_default();
 
-    let bridge = SanctuaryBridge::new(pb_url, stream_id);
+    let pb = PocketBaseClient::new(pb_url.clone());
+    let bridge = SanctuaryBridge::new(pb_url, stream_id.clone());
+
+    let app_state = AppState {
+        pb: Arc::new(Mutex::new(pb)),
+        stream_id: Arc::new(Mutex::new(stream_id)),
+    };
 
     tauri::Builder::default()
-        .setup(|app| {
+        .manage(app_state)
+        .setup(|_app| {
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = bridge.start().await {
                     error!("Failed to start bridge: {}", e);
@@ -192,6 +251,14 @@ fn main() {
             get_stream_status,
             send_command,
             show_notification,
+            list_sermons,
+            list_announcements,
+            list_resources,
+            list_recordings,
+            discover_and_login,
+            set_pocketbase_url,
+            test_connection,
+            get_file_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

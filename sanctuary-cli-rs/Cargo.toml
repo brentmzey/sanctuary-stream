@@ -1,0 +1,16 @@
+[package]
+name = "sanctuary-cli"
+version = "0.3.3"
+edition = "2021"
+
+[dependencies]
+sanctuary-core = { path = "../sanctuary-core" }
+clap = { version = "4.4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+colored = "2.0"
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+regex = "1.10"
+serde_json = "1.0"

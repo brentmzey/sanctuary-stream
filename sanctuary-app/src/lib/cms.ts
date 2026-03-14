@@ -15,6 +15,7 @@
  *   const io = createSermon(data).flatMap((s) => publishSermon(s.id));
  *   const result = await io.attempt();
  */
+import { invoke } from '@tauri-apps/api/tauri';
 import { pb } from './pocketbase';
 import { AsyncIO } from '@shared/io';
 import { fromNonEmptyString, getOrElse } from '@shared/option';
@@ -24,13 +25,6 @@ import type { Sermon, Announcement, Resource } from '@shared/types';
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Builds a PocketBase filter string, safely ignoring empty/null values.
- * Keeps the API call clean when the caller doesn't supply an optional filter.
- *
- * Option.fromNonEmptyString() does the null + whitespace check for us —
- * a perfect fit for optional query params from form inputs.
- */
 const resolveFilter = (filter: string | undefined): string =>
     getOrElse(fromNonEmptyString(filter), () => '');
 
@@ -38,27 +32,29 @@ const resolveFilter = (filter: string | undefined): string =>
 // Sermons
 // ---------------------------------------------------------------------------
 
-/**
- * List sermons — authenticated users only (see migration access rules).
- *
- * @param filter  Optional PocketBase filter string, e.g. "published = true"
- * @param sort    Sort expression, defaults to newest-first by sermon date
- * @param page    1-indexed page number
- * @param perPage Records per page (max 500 per PocketBase limits)
- */
 export const listSermons = (
     filter?: string,
     sort = '-sermon_date',
     page = 1,
-    perPage = 20
+    per_page = 20
 ): AsyncIO<Sermon[]> =>
     new AsyncIO(async () => {
         const safeFilter = resolveFilter(filter);
-        const result = await pb.collection('sermons').getList<Sermon>(page, perPage, {
-            filter: safeFilter,
-            sort,
-        });
-        return result.items;
+        try {
+            return await invoke<Sermon[]>('list_sermons', {
+                filter: safeFilter || null,
+                sort: sort || null,
+                page,
+                perPage: per_page,
+            });
+        } catch (e) {
+            console.warn('Rust list_sermons failed, falling back to JS SDK:', e);
+            const result = await pb.collection('sermons').getList<Sermon>(page, per_page, {
+                filter: safeFilter,
+                sort,
+            });
+            return result.items;
+        }
     });
 
 /**
@@ -141,11 +137,21 @@ export const listAnnouncements = (
 ): AsyncIO<Announcement[]> =>
     new AsyncIO(async () => {
         const safeFilter = resolveFilter(filter);
-        const result = await pb.collection('announcements').getList<Announcement>(page, perPage, {
-            filter: safeFilter,
-            sort,
-        });
-        return result.items;
+        try {
+            return await invoke<Announcement[]>('list_announcements', {
+                filter: safeFilter || null,
+                sort: sort || null,
+                page,
+                perPage,
+            });
+        } catch (e) {
+            console.warn('Rust list_announcements failed, falling back to JS SDK:', e);
+            const result = await pb.collection('announcements').getList<Announcement>(page, perPage, {
+                filter: safeFilter,
+                sort,
+            });
+            return result.items;
+        }
     });
 
 export const getAnnouncement = (id: string): AsyncIO<Announcement> =>
@@ -204,11 +210,21 @@ export const listResources = (
 ): AsyncIO<Resource[]> =>
     new AsyncIO(async () => {
         const safeFilter = resolveFilter(filter);
-        const result = await pb.collection('resources').getList<Resource>(page, perPage, {
-            filter: safeFilter,
-            sort,
-        });
-        return result.items;
+        try {
+            return await invoke<Resource[]>('list_resources', {
+                filter: safeFilter || null,
+                sort: sort || null,
+                page,
+                perPage,
+            });
+        } catch (e) {
+            console.warn('Rust list_resources failed, falling back to JS SDK:', e);
+            const result = await pb.collection('resources').getList<Resource>(page, perPage, {
+                filter: safeFilter,
+                sort,
+            });
+            return result.items;
+        }
     });
 
 export const getResource = (id: string): AsyncIO<Resource> =>
