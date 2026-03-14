@@ -9,10 +9,25 @@ import { logger } from './logger';
 // Load advanced user configuration (if exists)
 let advancedConfig: Record<string, string> = {};
 try {
-  const configPath = path.join(process.cwd(), 'config.json');
-  if (fs.existsSync(configPath)) {
+  // Check multiple locations for config.json
+  const possiblePaths = [
+    path.join(process.cwd(), 'config.json'),
+    path.join(path.dirname(process.execPath), 'config.json'),
+    // Also check directory of the script if running via node/tsx
+    path.join(__dirname, '..', 'config.json')
+  ];
+
+  let configPath = '';
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p) && !fs.statSync(p).isDirectory()) {
+      configPath = p;
+      break;
+    }
+  }
+
+  if (configPath) {
     advancedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    logger.info('🔧 Loaded advanced configuration from config.json');
+    logger.info(`🔧 Loaded advanced configuration from ${configPath}`);
   }
 } catch (e) {
   logger.warn('Failed to parse config.json, falling back to ENV variables');
@@ -74,6 +89,7 @@ class SanctuaryBridge {
   }
 
   async start() {
+    logger.info('🚀 Starting Sanctuary Bridge...');
     const authResult = await fromPromise(
       () => this.authenticatePocketBase(),
       (e: unknown) => (e instanceof Error ? e : new Error(String(e)))
@@ -82,6 +98,7 @@ class SanctuaryBridge {
     if (authResult._tag === 'failure') {
       logger.error('Failed to start bridge during authentication:', authResult.error);
       process.exit(1);
+      return;
     }
 
     // Now that we're authenticated, we can update status
@@ -105,6 +122,7 @@ class SanctuaryBridge {
   private async authenticatePocketBase() {
     const email = getConfig('BRIDGE_EMAIL', 'bridge@local.dev');
     const password = getConfig('BRIDGE_PASS', 'bridge123456');
+    logger.info(`Attempting PocketBase auth for ${email} at ${this.pb.baseUrl}...`);
     return this.pb.collection('users').authWithPassword(email, password);
   }
 
@@ -177,11 +195,11 @@ class SanctuaryBridge {
 
   private subscribeToCommands() {
     this.pb.collection('commands').subscribe<CommandRecord>('*', async (e) => {
+      logger.info(`Received realtime event: ${e.action} for record ${e.record.id} (executed: ${e.record.executed})`);
       if (e.action === 'create' && !e.record.executed) {
         await this.executeCommand(e.record);
       }
     });
-
     logger.info('✅ Subscribed to command changes');
   }
 

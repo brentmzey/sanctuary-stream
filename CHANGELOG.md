@@ -5,19 +5,25 @@ The project follows **RC-based release naming** (x.xx.xx-RCx) until ready for fu
 
 ---
 
-## [0.1.0-RC1] - 2026-02-28
+## [0.3.1] - 2026-03-14
 ### ✨ Added
-- **Infrastructure:** Initial local development automation with `scripts/setup.sh`.
-- **Backend:** PocketBase schema initialization with test users and stream records.
-- **Bridge:** Sanctuary-bridge implementation for OBS control via PocketBase commands.
-- **App:** React-based control panel with stream health monitoring and quality settings.
-- **Docs:** Comprehensive documentation suite (INDEX, USER_GUIDE, OBS_INTEGRATION).
-- **Automation:** Support for `dev-tmux.sh`, `dev-iterm.scpt`, and `dev-simple.sh`.
-- **E2E:** Playwright integration test suite covering login and dashboard verification.
+- **Test Coverage:** Achieved 99.5% line coverage for `sanctuary-bridge` and 95.5% for `sanctuary-app`.
+- **Infrastructure:** Added standalone `sanctuary-bridge` executable builds for Windows, macOS, and Linux to GitHub Actions.
+- **Verification:** New `acid-test.js` for full end-to-end command flow validation (PB -> Bridge -> OBS -> PB).
+- **Mobile:** Verified iOS build compatibility via Capacitor and successful compilation for iPhone simulator.
+- **Diagnostics:** New `scripts/verify-platform-support.sh` and `docs/ONBOARDING_AUDIT.md`.
 
 ### 🔧 Fixed
-- **Env:** Missing `STREAM_ID` and `PB_URL` in local `.env` files.
-- **Tauri:** CSP (Content Security Policy) updated for PocketHost cloud connectivity.
+- **Database:** Fixed `executed: false` constraint in PocketBase `commands` collection.
+- **Bridge:** Improved `config.json` lookup logic for portable executables.
+- **Tests:** Forced `NODE_ENV=test` in bridge tests to prevent accidental production interference.
+- **CI/CD:** Fixed bridge artifact omission in the `build-release.yml` workflow.
+
+## [0.3.0] - 2026-03-13
+### ✨ Added
+- **Architecture:** Initial support for 245+ church backends with real-time updates.
+- **Tauri:** Added desktop client support for macOS, Windows, and Linux.
+- **Capacitor:** Added mobile app support for iOS and Android.
 
 ## [0.1.1] - 2026-03-11
 ### ✨ Added

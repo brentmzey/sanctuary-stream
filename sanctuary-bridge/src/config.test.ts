@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import fs from 'fs';
+
 
 vi.mock('fs', async () => {
   const actual = await vi.importActual<typeof import('fs')>('fs');
@@ -10,6 +10,10 @@ vi.mock('fs', async () => {
       existsSync: vi.fn((p: string) => {
         if (p.endsWith('config.json')) return true;
         return actual.existsSync(p);
+      }),
+      statSync: vi.fn((p: string) => {
+        if (p.endsWith('config.json')) return { isDirectory: () => false };
+        return actual.statSync(p);
       }),
       readFileSync: vi.fn((p: string, enc: any) => {
         if (p.endsWith('config.json')) {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { uploadFile } from './google-drive';
 import fs from 'fs';
 import { google } from 'googleapis';
-import { logger } from './logger';
+
 
 vi.mock('fs', () => ({
   default: {

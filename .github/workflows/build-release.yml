@@ -436,9 +436,41 @@ jobs:
           name: backend-config
           path: backend-config.zip
 
+  # Build Bridge Executables
+  build-bridge:
+    needs: [validate]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd sanctuary-bridge && npm install
+
+      - name: Build bridge executables
+        run: |
+          cd sanctuary-bridge
+          npm run build:exe
+          npm run build:exe:windows
+          npm run build:exe:linux
+
+      - name: Upload bridge artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-executables
+          path: sanctuary-bridge/dist/bin/
+
   # Create GitHub Release
   create-release:
-    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android, package-backend]
+    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android, build-bridge, package-backend]
     runs-on: ubuntu-22.04
     if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
     permissions:
@@ -486,10 +518,11 @@ jobs:
             ### 📦 Download Assets
             Choose your platform below:
             - 🍎 **macOS**: .dmg (Universal)
-            - 🪟 **Windows**: .msi
-            - 🐧 **Linux**: .deb or .AppImage
+            - 🪟 **Windows**: .msi or bridge.exe
+            - 🐧 **Linux**: .deb, .AppImage, or bridge executable
             - 🤖 **Android**: .apk
             - 📱 **iOS**: .ipa (Internal use)
+            - 🔌 **Sanctuary Bridge**: Standalone connectors for OBS
             - 🗄️ **Backend**: PocketBase configuration package
           files: |
             artifacts/**/*.dmg
@@ -500,6 +533,7 @@ jobs:
             artifacts/**/*.ipa
             artifacts/**/*.apk
             artifacts/**/*.aab
+            artifacts/**/*sanctuary-bridge*
             artifacts/backend-config/backend-config.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
