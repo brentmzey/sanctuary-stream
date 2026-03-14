@@ -11,6 +11,10 @@ vi.mock('fs', async () => {
         if (p.endsWith('config.json')) return true;
         return actual.existsSync(p);
       }),
+      statSync: vi.fn((p: string) => {
+        if (p.endsWith('config.json')) return { isDirectory: () => false };
+        return actual.statSync(p);
+      }),
       readFileSync: vi.fn((p: string, enc: any) => {
         if (p.endsWith('config.json')) {
           if (process.env.TEST_FS_ERROR) throw new Error('fs error');
