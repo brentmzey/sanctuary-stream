@@ -92,7 +92,7 @@ function handleRequest(ws: WebSocket, msg: ObsRequest) {
   switch (requestType) {
     case 'GetVersion':
       responseData = {
-        obsVersion: '29.1.0',
+        obsVersion: '30.0.0',
         obsWebSocketVersion: '5.0.0',
         rpcVersion: 1,
         availableRequests: [],

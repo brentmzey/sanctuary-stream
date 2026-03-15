@@ -19,9 +19,5 @@ module.exports = {
       files: ['sanctuary-app/**/*.{ts,tsx}'],
       extends: ['./sanctuary-app/.eslintrc.cjs'],
     },
-    {
-      files: ['sanctuary-bridge/**/*.ts'],
-      extends: ['./sanctuary-bridge/.eslintrc.cjs'],
-    },
   ],
 };

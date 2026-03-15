@@ -60,6 +60,10 @@ export default defineConfig({
     env: {
       VITE_STREAM_ID: 'defaultstream01',
       VITE_PB_URL: 'http://127.0.0.1:8090',
+      STREAM_ID: 'defaultstream01',
+      PB_URL: 'http://127.0.0.1:8090',
+      OBS_URL: 'localhost',
+      OBS_PORT: '4455',
     }
   },
 });

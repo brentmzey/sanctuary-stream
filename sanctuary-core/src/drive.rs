@@ -36,8 +36,10 @@ pub async fn upload_to_drive(file_path: &str) -> Result<String, Box<dyn std::err
 
     info!("Starting upload to Google Drive: {}", file_name);
 
-    let mut req = DriveFile::default();
-    req.name = Some(file_name.to_string());
+    let req = DriveFile {
+        name: Some(file_name.to_string()),
+        ..Default::default()
+    };
 
     let content = fs::read(file_path).await?;
     let mut reader = Cursor::new(content);

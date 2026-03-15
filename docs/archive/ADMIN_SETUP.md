@@ -22,7 +22,7 @@ Run the following command in your terminal. This will install all dependencies, 
 ### 3. Environment Configuration
 Verify that your `.env` files were created and contain the correct values:
 - **`sanctuary-app/.env`**: Used by the frontend.
-- **`sanctuary-bridge/.env`**: Used by the OBS connector.
+- **`.env`** (Root): Used by the native Rust CLI and Bridge.
 
 **Crucial Check:** Ensure the `STREAM_ID` in both files matches the record ID in your PocketBase `streams` collection.
 

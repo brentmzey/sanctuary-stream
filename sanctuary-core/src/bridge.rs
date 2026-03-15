@@ -48,13 +48,9 @@ impl SanctuaryBridge {
         
         let obs_handle = self.obs.clone();
         tokio::spawn(async move {
-            loop {
-                if let Err(e) = Self::connect_obs(obs_handle.clone()).await {
-                    error!("OBS connection failed: {}. Retrying in 5s...", e);
-                    tokio::time::sleep(Duration::from_secs(5)).await;
-                } else {
-                    break;
-                }
+            while let Err(e) = Self::connect_obs(obs_handle.clone()).await {
+                error!("OBS connection failed: {}. Retrying in 5s...", e);
+                tokio::time::sleep(Duration::from_secs(5)).await;
             }
         });
 

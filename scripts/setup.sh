@@ -163,17 +163,19 @@ if [ -f "pocketbase/local/pb.pid" ]; then
     echo "PocketBase stopped after setup."
 fi
 
-cat > sanctuary-bridge/.env << EOF
-PB_URL=http://127.0.0.1:8090
-BRIDGE_EMAIL=bridge@local.dev
-BRIDGE_PASS=bridge123456
-OBS_URL=ws://127.0.0.1:4455
-STREAM_ID=${STREAM_ID}
-EOF
-
 cat > sanctuary-app/.env << EOF
 VITE_PB_URL=http://127.0.0.1:8090
 VITE_STREAM_ID=${STREAM_ID}
+EOF
+
+# Also create a root .env for the Rust CLI/Bridge if needed
+cat > .env << EOF
+PB_URL=http://127.0.0.1:8090
+STREAM_ID=${STREAM_ID}
+BRIDGE_EMAIL=bridge@local.dev
+BRIDGE_PASS=bridge123456
+OBS_URL=localhost
+OBS_PORT=4455
 EOF
 
 echo -e "${GREEN}✅ Environment files configured${NC}"
@@ -186,5 +188,5 @@ echo ""
 echo "✅ Setup Complete!"
 echo "======================================"
 echo "🚀 Next Steps:"
-echo -e "   ${GREEN}npm run dev:full${NC}"
+echo -e "   ${GREEN}just dev${NC}"
 echo "======================================"

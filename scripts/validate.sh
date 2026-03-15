@@ -1,7 +1,6 @@
 #!/bin/bash
 # Sanctuary Stream - Complete Validation Script
 # Tests build, lint, typecheck across all components
-#
 
 set -e  # Exit on any error
 
@@ -46,6 +45,9 @@ print_status $? "Node.js installed"
 command -v npm >/dev/null 2>&1
 print_status $? "npm installed"
 
+command -v cargo >/dev/null 2>&1
+print_status $? "Rust/Cargo installed"
+
 # Check if dependencies are installed
 print_step "📦 Step 2: Checking Dependencies"
 
@@ -65,16 +67,8 @@ else
     print_status $? "Frontend dependencies installed"
 fi
 
-if [ -d "sanctuary-bridge/node_modules" ]; then
-    print_status 0 "Bridge dependencies installed"
-else
-    echo -e "${YELLOW}⚠️  Installing bridge dependencies...${NC}"
-    cd sanctuary-bridge && npm install && cd ..
-    print_status $? "Bridge dependencies installed"
-fi
-
 # Type checking
-print_step "🔍 Step 3: Type Checking"
+print_step "🔍 Step 3: Type Checking (Frontend)"
 
 echo "Checking frontend types..."
 cd sanctuary-app
@@ -82,33 +76,28 @@ npm run typecheck >/dev/null 2>&1
 print_status $? "Frontend type checking passed"
 cd ..
 
-echo "Checking bridge types..."
-cd sanctuary-bridge
-npm run typecheck >/dev/null 2>&1
-print_status $? "Bridge type checking passed"
-cd ..
-
 # Linting
 print_step "🧹 Step 4: Linting"
 
-echo "Linting all workspaces..."
+echo "Linting all JS/TS workspaces..."
 npm run lint >/dev/null 2>&1
-print_status $? "Linting passed"
+print_status $? "JS/TS Linting passed"
+
+echo "Checking Rust formatting and clippy..."
+cargo clippy --workspace -- -D warnings >/dev/null 2>&1
+print_status $? "Rust Linting/Clippy passed"
 
 # Testing
 print_step "🧪 Step 5: Running Tests"
 
-echo "Testing frontend..."
-cd sanctuary-app
-npm test >/dev/null 2>&1
-print_status $? "Frontend tests passed"
-cd ..
-
-echo "Testing bridge..."
-cd sanctuary-bridge
-npm test >/dev/null 2>&1
-print_status $? "Bridge tests passed"
-cd ..
+echo "Running all tests (Rust + TS)..."
+# Use just if available, otherwise manual
+if command -v just >/dev/null 2>&1; then
+    just test-all >/dev/null 2>&1
+else
+    npm test >/dev/null 2>&1
+fi
+print_status $? "All tests passed"
 
 # Building
 print_step "🔨 Step 6: Building Production Artifacts"
@@ -119,11 +108,9 @@ npm run build >/dev/null 2>&1
 print_status $? "Frontend build successful"
 cd ..
 
-echo "Building bridge..."
-cd sanctuary-bridge
-npm run build >/dev/null 2>&1
-print_status $? "Bridge build successful"
-cd ..
+echo "Building Rust CLI..."
+cargo build --release --package sanctuary-cli >/dev/null 2>&1
+print_status $? "Rust CLI build successful"
 
 # Verify migrations
 print_step "📋 Step 7: Verifying Database Migrations"
@@ -138,15 +125,6 @@ if [ -d "$MIGRATION_DIR" ]; then
     fi
 else
     print_status 1 "Migration directory $MIGRATION_DIR not found"
-fi
-
-# Verify shared types
-print_step "📝 Step 8: Verifying Shared Types"
-
-if [ -f "shared/types.ts" ]; then
-    print_status 0 "shared/types.ts exists"
-else
-    print_status 1 "shared/types.ts exists"
 fi
 
 # Final summary
