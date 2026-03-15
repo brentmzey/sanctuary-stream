@@ -145,7 +145,7 @@ echo "🔐 Step 4: Creating admin account..."
 echo ""
 echo "🏗️ Step 5: Initializing Database Schema..."
 export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL=admin123456
-npm run schema:init:local
+npx tsx pocketbase/schema-init.ts local
 echo -e "${GREEN}✅ Schema initialized${NC}"
 
 echo ""

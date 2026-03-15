@@ -123,23 +123,31 @@ impl PocketBaseClient {
     }
 
     /// SaaS Discovery: Finds the specific instance URL for a user email.
-    /// This connects to the 'Master Registry' instance.
+    /// This connects to the 'Master Registry' instance. Falls back to base_url for single-tenant local setups.
     pub async fn discover_parish(&self, email: &str) -> Result<String> {
         let url = format!("{}/api/collections/parish_lookup/records", self.base_url);
         let query = [("filter", format!("email = '{}'", email))];
 
-        let resp: serde_json::Value = self.http.get(&url)
+        let resp_result = self.http.get(&url)
             .query(&query)
             .send()
-            .await
-            .map_err(|e| anyhow!("Discovery request failed: {}", e))?
-            .json()
-            .await?;
+            .await;
 
-        resp["items"][0]["instance_url"]
-            .as_str()
-            .map(|s| s.to_string())
-            .ok_or_else(|| anyhow!("No parish found for this email address"))
+        if let Ok(resp) = resp_result {
+            if resp.status().is_success() {
+                let json: serde_json::Value = resp.json().await.unwrap_or_default();
+                if let Some(items) = json.get("items").and_then(|i| i.as_array()) {
+                    if !items.is_empty() {
+                        if let Some(instance_url) = items[0].get("instance_url").and_then(|u| u.as_str()) {
+                            return Ok(instance_url.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback for local development / single-tenant instances
+        Ok(self.base_url.clone())
     }
 
     pub fn set_base_url(&mut self, url: String) {
