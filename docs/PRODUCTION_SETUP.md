@@ -1,131 +1,101 @@
-# 🚀 Production Setup & Publishing Guide
+# 🚀 Production Setup & SaaS Publishing Guide (v0.4.0)
 
-This guide explains how to prepare, build, and distribute Sanctuary Stream for production.
+This guide details how to deploy and manage Sanctuary Stream in a production SaaS environment using the new **Rust-First monadic architecture**.
 
-## 📋 Prerequisites
+## 📋 SaaS Prerequisites
 
-Before you can publish your own releases, you need:
-1.  **A GitHub Repository:** Fork this repository to your own account or organization.
-2.  **A Backend (PocketBase):** Deploy a production PocketBase instance (e.g., on [PocketHost](https://pockethost.io), VPS, or dedicated server).
-3.  **Vercel Account:** For hosting the web version (optional).
-4.  **Apple/Google Developer Accounts:** For mobile app distribution (optional).
+1.  **Master Registry Instance:** A centralized PocketBase instance (e.g., on [PocketHost](https://pockethost.io)) that stores the user-to-parish routing table.
+2.  **Parish Instances:** Isolated PocketBase instances for each church (multi-tenancy).
+3.  **GitHub Secrets:** Required for automated cross-platform builds and code signing.
 
 ---
 
-## 🔐 1. Configure GitHub Secrets
+## 🔐 1. SaaS Architecture Configuration
 
-The automated build and release process (`.github/workflows/build-release.yml`) requires several secrets to sign and deploy the applications.
+Sanctuary Stream 0.4.0 uses a **Discovery Layer** to handle 250+ PocketBase instances.
 
-Go to: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
+### Master Registry Setup
+1.  Create a collection named `parish_lookup`.
+2.  Add fields: `email` (string), `instance_url` (string), `parish_id` (relation).
+3.  When a user logs in, the Rust core queries this registry to find their private parish URL.
 
-### 🪟 Windows Signing (Optional)
-- `WINDOWS_CERTIFICATE`: Base64-encoded `.pfx` or `.p12` certificate.
-- `WINDOWS_CERTIFICATE_PASSWORD`: Password for the certificate.
-
-### 🍎 macOS Signing (Optional)
-- `APPLE_CERTIFICATE`: Base64-encoded signing certificate.
-- `APPLE_CERTIFICATE_PASSWORD`: Password for the certificate.
-- `APPLE_SIGNING_IDENTITY`: Your Developer ID Application name (e.g., `Developer ID Application: Your Name (TEAMID)`).
-- `APPLE_ID`: Your Apple ID email.
-- `APPLE_PASSWORD`: App-specific password for your Apple ID.
-- `APPLE_TEAM_ID`: Your 10-character Team ID.
-
-### 🌐 Web (Vercel)
-- `VERCEL_TOKEN`: Your Vercel API token.
-- `VERCEL_ORG_ID`: Your Vercel Organization ID.
-- `VERCEL_PROJECT_ID`: Your Vercel Project ID.
-- `VITE_PB_URL`: The URL of your production backend (e.g., `https://api.your-sanctuary.com`).
-
-### 🤖 Android Signing
-- `ANDROID_KEYSTORE_BASE64`: Base64-encoded `.jks` keystore file.
-- `ANDROID_KEYSTORE_PASSWORD`: Password for the keystore.
-- `ANDROID_KEY_ALIAS`: Alias name for the key.
-- `ANDROID_KEY_PASSWORD`: Password for the key.
-- `GOOGLE_PLAY_JSON_KEY`: JSON service account key for Google Play Console.
-
-### 📱 iOS Signing
-- `APPLE_PROVISIONING_PROFILE`: Base64-encoded provisioning profile.
-- `FASTLANE_SESSION`: Fastlane session cookie for 2FA-enabled accounts.
+### Global Schema Management
+Use the native Rust CLI to keep all 250+ instances in sync:
+```bash
+# Set your master registry URL
+export MASTER_REGISTRY_URL="https://registry.your-domain.com"
+# Synchronize all parish schemas
+just sync-schemas
+```
 
 ---
 
-## 🛠️ 2. Production Configuration
+## 🛠️ 2. Native Multi-Platform Deployment
 
-### Update Backend URL
-Ensure your production clients connect to your production backend.
+The `.github/workflows/build-release.yml` now cross-compiles native Rust binaries for all platforms.
 
-- **Web:** Set `VITE_PB_URL` in your GitHub Secrets or `.env.production`.
-- **Desktop/Mobile:** Users can configure this in the **Settings** menu within the app or during the initial **Setup Wizard**.
+### Required GitHub Secrets
+Go to: `Settings` → `Secrets` → `Actions`.
 
-### Versioning
-Before a release, update the version number in:
-- `package.json` (Root)
-- `sanctuary-app/package.json`
-- `sanctuary-app/src-tauri/tauri.conf.json`
+| Secret | Description |
+| :--- | :--- |
+| `APPLE_CERTIFICATE` | Base64 signing cert for Universal Mac App |
+| `WINDOWS_CERTIFICATE` | Base64 signing cert for Windows Installer |
+| `VITE_PB_URL` | Your Master Registry URL for the web build |
+| `STREAM_ID` | Default fallback stream ID |
 
 ---
 
 ## 🚢 3. Publishing a Release
 
-### Option A: Automatic (Recommended)
-The easiest way to publish is using the included automation script:
+### Automated Workflow (Recommended)
+1.  Ensure you are on the `main` branch.
+2.  Run the version bump:
+    ```bash
+    just bump 0.4.0
+    ```
+3.  Push a tag to GitHub:
+    ```bash
+    git tag -a v0.4.0 -m "Release v0.4.0"
+    git push origin v0.4.0
+    ```
 
-```bash
-./scripts/build-test-deploy.sh --version v1.0.0
-```
-
-This script will:
-1.  Run automated setup and dependency installation.
-2.  Run the full validation suite (lint, typecheck, tests).
-3.  Build all workspaces locally to ensure compilation.
-4.  Commit any changes.
-5.  Push to GitHub.
-6.  Create and push a git tag (`v1.0.0`), triggering the **Build and Release** workflow.
-
-### Option B: Manual Tagging
-If you prefer manual control:
-
-```bash
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
-```
+**GitHub Actions will then:**
+- Compile the **Universal macOS DMG**.
+- Compile the **Windows MSI** installer.
+- Compile the **Linux AppImage**.
+- Compile **Standalone Native CLI** binaries for all platforms.
+- Bundle the **PocketBase Backend** configuration.
 
 ---
 
-## 📦 4. Release Artifacts
+## 📦 4. Release Assets (The "Bullet-Proof" Package)
 
-Once the GitHub Action completes (~20 minutes), artifacts will be available in the **Releases** section of your repository:
+The following assets will be automatically attached to your GitHub Release:
 
-- `Sanctuary-Stream-universal.dmg` (macOS)
-- `Sanctuary-Stream-x64.msi` (Windows)
-- `sanctuary-stream_amd64.deb` (Linux)
-- `sanctuary-stream_amd64.AppImage` (Linux)
-- `app-release.apk` (Android)
-- `App.xcarchive` / `.ipa` (iOS - for Internal TestFlight)
-
----
-
-## 🔄 5. Managing Rollbacks
-
-To rollback to a previous version:
-1.  Go to the **Releases** page on GitHub.
-2.  Find the previous stable version.
-3.  Instruct your users to download the binaries from that specific release.
-4.  If using Vercel, you can also "Promote" a previous deployment from the Vercel dashboard.
+- `sanctuary-stream.dmg` (Universal Mac)
+- `sanctuary-stream-setup.msi` (Windows)
+- `sanctuary-stream.AppImage` (Linux)
+- `sanctuary-win-x64.exe` (Standalone Native Rust Bridge)
+- `sanctuary-macos-universal` (Standalone Native Rust Bridge)
+- `backend-config.zip` (Database Migrations & Schema)
 
 ---
 
-## ❓ Troubleshooting
+## 📱 5. Mobile Distribution
 
-- **Signing Errors:** Ensure your certificates are correctly base64-encoded and not expired.
-- **CI/CD Failures:** Check the GitHub Actions logs. Most common issues are missing secrets or environment variables.
-- **PocketBase Connection:** Ensure your backend has the correct CORS settings to allow connections from your web app domain.
+### iOS
+1.  `cd sanctuary-app && npx cap sync ios`
+2.  Open `ios/App/App.xcworkspace` in Xcode.
+3.  Archive and upload to TestFlight.
+
+### Android
+1.  `cd sanctuary-app && npx cap sync android`
+2.  The GitHub Action will automatically produce a signed `.apk`.
 
 ---
 
-📚 **Documentation Links:**
-- [Developer Guide](DEVELOPMENT.md)
-- [Architecture](ARCHITECTURE.md)
-- [Operations Guide](OPERATIONS.md)
-- [Functional Style Guide](FUNCTIONAL_STYLE.md)
-- [Full Index](INDEX.md)
+📚 **Advanced Documentation:**
+- [Monadic Rust Logic](../sanctuary-core/README.md)
+- [Unified CLI Reference](../sanctuary-cli-rs/README.md)
+- [E2E Testing Guide](../integration-tests/README.md)
