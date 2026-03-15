@@ -45,7 +45,7 @@
     "dev:app": "npm run dev --workspace=sanctuary-app",
     "dev:bridge": "cargo run -p sanctuary-cli -- bridge",
     "dev:full": "concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
-    "dev:pocketbase": "if [ -f pocketbase/local/pocketbase ]; then cd pocketbase/local && ./pocketbase serve --http=127.0.0.1:8090; else pocketbase serve --http=127.0.0.1:8090; fi",
+    "dev:pocketbase": "if [ -f pocketbase/local/pocketbase ]; then PB_EXEC=\"./pocketbase/local/pocketbase\"; else PB_EXEC=\"pocketbase\"; fi; $PB_EXEC superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data && $PB_EXEC serve --http=127.0.0.1:8090 --dir pocketbase/local/pb_data",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "lint": "eslint . --ext .ts,.tsx --ignore-path .eslintignore",
     "lint:app": "cd sanctuary-app && npm run lint",

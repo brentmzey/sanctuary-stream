@@ -65,7 +65,7 @@ impl SanctuaryBridge {
         let email = std::env::var("BRIDGE_EMAIL").unwrap_or_else(|_| "bridge@local.dev".to_string());
         let password = std::env::var("BRIDGE_PASS").unwrap_or_else(|_| "bridge123456".to_string());
 
-        // Try superuser first, then regular user
+        // SaaS Resilience: Try superuser first, then regular user
         let endpoints = [
             format!("{}/api/collections/_superusers/auth-with-password", self.pb_url),
             format!("{}/api/collections/users/auth-with-password", self.pb_url),
@@ -83,18 +83,18 @@ impl SanctuaryBridge {
                     if let Ok(auth_data) = r.json::<PocketBaseAuthResponse>().await {
                         let mut token = self.auth_token.lock().await;
                         *token = auth_data.token;
-                        info!("✅ Authenticated with PocketBase");
+                        info!("✅ Authenticated with PocketBase ({})", url);
                         return Ok(());
                     }
                 } else {
-                    last_err = Some(format!("Status: {}", r.status()));
+                    last_err = Some(format!("{}: {}", url, r.status()));
                 }
             } else if let Err(e) = resp {
                 last_err = Some(e.to_string());
             }
         }
 
-        Err(format!("PocketBase authentication failed: {:?}", last_err).into())
+        Err(format!("PocketBase authentication failed. Last error: {:?}", last_err).into())
     }
 
     async fn connect_obs(handle: Arc<Mutex<Option<ObsClient>>>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

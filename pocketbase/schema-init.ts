@@ -130,20 +130,17 @@ async function createTestUsers(pb: PocketBase) {
 
   for (const user of testUsers) {
     try {
+      // Always try to create, if fails, we update
       await pb.collection('users').create(user);
       console.log(`  ✅ Created test user: ${user.email}`);
     } catch (error: any) {
-      if (error.status === 400) {
-        // Try to update existing user to ensure password is correct
-        try {
-          const existing = await pb.collection('users').getFirstListItem(`email="${user.email}"`);
-          await pb.collection('users').update(existing.id, user);
-          console.log(`  ✅ Updated test user: ${user.email}`);
-        } catch (updateErr: any) {
-          console.log(`  ✓ Test user exists: ${user.email} (Update failed: ${updateErr.message})`);
-        }
-      } else {
-        console.error(`  ❌ Failed to create ${user.email}:`, error.message);
+      // Force update password and details for existing users
+      try {
+        const existing = await pb.collection('users').getFirstListItem(`email="${user.email}"`);
+        await pb.collection('users').update(existing.id, user);
+        console.log(`  ✅ Synced test user: ${user.email}`);
+      } catch (updateErr: any) {
+        console.error(`  ❌ Failed to sync ${user.email}:`, updateErr.message);
       }
     }
   }

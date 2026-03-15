@@ -62,6 +62,8 @@ export default defineConfig({
       VITE_PB_URL: 'http://127.0.0.1:8090',
       STREAM_ID: 'defaultstream01',
       PB_URL: 'http://127.0.0.1:8090',
+      BRIDGE_EMAIL: 'admin@local.dev',
+      BRIDGE_PASS: 'admin123456',
       OBS_URL: 'localhost',
       OBS_PORT: '4455',
     }
