@@ -63,7 +63,7 @@
     "typecheck:app": "cd sanctuary-app && npm run typecheck",
     "validate": "./scripts/validate.sh"
   },
-  "version": "0.3.4",
+  "version": "0.4.0",
   "workspaces": [
     "sanctuary-app",
     "sanctuary-cli"
