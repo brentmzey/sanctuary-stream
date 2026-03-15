@@ -44,10 +44,20 @@ elif [ -f "pocketbase/local/pocketbase.exe" ]; then
     PB_BIN="./pocketbase/local/pocketbase.exe"
     echo -e "${GREEN}✅ Local PocketBase binary (Windows) found${NC}"
 elif command -v pocketbase &> /dev/null; then
-    PB_BIN="pocketbase"
-    echo -e "${GREEN}✅ PocketBase found in PATH${NC}"
+    # Make sure 'pocketbase' in path is not just a directory
+    if ! [ -d "$(command -v pocketbase)" ]; then
+        PB_BIN="pocketbase"
+        echo -e "${GREEN}✅ PocketBase found in PATH: $(command -v pocketbase)${NC}"
+    else
+        echo -e "${YELLOW}⚠️  'pocketbase' in PATH is a directory. Installing locally...${NC}"
+        NEED_INSTALL=true
+    fi
 else
-    echo -e "${YELLOW}⚠️  PocketBase not found. Installing locally...${NC}"
+    NEED_INSTALL=true
+fi
+
+if [ "$NEED_INSTALL" = true ]; then
+    echo -e "${YELLOW}⚠️  PocketBase not found or invalid. Installing locally...${NC}"
     mkdir -p pocketbase/local
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -129,10 +139,8 @@ cd ../..
 
 echo ""
 echo "🔐 Step 4: Creating admin account..."
-# We need to be in the right directory for some pb commands or use absolute paths
-cd pocketbase/local
-../../$PB_BIN superuser upsert admin@local.dev admin123456 || true
-cd ../..
+# Use absolute path to binary for reliability
+"$ABS_PB_BIN" superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data || true
 
 echo ""
 echo "🏗️ Step 5: Initializing Database Schema..."

@@ -76,8 +76,17 @@ npm run typecheck >/dev/null 2>&1
 print_status $? "Frontend type checking passed"
 cd ..
 
+# Building (Must happen before Rust linting because of Tauri distDir check)
+print_step "🔨 Step 4: Building Frontend"
+
+echo "Building frontend..."
+cd sanctuary-app
+npm run build >/dev/null 2>&1
+print_status $? "Frontend build successful"
+cd ..
+
 # Linting
-print_step "🧹 Step 4: Linting"
+print_step "🧹 Step 5: Linting"
 
 echo "Linting all JS/TS workspaces..."
 npm run lint >/dev/null 2>&1
@@ -88,7 +97,7 @@ cargo clippy --workspace -- -D warnings >/dev/null 2>&1
 print_status $? "Rust Linting/Clippy passed"
 
 # Testing
-print_step "🧪 Step 5: Running Tests"
+print_step "🧪 Step 6: Running Tests"
 
 echo "Running all tests (Rust + TS)..."
 # Use just if available, otherwise manual
