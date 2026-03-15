@@ -89,7 +89,7 @@ cd ..
 print_step "🧹 Step 5: Linting"
 
 echo "Linting all JS/TS workspaces..."
-npm run lint >/dev/null 2>&1
+npx eslint . --ext .ts,.tsx --ignore-path .eslintignore >/dev/null 2>&1
 print_status $? "JS/TS Linting passed"
 
 echo "Checking Rust formatting and clippy..."
