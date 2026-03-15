@@ -15,6 +15,7 @@ use crate::types::{Command, CommandAction};
 #[allow(dead_code)]
 struct PocketBaseAuthResponse {
     token: String,
+    #[serde(alias = "user")]
     record: PocketBaseUser,
 }
 
@@ -64,18 +65,36 @@ impl SanctuaryBridge {
         let email = std::env::var("BRIDGE_EMAIL").unwrap_or_else(|_| "bridge@local.dev".to_string());
         let password = std::env::var("BRIDGE_PASS").unwrap_or_else(|_| "bridge123456".to_string());
 
-        let url = format!("{}/api/collections/users/auth-with-password", self.pb_url);
-        let resp = self.http.post(&url)
-            .json(&serde_json::json!({ "identity": email, "password": password }))
-            .send()
-            .await?
-            .json::<PocketBaseAuthResponse>()
-            .await?;
+        // SaaS Resilience: Try superuser first, then regular user
+        let endpoints = [
+            format!("{}/api/collections/_superusers/auth-with-password", self.pb_url),
+            format!("{}/api/collections/users/auth-with-password", self.pb_url),
+        ];
 
-        let mut token = self.auth_token.lock().await;
-        *token = resp.token;
-        info!("✅ Authenticated with PocketBase");
-        Ok(())
+        let mut last_err = None;
+        for url in endpoints {
+            let resp = self.http.post(&url)
+                .json(&serde_json::json!({ "identity": email, "password": password }))
+                .send()
+                .await;
+
+            if let Ok(r) = resp {
+                if r.status().is_success() {
+                    if let Ok(auth_data) = r.json::<PocketBaseAuthResponse>().await {
+                        let mut token = self.auth_token.lock().await;
+                        *token = auth_data.token;
+                        info!("✅ Authenticated with PocketBase ({})", url);
+                        return Ok(());
+                    }
+                } else {
+                    last_err = Some(format!("{}: {}", url, r.status()));
+                }
+            } else if let Err(e) = resp {
+                last_err = Some(e.to_string());
+            }
+        }
+
+        Err(format!("PocketBase authentication failed. Last error: {:?}", last_err).into())
     }
 
     async fn connect_obs(handle: Arc<Mutex<Option<ObsClient>>>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

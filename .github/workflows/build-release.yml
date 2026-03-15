@@ -41,7 +41,6 @@ jobs:
         run: |
           npm install
           cd sanctuary-app && npm install
-          cd ../sanctuary-bridge && npm install
 
       - name: Run Validation Script
         run: ./scripts/validate.sh
@@ -106,7 +105,6 @@ jobs:
   build-macos:
     needs: [validate, e2e]
     runs-on: macos-latest
-    # Skip build on PRs to save minutes, or only run on pushes/manual
     if: github.event_name != 'pull_request'
     steps:
       - name: Checkout repository
@@ -132,7 +130,6 @@ jobs:
         run: |
           cd sanctuary-app
           npm install @tauri-apps/cli
-          # Only set signing env vars if they are available
           if [ -n "${{ secrets.APPLE_CERTIFICATE }}" ]; then
             export APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
             export APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
@@ -180,7 +177,6 @@ jobs:
         run: |
           cd sanctuary-app
           npm install @tauri-apps/cli
-          # Only set signing env vars if they are available
           if [ -n "${{ secrets.WINDOWS_CERTIFICATE }}" ]; then
             export WINDOWS_CERTIFICATE="${{ secrets.WINDOWS_CERTIFICATE }}"
             export WINDOWS_CERTIFICATE_PASSWORD="${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}"
@@ -238,23 +234,12 @@ jobs:
 
       - name: Patch wry for Linux build
         run: |
-          # Fetch the wry crate to ensure it's in the cargo registry
           cd sanctuary-app/src-tauri
           cargo fetch
-          # Find the wry-0.24.11 source more robustly
           WRY_PATH=$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "wry" and .version == "0.24.11") | .manifest_path' | sed 's/Cargo.toml//')
           if [ -n "$WRY_PATH" ] && [ -d "$WRY_PATH" ]; then
-            echo "Patching wry at $WRY_PATH"
-            # Apply the patch using absolute path
             PATCH_FILE=$(realpath ../../patches/wry-webkit-settings-ext.patch)
             patch -p1 -d "$WRY_PATH" < "$PATCH_FILE"
-          else
-            echo "wry-0.24.11 not found in registry via metadata, trying find fallback..."
-            WRY_PATH=$(find ~/.cargo/registry/src -name "wry-0.24.11" -type d | head -n 1)
-            if [ -n "$WRY_PATH" ]; then
-              PATCH_FILE=$(realpath ../../patches/wry-webkit-settings-ext.patch)
-              patch -p1 -d "$WRY_PATH" < "$PATCH_FILE"
-            fi
           fi
 
       - name: Build Linux app
@@ -319,36 +304,25 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim
 
       - name: Run Setup
         run: ./scripts/setup.sh
         env:
           CI: true
 
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
       - name: Build iOS app (Capacitor)
         run: |
           cd sanctuary-app
           npm run build
           npx cap sync ios
-          
           if [ -n "${{ secrets.APPLE_TEAM_ID }}" ]; then
             npx cap build ios --scheme App --target generic/platform=iOS --team ${{ secrets.APPLE_TEAM_ID }}
           else
-            # Unsigned build for CI verification
-            # Capacitor 8+ uses project-based structure by default
             cd ios/App
             xcodebuild -project App.xcodeproj -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
             cd ../..
           fi
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
       - name: Upload iOS artifacts
         uses: actions/upload-artifact@v4
@@ -357,7 +331,6 @@ jobs:
           path: |
             sanctuary-app/ios/App/build/**/*.ipa
             sanctuary-app/ios/App/build/**/*.app
-            sanctuary-app/ios/App/*.xcarchive
 
   # Build Android App
   build-android:
@@ -393,18 +366,13 @@ jobs:
           cd sanctuary-app
           npm run build
           npx cap sync android
-          
           if [ -n "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ]; then
-             # We use the cap build command only if we have signing info
              npx cap build android --androidreleasetype apk
           else
-             # Direct gradle call for unsigned debug build
              cd android
              ./gradlew assembleDebug
              cd ..
           fi
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
@@ -426,7 +394,6 @@ jobs:
         run: |
           mkdir -p backend-deploy/pocketbase
           cp -r pocketbase/local/pb_migrations backend-deploy/pocketbase/ 2>/dev/null || mkdir -p backend-deploy/pocketbase/pb_migrations
-          cp -r pocketbase/pb_hooks backend-deploy/pocketbase/ 2>/dev/null || mkdir -p backend-deploy/pocketbase/pb_hooks
           cp docs/PRODUCTION_SETUP.md backend-deploy/README.md
           cd backend-deploy && zip -r ../backend-config.zip . && cd ..
           
@@ -435,38 +402,6 @@ jobs:
         with:
           name: backend-config
           path: backend-config.zip
-
-  # Build Bridge Executables
-  build-bridge:
-    needs: [validate]
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: |
-          npm install
-          cd sanctuary-bridge && npm install
-
-      - name: Build bridge executables
-        run: |
-          cd sanctuary-bridge
-          npm run build:exe
-          npm run build:exe:windows
-          npm run build:exe:linux
-
-      - name: Upload bridge artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: bridge-executables
-          path: sanctuary-bridge/dist/bin/
 
   # Build Rust CLI for all platforms
   build-cli:
@@ -477,13 +412,10 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            suffix: ""
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            suffix: ".exe"
           - os: macos-latest
             target: universal-apple-darwin
-            suffix: ""
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -499,6 +431,7 @@ jobs:
             rustup target add x86_64-apple-darwin aarch64-apple-darwin
             cargo build --release --package sanctuary-cli --target x86_64-apple-darwin
             cargo build --release --package sanctuary-cli --target aarch64-apple-darwin
+            mkdir -p target/release
             lipo -create -output target/release/sanctuary target/x86_64-apple-darwin/release/sanctuary target/aarch64-apple-darwin/release/sanctuary
           else
             cargo build --release --package sanctuary-cli
@@ -525,7 +458,7 @@ jobs:
 
   # Create GitHub Release
   create-release:
-    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android, build-bridge, build-cli, package-backend]
+    needs: [build-macos, build-windows, build-linux, build-web, build-ios, build-android, build-cli, package-backend]
     runs-on: ubuntu-22.04
     if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
     permissions:
@@ -565,19 +498,18 @@ jobs:
           body: |
             ## ⛪ Sanctuary Stream ${{ steps.version.outputs.version }}
             
-            ${{ steps.version.outputs.is_prerelease == 'true' && '> ⚠️ **Development Build**: This is an automated build for testing. For stable use, download the [Latest Release](https://github.com/brentmzey/sanctuary-stream/releases/latest).' || '> 🚀 **Stable Release**: This is a production-ready version of Sanctuary Stream.' }}
+            ${{ steps.version.outputs.is_prerelease == 'true' && '> ⚠️ **Development Build**: This is an automated build for testing.' || '> 🚀 **Stable Release**: This is a production-ready version of Sanctuary Stream.' }}
 
             ### 🚀 Installation & Setup
             📚 Complete guide: [BUILD_TEST_RUN.md](https://github.com/brentmzey/sanctuary-stream/blob/main/BUILD_TEST_RUN.md)
 
             ### 📦 Download Assets
-            Choose your platform below:
             - 🍎 **macOS**: .dmg (Universal)
-            - 🪟 **Windows**: .msi or bridge.exe
-            - 🐧 **Linux**: .deb, .AppImage, or bridge executable
+            - 🪟 **Windows**: .msi or sanctuary-win-x64.exe
+            - 🐧 **Linux**: .deb, .AppImage, or sanctuary-linux-x64
             - 🤖 **Android**: .apk
             - 📱 **iOS**: .ipa (Internal use)
-            - 🔌 **Sanctuary Bridge**: Standalone connectors for OBS
+            - 🔌 **Native CLI**: Unified management tool for all platforms
             - 🗄️ **Backend**: PocketBase configuration package
           files: |
             artifacts/**/*.dmg
@@ -588,7 +520,6 @@ jobs:
             artifacts/**/*.ipa
             artifacts/**/*.apk
             artifacts/**/*.aab
-            artifacts/**/*sanctuary-bridge*
             artifacts/backend-config/backend-config.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

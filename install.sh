@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sanctuary Stream - One-Command Installer
+# ⛪ Sanctuary Stream - Automated Installer
 # Usage: curl -sSL https://raw.githubusercontent.com/brentmzey/sanctuary-stream/main/install.sh | bash
 
 set -e
@@ -7,8 +7,13 @@ set -e
 REPO="brentmzey/sanctuary-stream"
 API_URL="https://api.github.com/repos/$REPO/releases/latest"
 
-echo "🏛️ Sanctuary Stream - Automated Installer"
-echo "=========================================="
+echo ""
+echo "╔════════════════════════════════════════════════════════════════╗"
+echo "║                                                                ║"
+echo "║        Sanctuary Stream - Automated Installer                 ║"
+echo "║                                                                ║"
+echo "╚════════════════════════════════════════════════════════════════╝"
+echo ""
 
 # 1. Detect OS
 OS_TYPE="unknown"
@@ -26,6 +31,11 @@ echo "🔍 Detected OS: $OS_TYPE"
 echo "📥 Fetching latest release information..."
 ASSETS=$(curl -s $API_URL | grep "browser_download_url")
 
+if [ -z "$ASSETS" ]; then
+    echo "❌ Error: Could not fetch release info. Please check your internet connection."
+    exit 1
+fi
+
 DOWNLOAD_URL=""
 FILENAME=""
 
@@ -41,29 +51,34 @@ elif [ "$OS_TYPE" == "windows" ]; then
 fi
 
 if [ -z "$DOWNLOAD_URL" ]; then
-    echo "❌ Error: Could not find a suitable download for $OS_TYPE"
-    echo "Please visit https://github.com/$REPO/releases to download manually."
-    exit 1
+    echo "❌ Error: No stable installer found for $OS_TYPE"
+    echo "Falling back to development builds..."
+    DOWNLOAD_URL=$(echo "$ASSETS" | head -n 1 | cut -d '"' -f 4)
+    FILENAME="sanctuary-stream-latest"
 fi
 
 # 3. Download
-echo "🚀 Downloading from $DOWNLOAD_URL..."
+echo "🚀 Downloading from: $DOWNLOAD_URL"
 curl -L "$DOWNLOAD_URL" -o "$FILENAME"
 
 echo "✅ Download complete: $FILENAME"
 
 # 4. Instructions
+echo ""
+echo "🎉 Next Steps:"
 if [ "$OS_TYPE" == "macos" ]; then
-    echo "👉 To install: Open $FILENAME and drag Sanctuary Stream to your Applications folder."
+    echo "   1. Open $FILENAME"
+    echo "   2. Drag Sanctuary Stream to your Applications folder."
+    echo "   3. Launch from Applications (Right-click -> Open if prompted)."
 elif [ "$OS_TYPE" == "linux" ]; then
     chmod +x "$FILENAME"
-    echo "👉 To install: Run ./$FILENAME"
+    echo "   1. Run the app: ./$FILENAME"
 elif [ "$OS_TYPE" == "windows" ]; then
-    echo "👉 To install: Run $FILENAME to start the installer."
+    echo "   1. Run $FILENAME to start the installer."
+    echo "   2. Launch from your Start Menu."
 fi
 
-# 5. Backend prompt
 echo ""
-echo "🗄️  Note: This installs the Control App only."
-echo "   If you need to set up a new server/bridge, see the documentation:"
-echo "   https://github.com/$REPO/blob/main/docs/PRODUCTION_SETUP.md"
+echo "⛪ Sanctuary Stream 0.4.0 is now ready to use."
+echo "Need help? Visit https://github.com/$REPO"
+echo ""
