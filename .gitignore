@@ -1,8 +1,6 @@
 # Dependencies
 node_modules/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
 # Environment Variables
@@ -15,8 +13,21 @@ pnpm-debug.log*
 dist/
 build/
 out/
+bin/
 *.tsbuildinfo
-/target/
+
+# Rust / Cargo
+target/
+**/target/
+Cargo.lock
+
+# Gradle / Java
+.gradle/
+build/
+**/*.class
+*.jar
+*.war
+*.ear
 
 # Tauri
 sanctuary-app/src-tauri/target/
@@ -26,11 +37,15 @@ sanctuary-app/src-tauri/WixTools/
 coverage/
 .nyc_output/
 *.lcov
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
 
 # IDE
 .vscode/
+.idea/*
 !.idea/runConfigurations/
-.idea/
 *.swp
 *.swo
 *.swn
@@ -42,9 +57,6 @@ logs/
 *.log
 .dev-pids
 DEPLOYMENT_STATUS.txt
-sanctuary-bridge/logs/
-sanctuary-app/logs/
-previous_context_gemini.txt
 
 # OS
 Thumbs.db
@@ -54,32 +66,13 @@ Thumbs.db
 *.pem
 *.key
 secrets/
-private-key.pem
-
-# Temporary
-tmp/
-temp/
-*.tmp
 
 # PocketBase local runtime
 pocketbase/local/pocketbase
 pocketbase/local/pb_data/
-pocketbase/local/auxiliary.db
-pocketbase/local/data.db
-pocketbase/local/data.db-shm
-pocketbase/local/data.db-wal
 pocketbase/local/pb.pid
 pocketbase/local/pb.log
 pocketbase/local/types.d.ts
-
-# PM2
-.pm2/
-
-# Playwright / Testing reports
-playwright-report/
-test-results/
-blob-report/
-playwright/.cache/
 
 # Archives
 *.zip
