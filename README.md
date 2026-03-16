@@ -37,7 +37,7 @@ We use `just` for a streamlined development experience.
 # 1. Clone & Enter
 git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
-
+```bash
 # 2. Automated Setup (Installs DB, Node, Rust components)
 just setup
 
@@ -45,7 +45,14 @@ just setup
 just dev
 ```
 
+### 💻 Developer Experience (DX)
+Sanctuary Stream provides first-class support for **IntelliJ IDEA Ultimate** and **RustRover**:
+- **One-Click Start:** Use the `🚀 Run All` configuration to boot the entire stack.
+- **Native Debugging:** Set breakpoints in the Rust core while the UI is running.
+- **Full Guide:** [**IDE Setup & Support**](docs/IDE_SETUP.md)
+
 ---
+
 
 ## ✨ Why Sanctuary Stream?
 

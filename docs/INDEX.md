@@ -20,6 +20,11 @@ Welcome to the Sanctuary Stream documentation. Use this index to find what you n
 - Step-by-step first stream
 
 ### For Developers (Path B: SDK)
+👉 **[IDE Setup & Support](IDE_SETUP.md)** ⭐
+- Get full Rust/TS support in IntelliJ or VS Code
+- Pre-configured one-click workflows
+- 🆘 Reset steps if IDE hangs
+
 👉 **[Build, Test, Run Guide](../BUILD_TEST_RUN.md)** ⭐
 - Local development setup
 - Building all workspaces (Desktop, Mobile, Web)
