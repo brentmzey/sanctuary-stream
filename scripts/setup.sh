@@ -97,27 +97,23 @@ echo -e "${GREEN}✅ Dependencies installed${NC}"
 echo ""
 echo "🗄️ Step 3: Setting up PocketBase..."
 
-# Ensure any existing PB is killed
-if command -v lsof >/dev/null 2>&1; then
-    if lsof -Pi :8090 -sTCP:LISTEN -t >/dev/null 2>&1; then
-        echo "Killing existing process on 8090..."
-        lsof -ti:8090 | xargs kill -9 2>/dev/null || true
-        sleep 2
-    fi
-else
-    echo "⚠️  lsof not found, skipping port check"
-fi
-
 mkdir -p pocketbase/local
-cd pocketbase/local
-# Use absolute path to binary for reliability (portable version)
+# Use absolute path to binary for reliability
 if [[ "$PB_BIN" == "./"* ]]; then
-    ROOT_DIR=$(cd ../.. && pwd)
+    ROOT_DIR=$(pwd)
     ABS_PB_BIN="${ROOT_DIR}/${PB_BIN#./}"
 else
-    ABS_PB_BIN="$PB_BIN"
+    ABS_PB_BIN=$(command -v "$PB_BIN")
 fi
-nohup "$ABS_PB_BIN" serve --http=127.0.0.1:8090 > pb.log 2>&1 &
+
+echo "🔐 Step 4: Creating admin account..."
+# Run upsert while PB is NOT running to avoid database locks
+"$ABS_PB_BIN" superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data || \
+"$ABS_PB_BIN" admin create admin@local.dev admin123456 --dir pocketbase/local/pb_data || true
+
+# Now start PB to initialize schema
+cd pocketbase/local
+nohup "$ABS_PB_BIN" serve --http=127.0.0.1:8090 --dir pb_data > pb.log 2>&1 &
 PB_PID=$!
 echo $PB_PID > pb.pid
 
@@ -129,18 +125,11 @@ while ! curl -s http://127.0.0.1:8090/api/health > /dev/null 2>&1; do
     COUNT=$((COUNT+1))
     if [ $COUNT -ge $MAX_RETRIES ]; then
         echo -e "${RED}❌ PocketBase failed to start. Check pocketbase/local/pb.log${NC}"
-        cat pb.log
-        kill -9 $PB_PID 2>/dev/null || true
         exit 1
     fi
 done
-echo -e "${GREEN}✅ PocketBase started${NC}"
+echo -e "${GREEN}✅ PocketBase started and admin verified${NC}"
 cd ../..
-
-echo ""
-echo "🔐 Step 4: Creating admin account..."
-# Use absolute path to binary for reliability
-"$ABS_PB_BIN" superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data || true
 
 echo ""
 echo "🏗️ Step 5: Initializing Database Schema..."
