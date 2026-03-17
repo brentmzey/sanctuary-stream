@@ -1,15 +1,15 @@
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use obws::Client as ObsClient;
-use eventsource_client::{Client, ClientBuilder, SSE};
-use futures_util::StreamExt;
-use serde::Deserialize;
-use tracing::{info, error, warn};
-use reqwest::Client as HttpClient;
-use std::time::Duration;
-use chrono::Utc;
 use crate::drive::upload_to_drive;
 use crate::types::{Command, CommandAction};
+use chrono::Utc;
+use eventsource_client::{Client, ClientBuilder, SSE};
+use futures_util::StreamExt;
+use obws::Client as ObsClient;
+use reqwest::Client as HttpClient;
+use serde::Deserialize;
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::sync::Mutex;
+use tracing::{error, info, warn};
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
@@ -46,7 +46,7 @@ impl SanctuaryBridge {
 
     pub async fn start(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.authenticate().await?;
-        
+
         let obs_handle = self.obs.clone();
         tokio::spawn(async move {
             while let Err(e) = Self::connect_obs(obs_handle.clone()).await {
@@ -62,18 +62,24 @@ impl SanctuaryBridge {
     }
 
     async fn authenticate(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        let email = std::env::var("BRIDGE_EMAIL").unwrap_or_else(|_| "bridge@local.dev".to_string());
+        let email =
+            std::env::var("BRIDGE_EMAIL").unwrap_or_else(|_| "bridge@local.dev".to_string());
         let password = std::env::var("BRIDGE_PASS").unwrap_or_else(|_| "bridge123456".to_string());
 
         // SaaS Resilience: Try superuser first, then regular user
         let endpoints = [
-            format!("{}/api/collections/_superusers/auth-with-password", self.pb_url),
+            format!(
+                "{}/api/collections/_superusers/auth-with-password",
+                self.pb_url
+            ),
             format!("{}/api/collections/users/auth-with-password", self.pb_url),
         ];
 
         let mut last_err = None;
         for url in endpoints {
-            let resp = self.http.post(&url)
+            let resp = self
+                .http
+                .post(&url)
                 .json(&serde_json::json!({ "identity": email, "password": password }))
                 .send()
                 .await;
@@ -94,12 +100,21 @@ impl SanctuaryBridge {
             }
         }
 
-        Err(format!("PocketBase authentication failed. Last error: {:?}", last_err).into())
+        Err(format!(
+            "PocketBase authentication failed. Last error: {:?}",
+            last_err
+        )
+        .into())
     }
 
-    async fn connect_obs(handle: Arc<Mutex<Option<ObsClient>>>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn connect_obs(
+        handle: Arc<Mutex<Option<ObsClient>>>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let obs_url = std::env::var("OBS_URL").unwrap_or_else(|_| "localhost".to_string());
-        let obs_port = std::env::var("OBS_PORT").unwrap_or_else(|_| "4455".to_string()).parse::<u16>().unwrap_or(4455);
+        let obs_port = std::env::var("OBS_PORT")
+            .unwrap_or_else(|_| "4455".to_string())
+            .parse::<u16>()
+            .unwrap_or(4455);
         let obs_pass = std::env::var("OBS_PASS").ok();
 
         let client = ObsClient::connect(obs_url, obs_port, obs_pass).await?;
@@ -111,8 +126,7 @@ impl SanctuaryBridge {
 
     async fn subscribe_to_commands(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let url = format!("{}/api/realtime", self.pb_url);
-        let client = ClientBuilder::for_url(&url)?
-            .build();
+        let client = ClientBuilder::for_url(&url)?.build();
 
         let mut stream = client.stream();
         let obs_handle = self.obs.clone();
@@ -129,14 +143,19 @@ impl SanctuaryBridge {
                         if ev.event_type == "commands" {
                             if let Ok(data) = serde_json::from_str::<serde_json::Value>(&ev.data) {
                                 if data["action"] == "create" {
-                                    if let Ok(record) = serde_json::from_value::<Command>(data["record"].clone()) {
+                                    if let Ok(record) =
+                                        serde_json::from_value::<Command>(data["record"].clone())
+                                    {
                                         if !record.executed {
                                             let obs = obs_handle.clone();
                                             let h = http.clone();
                                             let u = pb_url.clone();
                                             let t = auth_token.clone();
                                             tokio::spawn(async move {
-                                                if let Err(e) = Self::execute_command(record, obs, h, u, t).await {
+                                                if let Err(e) =
+                                                    Self::execute_command(record, obs, h, u, t)
+                                                        .await
+                                                {
                                                     error!("Command execution failed: {}", e);
                                                 }
                                             });
@@ -145,7 +164,7 @@ impl SanctuaryBridge {
                                 }
                             }
                         }
-                    },
+                    }
                     Err(e) => error!("SSE error: {}", e),
                     _ => {}
                 }
@@ -163,7 +182,7 @@ impl SanctuaryBridge {
         auth_token: Arc<Mutex<String>>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         info!("Executing command: {:?}", command.action);
-        
+
         let obs_guard = obs_handle.lock().await;
         let obs = match &*obs_guard {
             Some(o) => o,
@@ -171,9 +190,24 @@ impl SanctuaryBridge {
         };
 
         let result: Result<(), Box<dyn std::error::Error + Send + Sync>> = match command.action {
-            CommandAction::START => obs.streaming().start().await.map(|_| ()).map_err(|e| e.into()),
-            CommandAction::STOP => obs.streaming().stop().await.map(|_| ()).map_err(|e| e.into()),
-            CommandAction::RECORD_START => obs.recording().start().await.map(|_| ()).map_err(|e| e.into()),
+            CommandAction::START => obs
+                .streaming()
+                .start()
+                .await
+                .map(|_| ())
+                .map_err(|e| e.into()),
+            CommandAction::STOP => obs
+                .streaming()
+                .stop()
+                .await
+                .map(|_| ())
+                .map_err(|e| e.into()),
+            CommandAction::RECORD_START => obs
+                .recording()
+                .start()
+                .await
+                .map(|_| ())
+                .map_err(|e| e.into()),
             CommandAction::RECORD_STOP => {
                 let res = obs.recording().stop().await;
                 if let Ok(path) = &res {
@@ -185,22 +219,29 @@ impl SanctuaryBridge {
                     });
                 }
                 res.map(|_| ()).map_err(|e| e.into())
-            },
+            }
             CommandAction::SET_STREAM_SETTINGS => {
                 if let Some(payload) = &command.payload {
                     let service = payload["service"].as_str().unwrap_or("rtmp_common");
                     let server = payload["server"].as_str().unwrap_or("auto");
                     let key = payload["key"].as_str().unwrap_or_default();
-                    
-                    obs.outputs().set_settings("adv_stream", &serde_json::json!({
-                        "service": service,
-                        "server": server,
-                        "key": key
-                    })).await.map(|_| ()).map_err(|e| e.into())
+
+                    obs.outputs()
+                        .set_settings(
+                            "adv_stream",
+                            &serde_json::json!({
+                                "service": service,
+                                "server": server,
+                                "key": key
+                            }),
+                        )
+                        .await
+                        .map(|_| ())
+                        .map_err(|e| e.into())
                 } else {
                     Err("Missing payload for SET_STREAM_SETTINGS".into())
                 }
-            },
+            }
             _ => {
                 warn!("Unhandled command action: {:?}", command.action);
                 Ok(())
@@ -218,7 +259,8 @@ impl SanctuaryBridge {
             info!("✅ Command executed successfully: {:?}", command.action);
         }
 
-        let _ = http.patch(&update_url)
+        let _ = http
+            .patch(&update_url)
             .header("Authorization", format!("Bearer {}", *token))
             .json(&patch)
             .send()
@@ -238,7 +280,7 @@ impl SanctuaryBridge {
             let mut interval = tokio::time::interval(Duration::from_secs(10));
             loop {
                 interval.tick().await;
-                
+
                 let mut status_update = serde_json::json!({
                     "heartbeat": Utc::now().to_rfc3339()
                 });
@@ -247,8 +289,9 @@ impl SanctuaryBridge {
                 let obs_guard = obs_handle.lock().await;
                 if let Some(obs) = &*obs_guard {
                     if let Ok(stream_status) = obs.streaming().status().await {
-                        status_update["status"] = serde_json::json!(if stream_status.active { "live" } else { "idle" });
-                        
+                        status_update["status"] =
+                            serde_json::json!(if stream_status.active { "live" } else { "idle" });
+
                         let mut metadata = serde_json::json!({
                             "outputActive": stream_status.active,
                             "outputDuration": stream_status.duration,
@@ -268,8 +311,9 @@ impl SanctuaryBridge {
 
                 let token = auth_token.lock().await;
                 let url = format!("{}/api/collections/streams/records/{}", pb_url, stream_id);
-                
-                let _ = http.patch(&url)
+
+                let _ = http
+                    .patch(&url)
                     .header("Authorization", format!("Bearer {}", *token))
                     .json(&status_update)
                     .send()

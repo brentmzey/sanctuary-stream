@@ -1,6 +1,4 @@
-#[cfg(test)]
 use crate::{Command, CommandAction};
-#[cfg(test)]
 use serde_json::json;
 
 #[test]

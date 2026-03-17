@@ -2,13 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use sanctuary_core::{
-    SanctuaryBridge, StreamStatusValue, StreamMetadata, PocketBaseClient,
-    Sermon, Announcement, Resource, User
+    Announcement, PocketBaseClient, Resource, SanctuaryBridge, Sermon, StreamMetadata,
+    StreamStatusValue, User,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tracing::{info, error};
+use tracing::{error, info};
 
 struct AppState {
     pb: Arc<Mutex<PocketBaseClient>>,
@@ -54,27 +54,27 @@ async fn discover_and_login(
     password: String,
 ) -> Result<AuthResponse, String> {
     let mut pb = state.pb.lock().await;
-    
+
     // 1. Discover the parish instance URL from master registry
-    let instance_url = pb.discover_parish(&email).await.map_err(|e| e.to_string())?;
+    let instance_url = pb
+        .discover_parish(&email)
+        .await
+        .map_err(|e| e.to_string())?;
     info!("🚀 Discovered parish instance: {}", instance_url);
-    
+
     // 2. Switch the client to that specific instance
     pb.set_base_url(instance_url);
-    
+
     // 3. Perform the actual login on the parish instance
     to_tauri_res(
         pb.login(&email, &password)
             .await
-            .map(|(token, user)| AuthResponse { token, user })
+            .map(|(token, user)| AuthResponse { token, user }),
     )
 }
 
 #[tauri::command]
-async fn set_pocketbase_url(
-    state: tauri::State<'_, AppState>,
-    url: String,
-) -> Result<(), String> {
+async fn set_pocketbase_url(state: tauri::State<'_, AppState>, url: String) -> Result<(), String> {
     let mut pb = state.pb.lock().await;
     pb.set_base_url(url);
     Ok(())
@@ -87,7 +87,7 @@ async fn test_connection(
 ) -> Result<bool, String> {
     let pb = state.pb.lock().await;
     let test_url = url.unwrap_or_else(|| pb.base_url().to_string());
-    
+
     // Functional check using reqwest status
     let client = reqwest::Client::new();
     match client.get(format!("{}/api/health", test_url)).send().await {
@@ -107,7 +107,10 @@ async fn list_sermons(
     per_page: u32,
 ) -> Result<Vec<Sermon>, String> {
     let pb = state.pb.lock().await;
-    to_tauri_res(pb.list::<Sermon>("sermons", page, per_page, filter, sort).await)
+    to_tauri_res(
+        pb.list::<Sermon>("sermons", page, per_page, filter, sort)
+            .await,
+    )
 }
 
 #[tauri::command]
@@ -119,7 +122,10 @@ async fn list_announcements(
     per_page: u32,
 ) -> Result<Vec<Announcement>, String> {
     let pb = state.pb.lock().await;
-    to_tauri_res(pb.list::<Announcement>("announcements", page, per_page, filter, sort).await)
+    to_tauri_res(
+        pb.list::<Announcement>("announcements", page, per_page, filter, sort)
+            .await,
+    )
 }
 
 #[tauri::command]
@@ -131,7 +137,10 @@ async fn list_resources(
     per_page: u32,
 ) -> Result<Vec<Resource>, String> {
     let pb = state.pb.lock().await;
-    to_tauri_res(pb.list::<Resource>("resources", page, per_page, filter, sort).await)
+    to_tauri_res(
+        pb.list::<Resource>("resources", page, per_page, filter, sort)
+            .await,
+    )
 }
 
 #[tauri::command]
@@ -142,12 +151,13 @@ async fn list_recordings(
     let pb = state.pb.lock().await;
     to_tauri_res(
         pb.list::<Recording>(
-            "recordings", 
-            1, 
-            50, 
-            Some(format!("stream_id = '{}'", stream_id)), 
-            Some("-created".to_string())
-        ).await
+            "recordings",
+            1,
+            50,
+            Some(format!("stream_id = '{}'", stream_id)),
+            Some("-created".to_string()),
+        )
+        .await,
     )
 }
 
@@ -157,12 +167,17 @@ async fn list_recordings(
 async fn get_stream_status(state: tauri::State<'_, AppState>) -> Result<StreamStatus, String> {
     let pb = state.pb.lock().await;
     let stream_id = state.stream_id.lock().await;
-    
-    let url = format!("{}/api/collections/streams/records/{}", pb.base_url(), *stream_id);
+
+    let url = format!(
+        "{}/api/collections/streams/records/{}",
+        pb.base_url(),
+        *stream_id
+    );
     let client = reqwest::Client::new();
-    
+
     let res = async {
-        client.get(&url)
+        client
+            .get(&url)
             .send()
             .await
             .map_err(|e| anyhow::anyhow!("Network: {}", e))?
@@ -171,32 +186,33 @@ async fn get_stream_status(state: tauri::State<'_, AppState>) -> Result<StreamSt
             .json::<StreamStatus>()
             .await
             .map_err(|e| anyhow::anyhow!("JSON: {}", e))
-    }.await;
+    }
+    .await;
 
     to_tauri_res(res)
 }
 
 #[tauri::command]
-async fn send_command(
-    state: tauri::State<'_, AppState>,
-    action: String,
-) -> Result<String, String> {
+async fn send_command(state: tauri::State<'_, AppState>, action: String) -> Result<String, String> {
     let pb = state.pb.lock().await;
     let url = format!("{}/api/collections/commands/records", pb.base_url());
-    
+
     // Monadic check for token
-    let token = pb.get_token().ok_or_else(|| "Not authenticated".to_string())?;
+    let token = pb
+        .get_token()
+        .ok_or_else(|| "Not authenticated".to_string())?;
     let correlation_id = uuid::Uuid::new_v4().to_string();
-    
+
     let payload = serde_json::json!({
         "action": action,
         "executed": false,
         "correlation_id": &correlation_id,
     });
-    
+
     let client = reqwest::Client::new();
     let res = async {
-        client.post(&url)
+        client
+            .post(&url)
             .header("Authorization", format!("Bearer {}", token))
             .json(&payload)
             .send()
@@ -205,7 +221,8 @@ async fn send_command(
             .error_for_status()
             .map_err(|e| anyhow::anyhow!("Status: {}", e))
             .map(|_| correlation_id)
-    }.await;
+    }
+    .await;
 
     to_tauri_res(res)
 }
@@ -217,9 +234,20 @@ fn show_notification(message: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn get_file_url(state: tauri::State<'_, AppState>, collection: String, record_id: String, file_name: String) -> Result<String, String> {
+async fn get_file_url(
+    state: tauri::State<'_, AppState>,
+    collection: String,
+    record_id: String,
+    file_name: String,
+) -> Result<String, String> {
     let pb = state.pb.lock().await;
-    Ok(format!("{}/api/files/{}/{}/{}", pb.base_url(), collection, record_id, file_name))
+    Ok(format!(
+        "{}/api/files/{}/{}/{}",
+        pb.base_url(),
+        collection,
+        record_id,
+        file_name
+    ))
 }
 
 fn main() {
@@ -227,10 +255,11 @@ fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
-    
+
     info!("Starting Sanctuary Stream");
 
-    let pb_url = std::env::var("VITE_PB_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
+    let pb_url =
+        std::env::var("VITE_PB_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
     let stream_id = std::env::var("VITE_STREAM_ID").unwrap_or_default();
 
     let pb = PocketBaseClient::new(pb_url.clone());

@@ -1,10 +1,10 @@
 mod version;
 
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use colored::*;
-use std::process::Command;
 use sanctuary_core::SanctuaryBridge;
-use anyhow::{Context, Result};
+use std::process::Command;
 use version::bump_version;
 
 #[derive(Parser)]
@@ -57,7 +57,11 @@ async fn main() -> Result<()> {
     match &cli.command {
         Commands::Dev { simple } => {
             println!("{}", "🚀 Starting Sanctuary Stream services...".blue());
-            let cmd = if *simple { "npm run dev:simple" } else { "npm run dev:full" };
+            let cmd = if *simple {
+                "npm run dev:simple"
+            } else {
+                "npm run dev:full"
+            };
             run_command(cmd).context("Failed to run dev command")?;
         }
         Commands::Bridge => {
@@ -65,10 +69,15 @@ async fn main() -> Result<()> {
                 .with_max_level(tracing::Level::INFO)
                 .init();
             println!("{}", "🚀 Starting Rust Sanctuary Bridge...".cyan());
-            let pb_url = std::env::var("PB_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
-            let stream_id = std::env::var("STREAM_ID").context("STREAM_ID environment variable is required for the bridge")?;
+            let pb_url =
+                std::env::var("PB_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
+            let stream_id = std::env::var("STREAM_ID")
+                .context("STREAM_ID environment variable is required for the bridge")?;
             let bridge = SanctuaryBridge::new(pb_url, stream_id);
-            bridge.start().await.map_err(|e| anyhow::anyhow!(e.to_string()))?;
+            bridge
+                .start()
+                .await
+                .map_err(|e| anyhow::anyhow!(e.to_string()))?;
             // Keep the main thread alive
             tokio::signal::ctrl_c().await?;
         }
@@ -98,28 +107,37 @@ async fn main() -> Result<()> {
             println!("{}", "✨ Version bump complete!".green());
         }
         Commands::SyncSchemas => {
-            println!("{}", "☁️  Synchronizing database schemas across SaaS instances...".blue());
-            
+            println!(
+                "{}",
+                "☁️  Synchronizing database schemas across SaaS instances...".blue()
+            );
+
             // In a full production environment, this would:
             // 1. Authenticate with the Master PocketHost Registry
             // 2. Fetch all active 'Parish' instance URLs
             // 3. Iterate through them and apply the latest schema via the API
-            
-            let master_url = std::env::var("MASTER_REGISTRY_URL").unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
+
+            let master_url = std::env::var("MASTER_REGISTRY_URL")
+                .unwrap_or_else(|_| "http://127.0.0.1:8090".to_string());
             println!("📡 Connecting to Master Registry at: {}", master_url);
-            
+
             // For now, we simulate the orchestration loop
-            let simulated_instances = vec!["https://st-marys.pockethost.io", "https://first-baptist.pockethost.io"];
-            
+            let simulated_instances = vec![
+                "https://st-marys.pockethost.io",
+                "https://first-baptist.pockethost.io",
+            ];
+
             for instance in simulated_instances {
                 println!("   🔄 Syncing schema to {}...", instance);
                 // Here we would use PocketBaseClient::new(instance) to push updates
             }
-            
-            println!("{}", "✅ Schema sync complete for all active parishes!".green());
+
+            println!(
+                "{}",
+                "✅ Schema sync complete for all active parishes!".green()
+            );
         }
     }
-
 
     Ok(())
 }
@@ -134,6 +152,6 @@ fn run_command(cmd: &str) -> Result<()> {
     if !status.success() {
         return Err(anyhow::anyhow!("Command failed with status: {}", status));
     }
-    
+
     Ok(())
 }

@@ -92,9 +92,13 @@ echo "Linting all JS/TS workspaces..."
 npx eslint . --ext .ts,.tsx --ignore-path .eslintignore >/dev/null 2>&1
 print_status $? "JS/TS Linting passed"
 
-echo "Checking Rust formatting and clippy..."
-cargo clippy --workspace -- -D warnings >/dev/null 2>&1
-print_status $? "Rust Linting/Clippy passed"
+echo "Checking Rust formatting..."
+cargo fmt --all --check
+print_status $? "Rust Formatting passed"
+
+echo "Checking Rust clippy..."
+cargo clippy --workspace --all-targets -- -D warnings
+print_status $? "Rust Clippy passed"
 
 # Testing
 print_step "🧪 Step 6: Running Tests"

@@ -1,7 +1,7 @@
-use serde::Deserialize;
-use reqwest::{Client as HttpClient, RequestBuilder};
-use anyhow::{Result, anyhow};
 use crate::types::*;
+use anyhow::{anyhow, Result};
+use reqwest::{Client as HttpClient, RequestBuilder};
+use serde::Deserialize;
 
 /// A functional, immutable-first PocketBase client.
 #[derive(Clone)]
@@ -63,7 +63,7 @@ impl PocketBaseClient {
         ];
 
         let builder = self.http.get(&url).query(&query);
-        
+
         self.authenticated_request(builder)
             .send()
             .await
@@ -82,7 +82,10 @@ impl PocketBaseClient {
         collection: &str,
         id: &str,
     ) -> Result<T> {
-        let url = format!("{}/api/collections/{}/records/{}", self.base_url, collection, id);
+        let url = format!(
+            "{}/api/collections/{}/records/{}",
+            self.base_url, collection, id
+        );
         let builder = self.http.get(&url);
 
         self.authenticated_request(builder)
@@ -98,27 +101,35 @@ impl PocketBaseClient {
 
     pub async fn login(&self, email: &str, password: &str) -> Result<(String, User)> {
         let url = format!("{}/api/collections/users/auth-with-password", self.base_url);
-        
-        let resp = self.http.post(&url)
+
+        let resp = self
+            .http
+            .post(&url)
             .json(&serde_json::json!({ "identity": email, "password": password }))
             .send()
             .await
             .map_err(|e| anyhow!("Auth request failed: {}", e))?;
 
         if !resp.status().is_success() {
-            return Err(anyhow!("Authentication failed with status: {}", resp.status()));
+            return Err(anyhow!(
+                "Authentication failed with status: {}",
+                resp.status()
+            ));
         }
 
-        let auth_resp: serde_json::Value = resp.json().await
+        let auth_resp: serde_json::Value = resp
+            .json()
+            .await
             .map_err(|e| anyhow!("Failed to parse auth response: {}", e))?;
 
-        let token = auth_resp["token"].as_str()
+        let token = auth_resp["token"]
+            .as_str()
             .ok_or_else(|| anyhow!("Token missing in response"))?
             .to_string();
 
         let user: User = serde_json::from_value(auth_resp["record"].clone())
             .map_err(|e| anyhow!("Failed to deserialize user record: {}", e))?;
-        
+
         Ok((token, user))
     }
 
@@ -128,17 +139,16 @@ impl PocketBaseClient {
         let url = format!("{}/api/collections/parish_lookup/records", self.base_url);
         let query = [("filter", format!("email = '{}'", email))];
 
-        let resp_result = self.http.get(&url)
-            .query(&query)
-            .send()
-            .await;
+        let resp_result = self.http.get(&url).query(&query).send().await;
 
         if let Ok(resp) = resp_result {
             if resp.status().is_success() {
                 let json: serde_json::Value = resp.json().await.unwrap_or_default();
                 if let Some(items) = json.get("items").and_then(|i| i.as_array()) {
                     if !items.is_empty() {
-                        if let Some(instance_url) = items[0].get("instance_url").and_then(|u| u.as_str()) {
+                        if let Some(instance_url) =
+                            items[0].get("instance_url").and_then(|u| u.as_str())
+                        {
                             return Ok(instance_url.to_string());
                         }
                     }

@@ -1,8 +1,8 @@
 use anyhow::Result;
-use std::fs;
-use std::path::Path;
 use regex::Regex;
 use serde_json::Value;
+use std::fs;
+use std::path::Path;
 
 pub fn bump_version(new_version: &str) -> Result<()> {
     println!("🔄 Bumping all versions to {}...", new_version);
@@ -42,7 +42,7 @@ fn update_json_version(path: &str, version: &str) -> Result<()> {
     }
     let content = fs::read_to_string(path)?;
     let mut json: Value = serde_json::from_str(&content)?;
-    
+
     if let Some(obj) = json.as_object_mut() {
         obj.insert("version".to_string(), Value::String(version.to_string()));
     }
@@ -59,7 +59,7 @@ fn update_tauri_version(path: &str, version: &str) -> Result<()> {
     }
     let content = fs::read_to_string(path)?;
     let mut json: Value = serde_json::from_str(&content)?;
-    
+
     if let Some(package) = json.get_mut("package") {
         if let Some(obj) = package.as_object_mut() {
             obj.insert("version".to_string(), Value::String(version.to_string()));
@@ -79,7 +79,7 @@ fn update_cargo_version(path: &str, version: &str) -> Result<()> {
     let content = fs::read_to_string(path)?;
     let re = Regex::new(r#"(?m)^version\s*=\s*"[^"]*""#)?;
     let updated = re.replace(&content, format!(r#"version = "{}""#, version));
-    
+
     fs::write(path, updated.to_string())?;
     println!("  ✅ Updated {}", path);
     Ok(())
