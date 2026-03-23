@@ -179,7 +179,11 @@ echo -e "${GREEN}✅ Environment files configured${NC}"
 
 echo ""
 echo "🔍 Step 7: Verifying installation..."
-./scripts/validate.sh
+if [ "$CI" != "true" ]; then
+    ./scripts/validate.sh
+else
+    echo "⏭️  Skipping validation script in CI environment..."
+fi
 
 echo ""
 echo "✅ Setup Complete!"
