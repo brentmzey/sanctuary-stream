@@ -443,7 +443,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
           - os: macos-latest
-            target: universal-apple-darwin
+            target: x86_64-apple-darwin
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -460,7 +460,7 @@ jobs:
             cargo build --release --package sanctuary-cli --target x86_64-apple-darwin
             cargo build --release --package sanctuary-cli --target aarch64-apple-darwin
             mkdir -p target/release
-            lipo -create -output target/release/sanctuary target/x86_64-apple-darwin/release/sanctuary target/aarch64-apple-darwin/release/sanctuary
+            lipo -create -output target/release/sanctuary-cli target/x86_64-apple-darwin/release/sanctuary-cli target/aarch64-apple-darwin/release/sanctuary-cli
           else
             cargo build --release --package sanctuary-cli
           fi
@@ -470,11 +470,11 @@ jobs:
         run: |
           mkdir -p dist
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            cp target/release/sanctuary.exe dist/sanctuary-win-x64.exe
+            cp target/release/sanctuary-cli.exe dist/sanctuary-win-x64.exe
           elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-            cp target/release/sanctuary dist/sanctuary-macos-universal
+            cp target/release/sanctuary-cli dist/sanctuary-macos-universal
           else
-            cp target/release/sanctuary dist/sanctuary-linux-x64
+            cp target/release/sanctuary-cli dist/sanctuary-linux-x64
           fi
         shell: bash
 

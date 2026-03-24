@@ -26,6 +26,7 @@ Cargo.lock
 build/
 **/*.class
 *.jar
+!sanctuary-app/android/gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 
