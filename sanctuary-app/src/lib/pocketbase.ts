@@ -62,11 +62,17 @@ export function setPocketBaseUrl(url: string): void {
 export function testConnection(url?: string): AsyncIO<boolean> {
   return new AsyncIO(async () => {
     try {
-      if (url) pb.baseUrl = url;
-      await pb.health.check();
-      return true;
+      // 1. Try Rust bridge for cross-platform efficiency
+      return await invoke<boolean>('test_connection', { url: url || null });
     } catch {
-      return false;
+      // 2. Fallback to JS SDK if bridge unavailable (e.g. pure web)
+      try {
+        if (url) pb.baseUrl = url;
+        await pb.health.check();
+        return true;
+      } catch {
+        return false;
+      }
     }
   });
 }

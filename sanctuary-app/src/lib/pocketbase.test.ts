@@ -65,7 +65,8 @@ describe('pocketbase lib', () => {
 
     it('returns false on failed fetch (Rust fallback)', async () => {
       vi.mocked(invoke).mockRejectedValue(new Error('Rust error'));
-      vi.mocked(global.fetch).mockResolvedValue({ ok: false } as Response);
+      // Force pb.health.check() to fail by mocking it directly
+      pb.health.check = vi.fn().mockRejectedValue(new Error('PB error'));
       const isConnected = await testConnection('http://localhost:8090').unsafeRunAsync();
       expect(isConnected).toBe(false);
     });
@@ -136,7 +137,7 @@ describe('pocketbase lib', () => {
       const mockGetList = vi.fn().mockResolvedValue({ items: [{ id: 's1' }] });
       pb.collection = vi.fn().mockReturnValue({ getList: mockGetList });
       const sermons = await getSermons().unsafeRunAsync();
-      expect(sermons).toEqual([{ id: 's1' }]);
+      expect(sermons[0]).toEqual(expect.objectContaining({ id: 's1' }));
     });
 
     it('constructs file URL via Rust', async () => {

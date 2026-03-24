@@ -33,7 +33,7 @@ export class CompressionService {
    * Decompresses a Zlib-Base64 string back to original text.
    */
   static async decompressFromBase64(compressed: Option<string>): Promise<Option<string>> {
-    if (isNone(compressed) || compressed.value.trim() === '') return none();
+    if (isNone(compressed) || !compressed.value || compressed.value.trim() === '') return none();
 
     try {
       // Decode Base64 (Browser/Node compatible)
