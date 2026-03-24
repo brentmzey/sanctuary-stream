@@ -1,140 +1,35 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("pbc_1849560702")
+  if (!collection) return;
 
-  // update field
-  collection.fields.addAt(0, new Field({
-    "hidden": false,
-    "id": "select2063623452",
-    "maxSelect": 0,
-    "name": "status",
-    "presentable": false,
-    "required": true,
-    "system": false,
-    "type": "select",
-    "values": [
-      "idle",
-      "starting",
-      "live",
-      "recording",
-      "error"
-    ]
-  }))
+  // update status field
+  const statusField = collection.fields.getById("select2063623452");
+  if (statusField && statusField.type === "select") {
+    statusField.values = ["idle", "starting", "live", "recording", "error"];
+  }
 
-  // update field
-  collection.fields.addAt(2, new Field({
-    "exceptDomains": null,
-    "hidden": false,
-    "id": "url1858974015",
-    "name": "youtube_url",
-    "onlyDomains": null,
-    "presentable": false,
-    "required": false,
-    "system": false,
-    "type": "url"
-  }))
+  // update youtube_url field
+  const youtubeField = collection.fields.getById("url1858974015");
+  if (youtubeField && youtubeField.type === "url") {
+    youtubeField.onlyDomains = null; // Remove restriction if it was there
+  }
 
-  // update field
-  collection.fields.addAt(3, new Field({
-    "autogeneratePattern": "",
-    "hidden": false,
-    "id": "text1166349570",
-    "max": 0,
-    "min": 0,
-    "name": "scene_name",
-    "pattern": "",
-    "presentable": false,
-    "primaryKey": false,
-    "required": false,
-    "system": false,
-    "type": "text"
-  }))
-
-  // update field
-  collection.fields.addAt(7, new Field({
-    "autogeneratePattern": "",
-    "hidden": false,
-    "id": "text3208210256",
-    "max": 0,
-    "min": 0,
-    "name": "id",
-    "pattern": "^[a-z0-9]+$",
-    "presentable": false,
-    "primaryKey": true,
-    "required": true,
-    "system": true,
-    "type": "text"
-  }))
+  // update scene_name field
+  const sceneField = collection.fields.getById("text1166349570");
+  if (sceneField && sceneField.type === "text") {
+    delete sceneField.max;
+  }
 
   return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("pbc_1849560702")
+  if (!collection) return;
 
-  // update field
-  collection.fields.addAt(1, new Field({
-    "hidden": false,
-    "id": "select2063623452",
-    "maxSelect": 0,
-    "name": "status",
-    "presentable": false,
-    "required": true,
-    "system": false,
-    "type": "select",
-    "values": [
-      "idle",
-      "live",
-      "recording",
-      "error"
-    ]
-  }))
-
-  // update field
-  collection.fields.addAt(3, new Field({
-    "exceptDomains": null,
-    "hidden": false,
-    "id": "url1858974015",
-    "name": "youtube_url",
-    "onlyDomains": [
-      "youtube.com",
-      "youtu.be"
-    ],
-    "presentable": false,
-    "required": false,
-    "system": false,
-    "type": "url"
-  }))
-
-  // update field
-  collection.fields.addAt(4, new Field({
-    "autogeneratePattern": "",
-    "hidden": false,
-    "id": "text1166349570",
-    "max": 100,
-    "min": 0,
-    "name": "scene_name",
-    "pattern": "",
-    "presentable": false,
-    "primaryKey": false,
-    "required": false,
-    "system": false,
-    "type": "text"
-  }))
-
-  // update field
-  collection.fields.addAt(0, new Field({
-    "autogeneratePattern": "[a-z0-9]{15}",
-    "hidden": false,
-    "id": "text3208210256",
-    "max": 15,
-    "min": 15,
-    "name": "id",
-    "pattern": "^[a-z0-9]+$",
-    "presentable": false,
-    "primaryKey": true,
-    "required": true,
-    "system": true,
-    "type": "text"
-  }))
+  const statusField = collection.fields.getById("select2063623452");
+  if (statusField && statusField.type === "select") {
+    statusField.values = ["idle", "live", "recording", "error"];
+  }
 
   return app.save(collection)
 })

@@ -2,6 +2,7 @@
   "author": "Sanctuary Stream Contributors",
   "dependencies": {
     "dotenv": "^17.2.3",
+    "fflate": "^0.8.2",
     "pocketbase": "^0.26.8",
     "vite": "7.3.1"
   },

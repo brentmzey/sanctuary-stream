@@ -24,6 +24,11 @@
  *     so the app can optionally expose them without auth for the website.
  */
 migrate((app) => {
+    const existing = app.findCollectionByNameOrId("pbc_3910423001");
+    if (existing) {
+        return app.save(existing);
+    }
+
     const collection = new Collection({
         "id": "pbc_3910423001",
         "name": "sermons",
@@ -38,11 +43,10 @@ migrate((app) => {
                 "max": 200
             },
             {
-                "name": "body",
+                "name": "bodyBrotliBase64",
                 "type": "text",
                 "required": false,
-                "presentable": false,
-                "max": 50000
+                "presentable": false
             },
             {
                 "name": "sermon_date",
@@ -91,10 +95,8 @@ migrate((app) => {
             "CREATE INDEX idx_sermon_published ON sermons (published)",
             "CREATE INDEX idx_sermon_speaker ON sermons (speaker)"
         ],
-        // Anyone who is logged in can browse/view sermons
         "listRule": "@request.auth.id != ''",
         "viewRule": "@request.auth.id != ''",
-        // Only admins and pastors can write content — the tech role handles AV, not CMS
         "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "deleteRule": "@request.auth.role = 'admin'"
@@ -102,7 +104,6 @@ migrate((app) => {
 
     return app.save(collection);
 }, (app) => {
-    // Down migration — clean removal with no orphans
     const collection = app.findCollectionByNameOrId("pbc_3910423001");
-    return app.delete(collection);
+    if (collection) return app.delete(collection);
 })

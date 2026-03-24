@@ -1,5 +1,10 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
+  const existing = app.findCollectionByNameOrId("pbc_2867142091");
+  if (existing) {
+    return app.save(existing);
+  }
+
   const collection = new Collection({
     "id": "pbc_2867142091",
     "name": "commands",
@@ -58,5 +63,5 @@ migrate((app) => {
   return app.save(collection);
 }, (app) => {
   const collection = app.findCollectionByNameOrId("pbc_2867142091");
-  return app.delete(collection);
+  if (collection) return app.delete(collection);
 })

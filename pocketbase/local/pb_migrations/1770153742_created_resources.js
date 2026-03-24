@@ -22,7 +22,7 @@
  * on the website. Content writes are restricted to admins and pastors.
  */
 migrate((app) => {
-    const collection = new Collection({
+    const collection = app.findCollectionByNameOrId("pbc_5932645223") || new Collection({
         "id": "pbc_5932645223",
         "name": "resources",
         "type": "base",
@@ -34,66 +34,67 @@ migrate((app) => {
                 "required": true,
                 "presentable": true,
                 "max": 200
-            },
-            {
-                "name": "description",
-                "type": "text",
-                "required": false,
-                "presentable": false,
-                "max": 1000
-            },
-            {
-                "name": "file",
-                "type": "file",
-                "required": false,
-                "presentable": false,
-                "maxSize": 52428800,
-                "mimeTypes": [
-                    "application/pdf",
-                    "image/jpeg",
-                    "image/png",
-                    "image/webp",
-                    "application/msword",
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                ],
-                "maxSelect": 1
-            },
-            {
-                "name": "url",
-                "type": "url",
-                "required": false,
-                "presentable": false
-            },
-            {
-                "name": "category",
-                "type": "select",
-                "required": true,
-                "presentable": false,
-                "values": ["essay", "article", "free"],
-                "maxSelect": 1
-            },
-            {
-                "name": "published",
-                "type": "bool",
-                "required": false,
-                "presentable": false
             }
         ],
-        "indexes": [
-            "CREATE INDEX idx_resource_category ON resources (category)",
-            "CREATE INDEX idx_resource_published ON resources (published)"
-        ],
-        // Public read — free resources should be freely accessible
         "listRule": "",
         "viewRule": "",
-        // Admin and pastor can manage content; tech role handles AV not editorial
         "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "deleteRule": "@request.auth.role = 'admin'"
     });
 
+    // Ensure semantic naming for compressed description
+    const descriptionExists = collection.fields.find(f => f.name === 'descriptionBrotliBase64');
+    if (!descriptionExists) {
+        collection.fields.add(new SchemaField({
+            "name": "descriptionBrotliBase64",
+            "type": "text",
+            "required": false,
+            "presentable": false
+        }));
+    }
+
+    // Clean up old description field if present
+    const oldDescription = collection.fields.find(f => f.name === 'description');
+    if (oldDescription) {
+        collection.fields.removeById(oldDescription.id);
+    }
+
+    // Ensure other fields
+    if (!collection.fields.find(f => f.name === 'file')) {
+        collection.fields.add(new SchemaField({
+            "name": "file",
+            "type": "file",
+            "maxSelect": 1
+        }));
+    }
+
+    if (!collection.fields.find(f => f.name === 'url')) {
+        collection.fields.add(new SchemaField({
+            "name": "url",
+            "type": "url"
+        }));
+    }
+
+    if (!collection.fields.find(f => f.name === 'category')) {
+        collection.fields.add(new SchemaField({
+            "name": "category",
+            "type": "select",
+            "required": true,
+            "values": ["essay", "article", "free"]
+        }));
+    }
+
+    if (!collection.fields.find(f => f.name === 'published')) {
+        collection.fields.add(new SchemaField({
+            "name": "published",
+            "type": "bool"
+        }));
+    }
+
     return app.save(collection);
-}, (app) => {
+}
+, (app) => {
     const collection = app.findCollectionByNameOrId("pbc_5932645223");
-    return app.delete(collection);
+    if (collection) return app.delete(collection);
 })

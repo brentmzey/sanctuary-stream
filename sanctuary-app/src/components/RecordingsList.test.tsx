@@ -52,6 +52,8 @@ describe('RecordingsList', () => {
         stream_id: mockStreamId,
         file_id: 'drive-file-1',
         size: 1024 * 1024 * 500, // 500 MB
+        collectionId: 'sermons',
+        collectionName: 'sermons',
       },
       {
         id: 'rec-2',
@@ -61,6 +63,8 @@ describe('RecordingsList', () => {
         stream_id: mockStreamId,
         file_id: 'drive-file-2',
         size: 1024 * 1024 * 250, // 250 MB
+        collectionId: 'sermons',
+        collectionName: 'sermons',
       },
     ];
 
@@ -93,6 +97,8 @@ describe('RecordingsList', () => {
         updated: '2024-03-01T10:00:00Z',
         stream_id: mockStreamId,
         file_id: 'drive-file-1',
+        collectionId: 'sermons',
+        collectionName: 'sermons',
       },
     ];
 

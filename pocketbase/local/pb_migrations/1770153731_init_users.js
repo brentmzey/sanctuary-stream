@@ -3,22 +3,26 @@ migrate((app) => {
   const collection = app.findCollectionByNameOrId("users");
 
   // Update users collection with custom fields
-  collection.fields.add(new Field({
-    "name": "name",
-    "type": "text",
-    "required": true,
-    "presentable": false,
-    "system": false
-  }));
+  if (!collection.fields.getByName("name")) {
+    collection.fields.add(new Field({
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "presentable": false,
+      "system": false
+    }));
+  }
 
-  collection.fields.add(new Field({
-    "name": "role",
-    "type": "select",
-    "required": true,
-    "presentable": false,
-    "system": false,
-    "values": ["admin", "pastor", "tech"]
-  }));
+  if (!collection.fields.getByName("role")) {
+    collection.fields.add(new Field({
+      "name": "role",
+      "type": "select",
+      "required": true,
+      "presentable": false,
+      "system": false,
+      "values": ["admin", "pastor", "tech"]
+    }));
+  }
 
   return app.save(collection);
 }, (app) => {

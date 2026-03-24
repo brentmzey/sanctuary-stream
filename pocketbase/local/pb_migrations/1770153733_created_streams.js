@@ -1,5 +1,10 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
+  const existing = app.findCollectionByNameOrId("pbc_1849560702");
+  if (existing) {
+    return app.save(existing);
+  }
+
   const collection = new Collection({
     "id": "pbc_1849560702",
     "name": "streams",
@@ -26,8 +31,7 @@ migrate((app) => {
       {
         "name": "scene_name",
         "type": "text",
-        "required": false,
-        "max": 100
+        "required": false
       },
       {
         "name": "bitrate",
@@ -60,5 +64,5 @@ migrate((app) => {
   return app.save(collection);
 }, (app) => {
   const collection = app.findCollectionByNameOrId("pbc_1849560702");
-  return app.delete(collection);
+  if (collection) return app.delete(collection);
 })

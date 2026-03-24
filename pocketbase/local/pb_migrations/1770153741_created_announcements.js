@@ -20,6 +20,11 @@
  * still requires a role so random internet folks can't post.
  */
 migrate((app) => {
+    const existing = app.findCollectionByNameOrId("pbc_4821534112");
+    if (existing) {
+        return app.save(existing);
+    }
+
     const collection = new Collection({
         "id": "pbc_4821534112",
         "name": "announcements",
@@ -34,11 +39,10 @@ migrate((app) => {
                 "max": 150
             },
             {
-                "name": "body",
+                "name": "bodyBrotliBase64",
                 "type": "text",
                 "required": false,
-                "presentable": false,
-                "max": 5000
+                "presentable": false
             },
             {
                 "name": "published_at",
@@ -72,10 +76,8 @@ migrate((app) => {
             "CREATE INDEX idx_announcement_expires ON announcements (expires_at)",
             "CREATE INDEX idx_announcement_priority ON announcements (priority)"
         ],
-        // Announcements are public — anyone can read them, even unauthenticated
         "listRule": "",
         "viewRule": "",
-        // Only admins and pastors can create / modify / delete announcements
         "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'pastor'",
         "deleteRule": "@request.auth.role = 'admin'"
@@ -84,5 +86,5 @@ migrate((app) => {
     return app.save(collection);
 }, (app) => {
     const collection = app.findCollectionByNameOrId("pbc_4821534112");
-    return app.delete(collection);
+    if (collection) return app.delete(collection);
 })
