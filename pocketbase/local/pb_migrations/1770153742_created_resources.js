@@ -46,12 +46,12 @@ migrate((app) => {
     // Ensure semantic naming for compressed description
     const descriptionExists = collection.fields.find(f => f.name === 'descriptionBrotliBase64');
     if (!descriptionExists) {
-        collection.fields.add(new SchemaField({
+        collection.fields.add({
             "name": "descriptionBrotliBase64",
             "type": "text",
             "required": false,
             "presentable": false
-        }));
+        });
     }
 
     // Clean up old description field if present
@@ -62,34 +62,34 @@ migrate((app) => {
 
     // Ensure other fields
     if (!collection.fields.find(f => f.name === 'file')) {
-        collection.fields.add(new SchemaField({
+        collection.fields.add({
             "name": "file",
             "type": "file",
             "maxSelect": 1
-        }));
+        });
     }
 
     if (!collection.fields.find(f => f.name === 'url')) {
-        collection.fields.add(new SchemaField({
+        collection.fields.add({
             "name": "url",
             "type": "url"
-        }));
+        });
     }
 
     if (!collection.fields.find(f => f.name === 'category')) {
-        collection.fields.add(new SchemaField({
+        collection.fields.add({
             "name": "category",
             "type": "select",
             "required": true,
             "values": ["essay", "article", "free"]
-        }));
+        });
     }
 
     if (!collection.fields.find(f => f.name === 'published')) {
-        collection.fields.add(new SchemaField({
+        collection.fields.add({
             "name": "published",
             "type": "bool"
-        }));
+        });
     }
 
     return app.save(collection);

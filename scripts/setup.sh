@@ -125,6 +125,8 @@ while ! curl -s http://127.0.0.1:8090/api/health > /dev/null 2>&1; do
     COUNT=$((COUNT+1))
     if [ $COUNT -ge $MAX_RETRIES ]; then
         echo -e "${RED}❌ PocketBase failed to start. Check pocketbase/local/pb.log${NC}"
+        echo "Last 20 lines of pocketbase/local/pb.log:"
+        tail -n 20 pb.log || true
         exit 1
     fi
 done
