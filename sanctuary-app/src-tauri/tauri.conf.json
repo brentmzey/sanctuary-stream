@@ -73,7 +73,11 @@
       "shortDescription": "Church streaming control",
       "targets": [
         "app",
-        "dmg"
+        "dmg",
+        "msi",
+        "nsis",
+        "deb",
+        "appimage"
       ],
       "windows": {
         "certificateThumbprint": null,

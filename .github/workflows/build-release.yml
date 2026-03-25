@@ -548,6 +548,8 @@ jobs:
             artifacts/**/*.ipa
             artifacts/**/*.apk
             artifacts/**/*.aab
+            artifacts/**/sanctuary-macos-universal
+            artifacts/**/sanctuary-linux-x64
             artifacts/backend-config/backend-config.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
