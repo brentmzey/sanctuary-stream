@@ -354,17 +354,22 @@ jobs:
 
       - name: Zip iOS App (if IPA missing)
         run: |
-          cd sanctuary-app/ios/App/build
+          cd sanctuary-app/ios
           # Find any .ipa files
           IPAS=$(find . -name "*.ipa" | wc -l)
           if [ "$IPAS" -eq 0 ]; then
             echo "⚠️ No IPA found, zipping .app for internal use..."
-            # Find the .app directory (usually under Debug-iphoneos or similar)
+            # Look for the .app inside XCode archive or build folders
             APP_DIR=$(find . -name "App.app" -type d | head -n 1)
             if [ -n "$APP_DIR" ]; then
-              zip -r sanctuary-ios-app.zip "$APP_DIR"
+              # Get the directory containing the .app to zip it correctly
+              PARENT_DIR=$(dirname "$APP_DIR")
+              APP_NAME=$(basename "$APP_DIR")
+              cd "$PARENT_DIR"
+              zip -r ../../../sanctuary-ios-app.zip "$APP_NAME"
+              echo "✅ Zipped $APP_NAME to sanctuary-ios-app.zip"
             else
-              echo "❌ No .app found either"
+              echo "❌ No .app found in $(pwd)"
             fi
           fi
         shell: bash
@@ -374,9 +379,9 @@ jobs:
         with:
           name: ios-app
           path: |
-            sanctuary-app/ios/App/build/**/*.ipa
-            sanctuary-app/ios/App/build/**/*.zip
-            sanctuary-app/ios/App/build/**/App.app
+            sanctuary-ios-app.zip
+            sanctuary-app/ios/**/*.ipa
+            sanctuary-app/ios/**/App.app
 
   # Build Android App
   build-android:
