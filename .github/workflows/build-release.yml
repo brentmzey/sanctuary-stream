@@ -538,7 +538,7 @@ jobs:
           fi
 
       - name: Create Public Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           name: ${{ steps.version.outputs.release_name }}
@@ -565,17 +565,18 @@ jobs:
             | 🔌 **Cli** | - | Handheld Management Tool |
             | 🗄️ **Backend** | `backend-config.zip` | PocketBase Logic |
           files: |
-            artifacts/**/*.dmg
-            artifacts/**/*.msi
-            artifacts/**/*.exe
-            artifacts/**/*.deb
-            artifacts/**/*.AppImage
-            artifacts/**/*.ipa
-            artifacts/**/*.zip
-            artifacts/**/*.apk
-            artifacts/**/*.aab
-            artifacts/**/sanctuary-macos-universal
-            artifacts/**/sanctuary-linux-x64
+            artifacts/macos-universal/Sanctuary Stream.dmg
+            artifacts/windows-x64/sanctuary-stream_*.msi
+            artifacts/windows-x64/sanctuary-stream_*.exe
+            artifacts/linux-x64/*.deb
+            artifacts/linux-x64/*.AppImage
+            artifacts/ios-app/*.ipa
+            artifacts/ios-app/*.zip
+            artifacts/android-app/*.apk
+            artifacts/android-app/*.aab
+            artifacts/sanctuary-cli-macos-latest/dist/sanctuary-macos-universal
+            artifacts/sanctuary-cli-ubuntu-latest/dist/sanctuary-linux-x64
+            artifacts/sanctuary-cli-windows-latest/dist/sanctuary-win-x64.exe
             artifacts/backend-config/backend-config.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
