@@ -352,13 +352,31 @@ jobs:
             cd ../..
           fi
 
+      - name: Zip iOS App (if IPA missing)
+        run: |
+          cd sanctuary-app/ios/App/build
+          # Find any .ipa files
+          IPAS=$(find . -name "*.ipa" | wc -l)
+          if [ "$IPAS" -eq 0 ]; then
+            echo "⚠️ No IPA found, zipping .app for internal use..."
+            # Find the .app directory (usually under Debug-iphoneos or similar)
+            APP_DIR=$(find . -name "App.app" -type d | head -n 1)
+            if [ -n "$APP_DIR" ]; then
+              zip -r sanctuary-ios-app.zip "$APP_DIR"
+            else
+              echo "❌ No .app found either"
+            fi
+          fi
+        shell: bash
+
       - name: Upload iOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
           path: |
             sanctuary-app/ios/App/build/**/*.ipa
-            sanctuary-app/ios/App/build/**/*.app
+            sanctuary-app/ios/App/build/**/*.zip
+            sanctuary-app/ios/App/build/**/App.app
 
   # Build Android App
   build-android:
@@ -532,13 +550,15 @@ jobs:
             📚 Complete guide: [BUILD_TEST_RUN.md](https://github.com/brentmzey/sanctuary-stream/blob/main/BUILD_TEST_RUN.md)
 
             ### 📦 Download Assets
-            - 🍎 **macOS**: .dmg (Universal)
-            - 🪟 **Windows**: .msi or sanctuary-win-x64.exe
-            - 🐧 **Linux**: .deb, .AppImage, or sanctuary-linux-x64
-            - 🤖 **Android**: .apk
-            - 📱 **iOS**: .ipa (Internal use)
-            - 🔌 **Native CLI**: Unified management tool for all platforms
-            - 🗄️ **Backend**: PocketBase configuration package
+            | Platform | Installer / App Bundle | CLI Tool |
+            | :--- | :--- | :--- |
+            | 🍎 **macOS** | `.dmg` (Universal) | `sanctuary-macos-universal` |
+            | 🪟 **Windows** | `.msi` or `.exe` (Installer) | `sanctuary-win-x64.exe` |
+            | 🐧 **Linux** | `.deb` or `.AppImage` | `sanctuary-linux-x64` |
+            | 🤖 **Android** | `.apk` or `.aab` | - |
+            | 📱 **iOS** | `.ipa` or `.zip` (Non-signed App) | - |
+            | 🔌 **Cli** | - | Handheld Management Tool |
+            | 🗄️ **Backend** | `backend-config.zip` | PocketBase Logic |
           files: |
             artifacts/**/*.dmg
             artifacts/**/*.msi
@@ -546,6 +566,7 @@ jobs:
             artifacts/**/*.deb
             artifacts/**/*.AppImage
             artifacts/**/*.ipa
+            artifacts/**/*.zip
             artifacts/**/*.apk
             artifacts/**/*.aab
             artifacts/**/sanctuary-macos-universal
