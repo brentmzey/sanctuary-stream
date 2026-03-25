@@ -9,16 +9,34 @@
 
 ---
 
+## 🏗️ How it Works: The Three Pillars
+
+Sanctuary Stream is more than just an app; it's a complete ecosystem for secure, low-latency church production.
+
+### 1. 🗄️ The Host (PocketBase)
+The "Brain" of your operation. It stores your liturgy, announcements, and stream metadata.
+- **Where to run:** Securely on [PocketHost.io](https://pockethost.io) or your own server.
+- **Included in:** `backend-config.zip` (for manual setup).
+
+### 2. 🔌 The Bridge (Native CLI)
+The "Heart" of your sanctuary. It runs on the same machine as OBS and translates your remote commands into native OBS actions with zero latency.
+- **Where to run:** Directly on the OBS computer (Mac/PC/Linux).
+- **Download:** `sanctuary-win-x64.exe`, `sanctuary-macos-universal`, or `sanctuary-linux-x64`.
+
+### 3. 📱 The Remote Controls (Tauri/Capacitor)
+The "Eyes and Hands" for your volunteers. Native apps for every device that let you control the service from the pulpit, the soundboard, or the back of the room.
+- **Downloads:** `.dmg` (Mac), `.msi` (Windows), `.deb/.AppImage` (Linux), `.apk` (Android), and `.ipa` (iOS).
+
+---
+
 ## 🚀 Native Multi-Platform Support
 
-Sanctuary Stream 0.4.0 is built on a **"Rust-First" architecture**, moving the heavy lifting (networking, concurrency, and safety) into a shared native core.
-
-| Platform | Installer | Architecture |
+| Component | Platform | Primary Download |
 | :--- | :--- | :--- |
-| **Windows** | [Download .msi](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Native x64 |
-| **macOS** | [Download .dmg](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Universal (Intel & Apple Silicon) |
-| **Linux** | [Download .AppImage](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Native x64 |
-| **CLI/Bridge** | [Download Binary](https://github.com/brentmzey/sanctuary-stream/releases/latest) | Native Rust (Win/Mac/Linux) |
+| **Desktop App** | Windows / Mac / Linux | `.msi` / `.dmg` / `.AppImage` |
+| **Mobile App** | Android / iOS | `.apk` / `.ipa` (Internal) |
+| **Native Bridge** | Win / Mac / Linux | `sanctuary-cli-*` |
+| **Cloud Config** | PocketBase | `backend-config.zip` |
 
 ---
 
