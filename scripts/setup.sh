@@ -108,7 +108,10 @@ fi
 
 echo "🔐 Step 4: Creating admin account..."
 # Run upsert while PB is NOT running to avoid database locks
-"$ABS_PB_BIN" superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data || \
+        # Use provided admin if available, otherwise default
+        ADMIN_EMAIL=${PB_ADMIN_EMAIL:-"admin@local.dev"}
+        ADMIN_PASS=${PB_ADMIN_PASSWORD:-"admin123456"}
+        "$ABS_PB_BIN" superuser upsert "$ADMIN_EMAIL" "$ADMIN_PASS" --dir pocketbase/local/pb_data || \
 "$ABS_PB_BIN" admin create admin@local.dev admin123456 --dir pocketbase/local/pb_data || true
 
 # Now start PB to initialize schema
@@ -135,7 +138,8 @@ cd ../..
 
 echo ""
 echo "🏗️ Step 5: Initializing Database Schema..."
-export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL=admin123456
+export PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-"admin@local.dev"}
+export PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-"admin123456"}
 npx tsx pocketbase/schema-init.ts local
 echo -e "${GREEN}✅ Schema initialized${NC}"
 

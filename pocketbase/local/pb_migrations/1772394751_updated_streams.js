@@ -1,35 +1,31 @@
-/// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("pbc_1849560702")
-  if (!collection) return;
+  try {
+    const collection = app.findCollectionByNameOrId("pbc_1849560702");
+    if (!collection) return;
 
-  // update status field
-  const statusField = collection.fields.getById("select2063623452");
-  if (statusField && statusField.type === "select") {
-    statusField.values = ["idle", "starting", "live", "recording", "error"];
-  }
+    // Update scene_name field
+    const sceneField = collection.fields.getByName("scene_name");
+    if (sceneField) {
+      sceneField.required = false;
+    }
 
-  // update youtube_url field
-  const youtubeField = collection.fields.getById("url1858974015");
-  if (youtubeField && youtubeField.type === "url") {
-    youtubeField.onlyDomains = null; // Remove restriction if it was there
-  }
+    // Add profile_name field
+    if (!collection.fields.getByName("profile_name")) {
+      collection.fields.add(new Field({
+        "name": "profile_name",
+        "type": "text",
+        "required": false
+      }));
+    }
 
-  // update scene_name field
-  const sceneField = collection.fields.getById("text1166349570");
-  if (sceneField && sceneField.type === "text") {
-    delete sceneField.max;
-  }
-
-  return app.save(collection)
+    return app.save(collection);
+  } catch (e) {}
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_1849560702")
-  if (!collection) return;
-
-  const statusField = collection.fields.getById("select2063623452");
-  if (statusField && statusField.type === "select") {
-    statusField.values = ["idle", "live", "recording", "error"];
-  }
-
-  return app.save(collection)
+  try {
+    const collection = app.findCollectionByNameOrId("pbc_1849560702");
+    if (collection) {
+      collection.fields.removeByName("profile_name");
+      return app.save(collection);
+    }
+  } catch (e) {}
 })

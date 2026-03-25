@@ -3,15 +3,15 @@ import PocketBase from 'pocketbase';
 const ENVIRONMENTS: Record<string, { url: string; admin: string }> = {
   local: { 
     url: 'http://127.0.0.1:8090', 
-    admin: process.env.PB_ADMIN_EMAIL_LOCAL || 'admin@local.dev' 
+    admin: process.env.PB_ADMIN_EMAIL || 'admin@local.dev' 
   },
   staging: { 
     url: process.env.PB_URL_STAGING || 'https://staging.pockethost.io', 
-    admin: process.env.PB_ADMIN_EMAIL_STAGING || 'admin@sanctuary.dev' 
+    admin: process.env.PB_ADMIN_EMAIL || 'admin@sanctuary.dev' 
   },
   production: { 
     url: process.env.PB_URL_PRODUCTION || 'https://production.pockethost.io', 
-    admin: process.env.PB_ADMIN_EMAIL_PRODUCTION || 'admin@sanctuary.church' 
+    admin: process.env.PB_ADMIN_EMAIL || 'admin@sanctuary.church' 
   }
 };
 
@@ -26,12 +26,11 @@ async function initSchema(env: string = 'local') {
   const pb = new PocketBase(config.url);
   
   // Authenticate as admin
-  const passwordEnvVar = `PB_SANCTUARY_STREAM_ADMIN_PASSWORD_${env.toUpperCase()}`;
-  const password = process.env[passwordEnvVar];
+  const password = process.env.PB_ADMIN_PASSWORD;
   
   if (!password) {
-    console.error(`❌ Missing ${passwordEnvVar} environment variable`);
-    console.error(`   Set it with: export ${passwordEnvVar}=your-password`);
+    console.error(`❌ Missing PB_ADMIN_PASSWORD environment variable`);
+    console.error(`   Set it with: export PB_ADMIN_PASSWORD=your-password`);
     process.exit(1);
   }
 
@@ -52,7 +51,7 @@ async function initSchema(env: string = 'local') {
     }
     console.error(`   Make sure you created the admin account at ${config.url}/_`);
     console.error(`   Email: ${config.admin}`);
-    console.error(`   Password: <value of ${passwordEnvVar}>`);
+    console.error(`   Password: <value of PB_ADMIN_PASSWORD>`);
     process.exit(1);
   }
 

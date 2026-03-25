@@ -1,33 +1,38 @@
-/// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("users");
+    try {
+        const collection = app.findCollectionByNameOrId("users");
+        if (!collection) return;
 
-  // Update users collection with custom fields
-  if (!collection.fields.getByName("name")) {
-    collection.fields.add(new Field({
-      "name": "name",
-      "type": "text",
-      "required": true,
-      "presentable": false,
-      "system": false
-    }));
-  }
+        // Add name field if it doesn't exist
+        if (!collection.fields.getByName("name")) {
+            collection.fields.add(new Field({
+                "name": "name",
+                "type": "text",
+                "required": true
+            }));
+        }
 
-  if (!collection.fields.getByName("role")) {
-    collection.fields.add(new Field({
-      "name": "role",
-      "type": "select",
-      "required": true,
-      "presentable": false,
-      "system": false,
-      "values": ["admin", "pastor", "tech"]
-    }));
-  }
+        // Add role field if it doesn't exist
+        if (!collection.fields.getByName("role")) {
+            collection.fields.add(new Field({
+                "name": "role",
+                "type": "select",
+                "required": true,
+                "values": ["admin", "pastor", "tech"]
+            }));
+        }
 
-  return app.save(collection);
+        return app.save(collection);
+    } catch (e) {
+        return;
+    }
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("users");
-  collection.fields.removeByName("name");
-  collection.fields.removeByName("role");
-  return app.save(collection);
+    try {
+        const collection = app.findCollectionByNameOrId("users");
+        if (collection) {
+            collection.fields.removeByName("name");
+            collection.fields.removeByName("role");
+            return app.save(collection);
+        }
+    } catch (e) {}
 })

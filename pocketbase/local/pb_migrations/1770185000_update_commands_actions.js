@@ -1,14 +1,15 @@
-/// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("pbc_2867142091");
+  let collection;
+  try {
+    collection = app.findCollectionByNameOrId("pbc_2867142091");
+  } catch (e) {}
   
   if (!collection) {
-    console.log("⚠️  Commands collection not found, skipping migration");
     return;
   }
 
   // Update action field to include new command types
-  const actionField = collection.fields.find((f) => f.name === "action");
+  const actionField = collection.fields.getByName("action");
   if (actionField && actionField.type === "select") {
     actionField.values = [
       "START",
@@ -21,34 +22,30 @@ migrate((app) => {
       "SET_AUDIO_SETTINGS",
       "UPLOAD_TO_DRIVE"
     ];
-    console.log("✅ Updated commands.action field with new values");
   }
 
   // Remove max length limit from error_message field for safety
-  const errorField = collection.fields.find((f) => f.name === "error_message");
+  const errorField = collection.fields.getByName("error_message");
   if (errorField && errorField.type === "text") {
-    delete errorField.max;
-    console.log("✅ Removed max length limit from commands.error_message");
+    errorField.max = 0; // 0 for unlimited in 0.22+
   }
 
   return app.save(collection);
 }, (app) => {
-  // Rollback: restore original values
-  const collection = app.findCollectionByNameOrId("pbc_2867142091");
-  
-  if (!collection) {
-    return;
-  }
+  try {
+    const collection = app.findCollectionByNameOrId("pbc_2867142091");
+    if (collection) {
+      const actionField = collection.fields.getByName("action");
+      if (actionField && actionField.type === "select") {
+        actionField.values = ["START", "STOP", "RECORD_START", "RECORD_STOP"];
+      }
 
-  const actionField = collection.fields.find((f) => f.name === "action");
-  if (actionField && actionField.type === "select") {
-    actionField.values = ["START", "STOP", "RECORD_START", "RECORD_STOP"];
-  }
+      const errorField = collection.fields.getByName("error_message");
+      if (errorField && errorField.type === "text") {
+        errorField.max = 500;
+      }
 
-  const errorField = collection.fields.find((f) => f.name === "error_message");
-  if (errorField && errorField.type === "text") {
-    errorField.max = 500;
-  }
-
-  return app.save(collection);
-});
+      return app.save(collection);
+    }
+  } catch (e) {}
+})
