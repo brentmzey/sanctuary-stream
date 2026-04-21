@@ -1,6 +1,6 @@
 [package]
 name = "sanctuary-stream"
-version = "0.4.1"
+version = "0.4.86"
 description = "Secure-by-Design church streaming control system"
 authors = ["Sanctuary Stream Contributors"]
 license = "MIT"

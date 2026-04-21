@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { sendCommand } from '../lib/pocketbase';
+import { CommandAction } from '@shared/schema';
 
 interface VideoSettings {
   resolution: string;
@@ -64,9 +65,9 @@ export function VideoQualitySettings() {
 
     try {
       const [width, height] = videoSettings.resolution.split('x').map(Number);
-      await sendCommand('SET_VIDEO_SETTINGS', { baseWidth: width, baseHeight: height, outputWidth: width, outputHeight: height, fpsNum: videoSettings.fps, fpsDen: 1 });
-      await sendCommand('SET_STREAM_ENCODER', { encoder: videoSettings.encoder, settings: { bitrate: videoSettings.videoBitrate, keyint_sec: videoSettings.keyframeInterval, preset: videoSettings.preset, profile: 'high', rate_control: 'CBR' } });
-      await sendCommand('SET_AUDIO_SETTINGS', { sampleRate: audioSettings.sampleRate, channels: audioSettings.channels === 'stereo' ? 2 : 1, bitrate: videoSettings.audioBitrate });
+      await sendCommand(CommandAction.SetVideoSettings, { baseWidth: width, baseHeight: height, outputWidth: width, outputHeight: height, fpsNum: videoSettings.fps, fpsDen: 1 });
+      await sendCommand(CommandAction.SetStreamEncoder, { encoder: videoSettings.encoder, settings: { bitrate: videoSettings.videoBitrate, keyint_sec: videoSettings.keyframeInterval, preset: videoSettings.preset, profile: 'high', rate_control: 'CBR' } });
+      await sendCommand(CommandAction.SetAudioSettings, { sampleRate: audioSettings.sampleRate, channels: audioSettings.channels === 'stereo' ? 2 : 1, bitrate: videoSettings.audioBitrate });
       setMessage({ text: 'Quality settings synchronized with station!', type: 'success' });
     } catch (error) {
       setMessage({ text: 'Failed to update quality settings', type: 'error' });

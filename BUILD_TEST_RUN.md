@@ -11,11 +11,12 @@ To go from zero to a working local environment in one command:
 ```bash
 git clone https://github.com/brentmzey/sanctuary-stream.git
 cd sanctuary-stream
+# Tip: Install Bun (https://bun.sh) for 2-3x faster development!
 just setup
 ```
 
 **What this does:**
-- Installs all dependencies (Root, App, CLI)
+- Installs all dependencies (Root, App, CLI) — **Uses Bun if available**
 - Downloads the correct **PocketBase** binary for your OS
 - Initializes the database schema and test users
 - Creates `.env` files for the App and the native Rust Bridge

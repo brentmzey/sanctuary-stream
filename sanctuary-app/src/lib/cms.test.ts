@@ -12,6 +12,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { isSuccess, isFailure } from '@shared/result';
 import type { Sermon, Announcement, Resource } from '@shared/types';
+import { Priority } from '@shared/schema';
 
 // ---------------------------------------------------------------------------
 // PocketBase mock — must be set up before importing cms.ts
@@ -69,7 +70,7 @@ const announcement: Announcement = {
     body: 'Join us at 10am for our Easter celebration.',
     published_at: '2026-03-01T00:00:00Z',
     expires_at: '2026-04-06T00:00:00Z',
-    priority: 'high',
+    priority: Priority.High,
     published: true,
     created: '2026-02-22T00:00:00Z',
     updated: '2026-02-22T00:00:00Z',
@@ -342,7 +343,7 @@ describe('createAnnouncement()', () => {
             body: null,
             published_at: null,
             expires_at: null,
-            priority: 'high',
+            priority: Priority.High,
             published: false,
         }).attempt();
 

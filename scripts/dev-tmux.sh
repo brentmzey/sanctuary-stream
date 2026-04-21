@@ -35,15 +35,14 @@ tmux send-keys -t $SESSION_NAME:0 "echo '📝 Create admin account at: http://12
 tmux send-keys -t $SESSION_NAME:0 "echo ''" C-m
 tmux send-keys -t $SESSION_NAME:0 "./pocketbase serve" C-m
 
-# Window 1: Bridge
-echo "⚙️  Setting up Bridge..."
+# Window 1: Bridge (Rust)
+echo "⚙️  Setting up Bridge (Rust)..."
 tmux new-window -t $SESSION_NAME:1 -n "bridge" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:1 "cd sanctuary-bridge" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo '⚙️  Waiting for PocketBase to start...'" C-m
 tmux send-keys -t $SESSION_NAME:1 "sleep 3" C-m
-tmux send-keys -t $SESSION_NAME:1 "echo '🔗 Starting Bridge (connects to OBS)'" C-m
+tmux send-keys -t $SESSION_NAME:1 "echo '🔗 Starting Rust Bridge (connects to OBS)'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo ''" C-m
-tmux send-keys -t $SESSION_NAME:1 "npm start" C-m
+tmux send-keys -t $SESSION_NAME:1 "cargo run -p sanctuary-cli -- bridge" C-m
 
 # Window 2: Web App
 echo "🌐 Setting up Web App..."
@@ -94,7 +93,7 @@ echo "   Kill session:   tmux kill-session -t $SESSION_NAME"
 echo ""
 echo "📚 Window Layout:"
 echo "   0: PocketBase   (database)"
-echo "   1: Bridge       (OBS connection)"
+echo "   1: Bridge       (Rust OBS connection)"
 echo "   2: Web App      (control panel)"
 echo "   3: Logs/Utils   (commands)"
 echo ""

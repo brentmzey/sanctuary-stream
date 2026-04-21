@@ -8,9 +8,14 @@ Fast reference for common development tasks.
 
 ```bash
 # Automated setup (dependencies, PocketBase, schema, .env)
+# 🚀 Use Bun for 2-3x faster setup!
+bun run setup
+# Or fallback to npm
 npm run setup
 
 # Start everything (PocketBase, App, Bridge, Mock OBS)
+bun run dev:full
+# Or fallback to npm
 npm run dev:full
 ```
 
@@ -20,12 +25,18 @@ npm run dev:full
 
 ```bash
 # Install all dependencies (manual)
+bun install
+# Or fallback to npm
 npm install
 
 # Clean install (fresh node_modules)
+bun install --no-save
+# Or fallback to npm
 npm ci
 
 # Full clean + reinstall
+bun run clean:all && bun install
+# Or fallback to npm
 npm run clean:all && npm install
 ```
 
@@ -35,16 +46,18 @@ npm run clean:all && npm install
 
 ```bash
 # Start all services (PocketBase, App, Bridge)
+bun run dev
+# Or fallback to npm
 npm run dev
 
 # Start with mock OBS (Full stack)
-npm run dev:full
+bun run dev:full
 
 # Start individual services
-npm run dev:pocketbase  # Database (port 8090)
-npm run dev:app         # Frontend (port 5173)
-npm run dev:bridge      # Backend service
-
+bun run dev:pocketbase  # Database (port 8090)
+bun run dev:app         # Frontend (port 5173)
+bun run dev:bridge      # Backend service
+```
 # Access at: http://localhost:5173
 # Login: admin@local.dev / admin123456
 ```

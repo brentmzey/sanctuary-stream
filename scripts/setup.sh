@@ -17,23 +17,58 @@ NC='\033[0m' # No Color
 # Check prerequisites
 echo "📋 Step 1: Checking prerequisites..."
 
-if ! command -v node &> /dev/null; then
-    echo -e "${RED}❌ Node.js not found. Install from https://nodejs.org${NC}"
-    exit 1
+# Check for Bun (Recommended)
+if command -v bun &> /dev/null; then
+    echo -e "${GREEN}✅ Bun $(bun -v) (Fast runtime detected) ${NC}"
+    JS_RUNTIME="bun"
+else
+    # Check for Node
+    if ! command -v node &> /dev/null; then
+        echo -e "${RED}❌ Node.js or Bun not found. Install from https://bun.sh (Recommended) or https://nodejs.org${NC}"
+        exit 1
+    fi
+
+    NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+    if [ "$NODE_VERSION" -lt 18 ]; then
+        echo -e "${RED}❌ Node.js 18+ required. Current: $(node -v)${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Node.js $(node -v)${NC}"
+    JS_RUNTIME="npm"
 fi
 
-NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-    echo -e "${RED}❌ Node.js 18+ required. Current: $(node -v)${NC}"
-    exit 1
+if [[ "$JS_RUNTIME" == "npm" ]]; then
+    if ! command -v npm &> /dev/null; then
+        echo -e "${RED}❌ npm not found${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ npm $(npm -v)${NC}"
 fi
-echo -e "${GREEN}✅ Node.js $(node -v)${NC}"
 
-if ! command -v npm &> /dev/null; then
-    echo -e "${RED}❌ npm not found${NC}"
+# Check for curl
+if ! command -v curl &> /dev/null; then
+    echo -e "${RED}❌ curl not found. Install it with your package manager.${NC}"
     exit 1
 fi
-echo -e "${GREEN}✅ npm $(npm -v)${NC}"
+echo -e "${GREEN}✅ curl found${NC}"
+
+# Check for unzip (needed for PocketBase download)
+if ! command -v unzip &> /dev/null; then
+    echo -e "${RED}❌ unzip not found. Install it:${NC}"
+    echo "   Ubuntu/Debian: sudo apt install unzip"
+    echo "   macOS: brew install unzip"
+    exit 1
+fi
+echo -e "${GREEN}✅ unzip found${NC}"
+
+# Check for Rust/Cargo (needed for the bridge)
+if command -v cargo &> /dev/null; then
+    echo -e "${GREEN}✅ Rust/Cargo $(cargo --version | cut -d' ' -f2)${NC}"
+else
+    echo -e "${YELLOW}⚠️  Rust/Cargo not found. The bridge requires Rust.${NC}"
+    echo "   Install from: https://rustup.rs"
+    echo "   Run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+fi
 
 # Check for PocketBase
 PB_BIN="pocketbase"
@@ -67,11 +102,16 @@ if [ "$NEED_INSTALL" = true ]; then
             URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_darwin_amd64.zip"
         fi
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_linux_amd64.zip"
-    elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "win32"* ]]; then
+        if [[ $(uname -m) == 'aarch64' || $(uname -m) == 'arm64' ]]; then
+            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_linux_arm64.zip"
+        else
+            URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_linux_amd64.zip"
+        fi
+    elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "win32"* || "$OSTYPE" == "cygwin"* ]]; then
         URL="https://github.com/pocketbase/pocketbase/releases/download/v0.25.0/pocketbase_0.25.0_windows_amd64.zip"
     else
         echo -e "${RED}❌ Unsupported OS: $OSTYPE. Automatic PocketBase download failed.${NC}"
+        echo "   Download manually from https://pocketbase.io/docs/ and place in pocketbase/local/"
         exit 1
     fi
     
@@ -90,8 +130,12 @@ if [ "$NEED_INSTALL" = true ]; then
 fi
 
 echo ""
-echo "📦 Step 2: Installing Node.js dependencies..."
-npm install
+echo "📦 Step 2: Installing dependencies..."
+if [[ "$JS_RUNTIME" == "bun" ]]; then
+    bun install
+else
+    npm install
+fi
 echo -e "${GREEN}✅ Dependencies installed${NC}"
 
 echo ""
@@ -140,7 +184,11 @@ echo ""
 echo "🏗️ Step 5: Initializing Database Schema..."
 export PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-"admin@local.dev"}
 export PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-"admin123456"}
-npx tsx pocketbase/schema-init.ts local
+if [[ "$JS_RUNTIME" == "bun" ]]; then
+    bun run pocketbase/schema-init.ts local
+else
+    npx tsx pocketbase/schema-init.ts local
+fi
 echo -e "${GREEN}✅ Schema initialized${NC}"
 
 echo ""

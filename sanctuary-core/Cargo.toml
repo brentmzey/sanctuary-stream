@@ -1,6 +1,6 @@
 [package]
 name = "sanctuary-core"
-version = "0.4.1"
+version = "0.4.86"
 edition = "2021"
 
 [dependencies]

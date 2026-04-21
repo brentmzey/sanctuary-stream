@@ -20,6 +20,7 @@ import { pb } from './pocketbase';
 import { AsyncIO } from '@shared/io';
 import { fromNonEmptyString, getOrElse } from '@shared/option';
 import type { Sermon, Announcement, Resource } from '@shared/types';
+import { PBCollection, Priority } from '@shared/schema';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -49,7 +50,7 @@ export const listSermons = (
             });
         } catch (e) {
             console.warn('Rust list_sermons failed, falling back to JS SDK:', e);
-            const result = await pb.collection('sermons').getList<Sermon>(page, per_page, {
+            const result = await pb.collection(PBCollection.Sermons).getList<Sermon>(page, per_page, {
                 filter: safeFilter,
                 sort,
             });
@@ -67,7 +68,7 @@ export const getSermon = (id: string): AsyncIO<Sermon> =>
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Sermon ID must not be empty');
         });
-        return pb.collection('sermons').getOne<Sermon>(safeId);
+        return pb.collection(PBCollection.Sermons).getOne<Sermon>(safeId);
     });
 
 /**
@@ -81,7 +82,7 @@ export const createSermon = (
     new AsyncIO(async () => {
         // Ensure published defaults to draft state — caller's value takes precedence
         const payload = { ...data, published: data.published ?? false };
-        return pb.collection('sermons').create<Sermon>(payload);
+        return pb.collection(PBCollection.Sermons).create<Sermon>(payload);
     });
 
 /**
@@ -96,7 +97,7 @@ export const updateSermon = (
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Sermon ID must not be empty');
         });
-        return pb.collection('sermons').update<Sermon>(safeId, data);
+        return pb.collection(PBCollection.Sermons).update<Sermon>(safeId, data);
     });
 
 /**
@@ -108,7 +109,7 @@ export const deleteSermon = (id: string): AsyncIO<void> =>
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Sermon ID must not be empty');
         });
-        await pb.collection('sermons').delete(safeId);
+        await pb.collection(PBCollection.Sermons).delete(safeId);
     });
 
 /**
@@ -146,7 +147,7 @@ export const listAnnouncements = (
             });
         } catch (e) {
             console.warn('Rust list_announcements failed, falling back to JS SDK:', e);
-            const result = await pb.collection('announcements').getList<Announcement>(page, perPage, {
+            const result = await pb.collection(PBCollection.Announcements).getList<Announcement>(page, perPage, {
                 filter: safeFilter,
                 sort,
             });
@@ -159,7 +160,7 @@ export const getAnnouncement = (id: string): AsyncIO<Announcement> =>
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Announcement ID must not be empty');
         });
-        return pb.collection('announcements').getOne<Announcement>(safeId);
+        return pb.collection(PBCollection.Announcements).getOne<Announcement>(safeId);
     });
 
 export const createAnnouncement = (
@@ -169,9 +170,9 @@ export const createAnnouncement = (
         const payload = { 
             ...data, 
             published: data.published ?? false, 
-            priority: data.priority ?? ('normal' as const) 
+            priority: data.priority ?? Priority.Normal 
         };
-        return pb.collection('announcements').create<Announcement>(payload);
+        return pb.collection(PBCollection.Announcements).create<Announcement>(payload);
     });
 
 export const updateAnnouncement = (
@@ -182,7 +183,7 @@ export const updateAnnouncement = (
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Announcement ID must not be empty');
         });
-        return pb.collection('announcements').update<Announcement>(safeId, data);
+        return pb.collection(PBCollection.Announcements).update<Announcement>(safeId, data);
     });
 
 export const deleteAnnouncement = (id: string): AsyncIO<void> =>
@@ -190,7 +191,7 @@ export const deleteAnnouncement = (id: string): AsyncIO<void> =>
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Announcement ID must not be empty');
         });
-        await pb.collection('announcements').delete(safeId);
+        await pb.collection(PBCollection.Announcements).delete(safeId);
     });
 
 // ---------------------------------------------------------------------------
@@ -219,7 +220,7 @@ export const listResources = (
             });
         } catch (e) {
             console.warn('Rust list_resources failed, falling back to JS SDK:', e);
-            const result = await pb.collection('resources').getList<Resource>(page, perPage, {
+            const result = await pb.collection(PBCollection.Resources).getList<Resource>(page, perPage, {
                 filter: safeFilter,
                 sort,
             });
@@ -232,7 +233,7 @@ export const getResource = (id: string): AsyncIO<Resource> =>
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Resource ID must not be empty');
         });
-        return pb.collection('resources').getOne<Resource>(safeId);
+        return pb.collection(PBCollection.Resources).getOne<Resource>(safeId);
     });
 
 export const createResource = (
@@ -240,7 +241,7 @@ export const createResource = (
 ): AsyncIO<Resource> =>
     new AsyncIO(async () => {
         const payload = { ...data, published: data.published ?? false };
-        return pb.collection('resources').create<Resource>(payload);
+        return pb.collection(PBCollection.Resources).create<Resource>(payload);
     });
 
 export const updateResource = (
@@ -251,7 +252,7 @@ export const updateResource = (
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Resource ID must not be empty');
         });
-        return pb.collection('resources').update<Resource>(safeId, data);
+        return pb.collection(PBCollection.Resources).update<Resource>(safeId, data);
     });
 
 export const deleteResource = (id: string): AsyncIO<void> =>
@@ -259,5 +260,5 @@ export const deleteResource = (id: string): AsyncIO<void> =>
         const safeId = getOrElse(fromNonEmptyString(id), () => {
             throw new Error('Resource ID must not be empty');
         });
-        await pb.collection('resources').delete(safeId);
+        await pb.collection(PBCollection.Resources).delete(safeId);
     });

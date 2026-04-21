@@ -119,4 +119,60 @@ describe('LoginForm', () => {
     expect(darkBtn).toBeDefined();
     expect(systemBtn).toBeDefined();
   });
+
+  it('shows OTP field when mfaToken is returned', async () => {
+    const mockAuth = vi.fn().mockRejectedValue({
+      response: { mfaToken: 'mfa-token-123' }
+    });
+    vi.mocked(pb.collection).mockReturnValue({ authWithPassword: mockAuth } as any);
+
+    renderWithTheme(<LoginForm onSuccess={() => {}} />);
+    
+    const emailInput = screen.getByLabelText(/Email Channel/i);
+    const passwordInput = screen.getByLabelText(/Access Key/i);
+    const submitBtn = screen.getByRole('button', { name: /Initiate Command/i });
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: 'mfa@example.com' } });
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(submitBtn);
+    });
+
+    expect(screen.getByLabelText(/Verification Code/i)).toBeDefined();
+    expect(screen.getByText(/Verify Security Code/i)).toBeDefined();
+  });
+
+  it('calls authWithOTP on MFA submission', async () => {
+    const onSuccess = vi.fn();
+    const mockAuth = vi.fn().mockRejectedValue({
+      response: { mfaToken: 'mfa-token-123' }
+    });
+    const mockAuthWithOTP = vi.fn().mockResolvedValue({ record: { id: 'user-1' } });
+    
+    vi.mocked(pb.collection).mockReturnValue({ 
+      authWithPassword: mockAuth,
+      authWithOTP: mockAuthWithOTP
+    } as any);
+
+    renderWithTheme(<LoginForm onSuccess={onSuccess} />);
+    
+    // 1. Submit password to trigger MFA
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText(/Email Channel/i), { target: { value: 'mfa@example.com' } });
+      fireEvent.change(screen.getByLabelText(/Access Key/i), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /Initiate Command/i }));
+    });
+
+    // 2. Submit OTP
+    const otpInput = screen.getByLabelText(/Verification Code/i);
+    const verifyBtn = screen.getByRole('button', { name: /Verify Security Code/i });
+
+    await act(async () => {
+      fireEvent.change(otpInput, { target: { value: '123456' } });
+      fireEvent.click(verifyBtn);
+    });
+
+    expect(mockAuthWithOTP).toHaveBeenCalledWith('mfa-token-123', '123456');
+    expect(onSuccess).toHaveBeenCalled();
+  });
 });

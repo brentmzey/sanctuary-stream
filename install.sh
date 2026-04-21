@@ -79,6 +79,7 @@ elif [ "$OS_TYPE" == "windows" ]; then
 fi
 
 echo ""
-echo "⛪ Sanctuary Stream 0.4.0 is now ready to use."
+echo ""
+echo "⛪ Sanctuary Stream is now ready to use."
 echo "Need help? Visit https://github.com/$REPO"
 echo ""

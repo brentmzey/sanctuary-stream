@@ -3,22 +3,21 @@ import { pb } from './lib/pocketbase';
 import { useStream } from './lib/hooks';
 import { isSome } from '@shared/option';
 import { LoginForm } from './components/LoginForm';
-import { StreamStatus } from './components/StreamStatus';
-import { ControlButtons } from './components/ControlButtons';
-import { StreamSettings } from './components/StreamSettings';
-import { VideoQualitySettings } from './components/VideoQualitySettings';
+import { StreamStatus as StreamStatusDisplay } from './components/StreamStatus';
 import { StreamHealthMonitor } from './components/StreamHealthMonitor';
-import { StreamControlsExtended } from './components/StreamControlsExtended';
+import { ProductionSwitcher } from './components/vmix/ProductionSwitcher';
 import { SetupWizard } from './components/SetupWizard';
 import { AnnouncementsBanner } from './components/AnnouncementsBanner';
 import { PastoralReflections } from './components/PastoralReflections';
+import { StreamStatus } from '@shared/schema';
 import { RecordingsList } from './components/RecordingsList';
+import { SecuritySettings } from './components/SecuritySettings';
 import { HelpGuide } from './components/HelpGuide';
 import { Logo } from './components/Logo';
 import { useTheme } from './lib/ThemeContext';
 import './App.css';
 
-type Tab = 'control' | 'reflections' | 'recordings' | 'help';
+type Tab = 'control' | 'reflections' | 'recordings' | 'security' | 'help';
 
 function App() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -31,8 +30,6 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(pb.authStore.isValid);
   const [userRole, setUserRole] = useState<string>('');
   const [activeTab, setActiveTab] = useState<Tab>('control');
-  const [showQualitySettings, setShowQualitySettings] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   // Only hook into stream if we have an ID and are authenticated
   const { stream, loading, error } = useStream({ streamId, isAuthenticated });
@@ -155,6 +152,15 @@ function App() {
           Recordings
         </button>
         <button
+          className={`app-tab ${activeTab === 'security' ? 'app-tab--active' : ''}`}
+          onClick={() => setActiveTab('security')}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+          </svg>
+          Security
+        </button>
+        <button
           className={`app-tab ${activeTab === 'help' ? 'app-tab--active' : ''}`}
           onClick={() => setActiveTab('help')}
         >
@@ -184,42 +190,18 @@ function App() {
 
             {isSome(stream) && (
               <>
-                <StreamStatus stream={stream.value} />
+                <StreamStatusDisplay stream={stream.value} />
 
                 {/* Stream Health Monitor - Only show when live */}
-                {stream.value.status === 'live' && (
+                {stream.value.status === StreamStatus.Live && (
                   <StreamHealthMonitor stream={stream.value} />
                 )}
 
                 {canControl ? (
-                  <>
-                    <ControlButtons
-                      isLive={stream.value.status === 'live'}
-                      isRecording={stream.value.status === 'recording'}
-                      disabled={stream.value.status === 'error'}
-                    />
-                    
-                    <StreamControlsExtended 
-                      stream={stream.value}
-                      disabled={stream.value.status === 'error'}
-                    />
-                    <div className="flex justify-end gap-4 mt-4">
-                      <button
-                        onClick={() => setShowQualitySettings(!showQualitySettings)}
-                        className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
-                      >
-                        {showQualitySettings ? '🔼 Hide Quality Controls' : '🎬 Video Quality'}
-                      </button>
-                      <button
-                        onClick={() => setShowSettings(!showSettings)}
-                        className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
-                      >
-                        {showSettings ? '🔼 Hide Settings' : '⚙️ Stream Settings'}
-                      </button>
-                    </div>
-                    {showQualitySettings && <VideoQualitySettings />}
-                    {showSettings && <StreamSettings />}
-                  </>
+                  <ProductionSwitcher
+                    stream={stream.value}
+                    disabled={stream.value.status === 'error'}
+                  />
                 ) : (
                   <div className="permission-notice">
                     <p>ℹ️ You don't have permission to control streaming.</p>
@@ -281,6 +263,9 @@ function App() {
 
         {/* ── Recordings Tab ─────────────────────────────────────── */}
         {activeTab === 'recordings' && <RecordingsList streamId={streamId} />}
+
+        {/* ── Security Tab ───────────────────────────────────────── */}
+        {activeTab === 'security' && <SecuritySettings />}
 
         {/* ── Help Tab ───────────────────────────────────────────── */}
         {activeTab === 'help' && <HelpGuide />}

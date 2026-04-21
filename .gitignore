@@ -19,7 +19,6 @@ bin/
 # Rust / Cargo
 target/
 **/target/
-Cargo.lock
 
 # Gradle / Java
 .gradle/
@@ -70,10 +69,13 @@ secrets/
 
 # PocketBase local runtime
 pocketbase/local/pocketbase
+pocketbase/local/pocketbase.exe
 pocketbase/local/pb_data/
 pocketbase/local/pb.pid
 pocketbase/local/pb.log
 pocketbase/local/types.d.ts
+pocketbase/local/data.db*
+pocketbase/pb_data/
 
 # Archives
 *.zip

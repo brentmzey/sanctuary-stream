@@ -15,8 +15,10 @@ NC='\033[0m'
 
 # Clean up
 echo "🧹 Cleaning up old processes..."
-pkill -9 pocketbase 2>/dev/null || true
-pkill -9 node 2>/dev/null || true
+pkill -f "pocketbase serve" 2>/dev/null || true
+pkill -f "sanctuary-cli.*bridge" 2>/dev/null || true
+pkill -f "vite.*sanctuary" 2>/dev/null || true
+pkill -f "mock-obs" 2>/dev/null || true
 sleep 2
 
 # Start PocketBase
@@ -60,9 +62,8 @@ for i in {1..30}; do
     sleep 1
 done
 
-# Update Bridge .env with correct password
+# Configure Bridge env
 echo "⚙️  Configuring Bridge..."
-cd sanctuary-bridge
 cat > .env << 'ENVEOF'
 PB_URL=http://127.0.0.1:8090
 BRIDGE_EMAIL=admin@sanctuary.local
@@ -73,14 +74,11 @@ STREAM_ID=test-stream-001
 LOG_LEVEL=info
 NODE_ENV=development
 ENVEOF
-cd ..
 
-# Start Bridge
-echo "🔗 Starting Bridge..."
-cd sanctuary-bridge
-npm start > ../logs/bridge.log 2>&1 &
+# Start Bridge (Rust)
+echo "🔗 Starting Bridge (Rust)..."
+cargo run -p sanctuary-cli -- bridge > logs/bridge.log 2>&1 &
 BRIDGE_PID=$!
-cd ..
 
 sleep 3
 

@@ -18,7 +18,7 @@ fi
 echo "✅ Node.js found: $(node -v)"
 echo ""
 
-# Install dependencies
+# Install dependencies (including workspaces)
 echo "📦 Installing dependencies..."
 npm install --silent
 echo "✅ Dependencies installed"
@@ -30,16 +30,15 @@ npm run build --silent
 echo "✅ Build complete"
 echo ""
 
-# Setup PocketBase symlink if needed
-if ! command -v pocketbase &> /dev/null; then
-    echo "⚠️  PocketBase not found globally"
-    echo "   Install with: brew install pocketbase (macOS)"
-    echo "   Or download from: https://pocketbase.io"
+# Setup PocketBase
+if [ -f "pocketbase/local/pocketbase" ]; then
+    echo "✅ PocketBase binary found"
+elif command -v pocketbase &> /dev/null; then
+    echo "✅ PocketBase found in PATH"
 else
-    echo "✅ PocketBase found"
-    cd pocketbase/local
-    ln -sf $(which pocketbase) pocketbase 2>/dev/null || true
-    cd ../..
+    echo "⚠️  PocketBase not found."
+    echo "   Run the full setup instead: ./scripts/setup.sh"
+    echo "   It will download PocketBase automatically."
 fi
 echo ""
 

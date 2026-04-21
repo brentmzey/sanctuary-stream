@@ -1,17 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StreamHealthMonitor } from './StreamHealthMonitor';
+import { StreamStatus } from '@shared/schema';
 
 describe('StreamHealthMonitor', () => {
   it('renders nothing if stream is not live', () => {
-    const { container } = render(<StreamHealthMonitor stream={{ status: 'idle', id: '', heartbeat: '', created: '', updated: '' }} />);
+    const { container } = render(<StreamHealthMonitor stream={{ status: StreamStatus.Idle, id: '', heartbeat: '', metadata: {}, created: '', updated: '' }} />);
     expect(container.firstChild).toBeNull();
   });
 
   it('renders excellent health metrics', () => {
     const stream = {
       id: '1',
-      status: 'live' as const,
+      status: StreamStatus.Live,
       heartbeat: '',
       created: '',
       updated: '',
@@ -39,7 +40,7 @@ describe('StreamHealthMonitor', () => {
   it('renders critical health for high frame drops', () => {
     const stream = {
       id: '1',
-      status: 'live' as const,
+      status: StreamStatus.Live,
       heartbeat: '',
       created: '',
       updated: '',
@@ -66,7 +67,7 @@ describe('StreamHealthMonitor', () => {
   it('renders poor health for some frame drops', () => {
     const stream = {
       id: '1',
-      status: 'live' as const,
+      status: StreamStatus.Live,
       heartbeat: '',
       created: '',
       updated: '',
@@ -83,7 +84,7 @@ describe('StreamHealthMonitor', () => {
   it('renders fair health for minor frame drops', () => {
     const stream = {
       id: '1',
-      status: 'live' as const,
+      status: StreamStatus.Live,
       heartbeat: '',
       created: '',
       updated: '',
@@ -100,7 +101,7 @@ describe('StreamHealthMonitor', () => {
   it('detects low bitrate', () => {
     const stream = {
       id: '1',
-      status: 'live' as const,
+      status: StreamStatus.Live,
       heartbeat: '',
       created: '',
       updated: '',

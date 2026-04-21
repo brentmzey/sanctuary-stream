@@ -9,6 +9,7 @@
   "description": "Secure-by-Design church streaming control system with real-time remote management",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@tauri-apps/cli-darwin-x64": "^2.10.1",
     "@types/node": "^25.2.2",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -46,7 +47,8 @@
     "dev:app": "npm run dev --workspace=sanctuary-app",
     "dev:bridge": "cargo run -p sanctuary-cli -- bridge",
     "dev:full": "npx concurrently -n \"pb,obs,bridge,app\" -c \"blue,yellow,cyan,green\" \"npm run dev:pocketbase\" \"npm run mock:obs\" \"npm run dev:bridge\" \"npm run dev:app\"",
-    "dev:pocketbase": "if [ -f pocketbase/local/pocketbase ]; then PB_EXEC=\"./pocketbase/local/pocketbase\"; else PB_EXEC=\"pocketbase\"; fi; $PB_EXEC superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data || $PB_EXEC admin create admin@local.dev admin123456 --dir pocketbase/local/pb_data || true; $PB_EXEC serve --http=127.0.0.1:8090 --dir pocketbase/local/pb_data",
+    "dev:pocketbase": "if [ -f pocketbase/local/pocketbase ]; then PB_EXEC=\"./pocketbase/local/pocketbase\"; elif [ -f pocketbase/local/pocketbase.exe ]; then PB_EXEC=\"./pocketbase/local/pocketbase.exe\"; else PB_EXEC=\"pocketbase\"; fi; $PB_EXEC superuser upsert admin@local.dev admin123456 --dir pocketbase/local/pb_data || $PB_EXEC admin create admin@local.dev admin123456 --dir pocketbase/local/pb_data || true; $PB_EXEC serve --http=127.0.0.1:8090 --dir pocketbase/local/pb_data",
+    "dev:simple": "./scripts/dev-simple.sh",
     "format": "npx prettier --write \"**/*.{ts,tsx,json,md}\"",
     "lint": "npx eslint . --ext .ts,.tsx --ignore-path .eslintignore",
     "lint:app": "cd sanctuary-app && npm run lint",

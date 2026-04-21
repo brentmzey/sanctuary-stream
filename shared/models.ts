@@ -1,4 +1,5 @@
 import { Option, fromNullable, none } from './option';
+import { PBCollection, Priority } from './schema';
 
 // ============================================================================
 // BASE TYPES & BRANDING
@@ -39,8 +40,8 @@ export class SermonBuilder {
   private _id: string = '';
   private _created: string = '';
   private _updated: string = '';
-  private _collectionId: string = 'sermons';
-  private _collectionName: string = 'sermons';
+  private _collectionId: string = PBCollection.Sermons;
+  private _collectionName: string = PBCollection.Sermons;
 
   private _title: string = '';
   private _bodyBrotliBase64: BrotliBase64String = '' as BrotliBase64String;
@@ -135,7 +136,7 @@ export interface AnnouncementRow extends BaseRow {
   body?: string;
   published_at?: string;
   expires_at?: string;
-  priority: 'low' | 'normal' | 'high';
+  priority: Priority;
   published: boolean;
 }
 
@@ -143,15 +144,15 @@ export class AnnouncementBuilder {
     private _id: string = '';
     private _created: string = '';
     private _updated: string = '';
-    private _collectionId: string = 'announcements';
-    private _collectionName: string = 'announcements';
+    private _collectionId: string = PBCollection.Announcements;
+    private _collectionName: string = PBCollection.Announcements;
 
     private _title: string = '';
     private _bodyBrotliBase64: BrotliBase64String = '' as BrotliBase64String;
     private _body: Option<string> = none();
     private _published_at: Option<string> = none();
     private _expires_at: Option<string> = none();
-    private _priority: 'low' | 'normal' | 'high' = 'normal';
+    private _priority: Priority = Priority.Normal;
     private _published: boolean = false;
 
     static fromRow(row: AnnouncementRow): AnnouncementBuilder {
@@ -191,7 +192,7 @@ export class AnnouncementBuilder {
     withBody(body?: string | null): this { this._body = fromNullable(body); return this; }
     withPublishedAt(date?: string | null): this { this._published_at = fromNullable(date); return this; }
     withExpiresAt(date?: string | null): this { this._expires_at = fromNullable(date); return this; }
-    withPriority(priority: 'low' | 'normal' | 'high'): this { this._priority = priority; return this; }
+    withPriority(priority: Priority): this { this._priority = priority; return this; }
     withPublished(published: boolean): this { this._published = published; return this; }
 
     toRow(): AnnouncementRow {
@@ -231,8 +232,8 @@ export class ResourceBuilder {
     private _id: string = '';
     private _created: string = '';
     private _updated: string = '';
-    private _collectionId: string = 'resources';
-    private _collectionName: string = 'resources';
+    private _collectionId: string = PBCollection.Resources;
+    private _collectionName: string = PBCollection.Resources;
 
     private _title: string = '';
     private _descriptionBrotliBase64: BrotliBase64String = '' as BrotliBase64String;

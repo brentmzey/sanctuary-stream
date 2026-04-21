@@ -8,7 +8,8 @@ This document tracks the systematic verification of the Sanctuary Stream install
 ### Step 1: Prerequisites
 - [x] **Node.js (v18+):** Verified v22.20.0.
 - [x] **npm:** Verified v11.6.4.
-- [x] **Bun:** Verified (needed for bridge compilation).
+- [x] **Bun:** Verified (optional, for faster npm operations).
+- [x] **Rust/Cargo:** Required for the Rust-based bridge.
 - **Gotchas:** 
   - *Fixed:* Shell environment `NODE_ENV` can override test settings if not explicitly handled in `package.json`.
 
@@ -26,7 +27,7 @@ This document tracks the systematic verification of the Sanctuary Stream install
 ### Step 4: `npm run dev:full`
 - [x] **PocketBase:** Starts on port 8090.
 - [x] **Mock OBS:** Starts on port 4455.
-- [x] **Sanctuary Bridge:** Starts and connects to PB and OBS.
+- [x] **Sanctuary Bridge (Rust):** Starts and connects to PB and OBS via `cargo run -p sanctuary-cli -- bridge`.
 - [x] **Control App:** Starts Vite dev server on port 5173.
 - **Gotchas:**
   - *Fixed:* Bridge would attempt to start during tests if `NODE_ENV` was inherited as `development`. Fixed by forcing `NODE_ENV=test` in test scripts.

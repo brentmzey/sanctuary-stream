@@ -2,8 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use sanctuary_core::{
-    Announcement, PocketBaseClient, Resource, SanctuaryBridge, Sermon, StreamMetadata,
-    StreamStatusValue, User,
+    Announcement, PBCollection, PocketBaseClient, Resource, SanctuaryBridge, Sermon, StreamMetadata,
+    StreamStatus as StreamStatusEnum, User,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -17,7 +17,7 @@ struct AppState {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct StreamStatus {
-    status: StreamStatusValue,
+    status: StreamStatusEnum,
     youtube_url: Option<String>,
     metadata: Option<StreamMetadata>,
 }
@@ -108,7 +108,7 @@ async fn list_sermons(
 ) -> Result<Vec<Sermon>, String> {
     let pb = state.pb.lock().await;
     to_tauri_res(
-        pb.list::<Sermon>("sermons", page, per_page, filter, sort)
+        pb.list::<Sermon>(PBCollection::Sermons, page, per_page, filter, sort)
             .await,
     )
 }
@@ -123,7 +123,7 @@ async fn list_announcements(
 ) -> Result<Vec<Announcement>, String> {
     let pb = state.pb.lock().await;
     to_tauri_res(
-        pb.list::<Announcement>("announcements", page, per_page, filter, sort)
+        pb.list::<Announcement>(PBCollection::Announcements, page, per_page, filter, sort)
             .await,
     )
 }
@@ -138,7 +138,7 @@ async fn list_resources(
 ) -> Result<Vec<Resource>, String> {
     let pb = state.pb.lock().await;
     to_tauri_res(
-        pb.list::<Resource>("resources", page, per_page, filter, sort)
+        pb.list::<Resource>(PBCollection::Resources, page, per_page, filter, sort)
             .await,
     )
 }
@@ -151,7 +151,7 @@ async fn list_recordings(
     let pb = state.pb.lock().await;
     to_tauri_res(
         pb.list::<Recording>(
-            "recordings",
+            PBCollection::Recordings,
             1,
             50,
             Some(format!("stream_id = '{}'", stream_id)),
@@ -193,7 +193,11 @@ async fn get_stream_status(state: tauri::State<'_, AppState>) -> Result<StreamSt
 }
 
 #[tauri::command]
-async fn send_command(state: tauri::State<'_, AppState>, action: String) -> Result<String, String> {
+async fn send_command(
+    state: tauri::State<'_, AppState>,
+    action: String,
+    payload: Option<serde_json::Value>,
+) -> Result<String, String> {
     let pb = state.pb.lock().await;
     let url = format!("{}/api/collections/commands/records", pb.base_url());
 
@@ -203,18 +207,23 @@ async fn send_command(state: tauri::State<'_, AppState>, action: String) -> Resu
         .ok_or_else(|| "Not authenticated".to_string())?;
     let correlation_id = uuid::Uuid::new_v4().to_string();
 
-    let payload = serde_json::json!({
+    // Include payload so commands like SET_SCENE, SET_MUTE, SET_VOLUME
+    // carry their arguments through the PocketBase command bus.
+    let mut body = serde_json::json!({
         "action": action,
         "executed": false,
         "correlation_id": &correlation_id,
     });
+    if let Some(p) = payload {
+        body["payload"] = p;
+    }
 
     let client = reqwest::Client::new();
     let res = async {
         client
             .post(&url)
             .header("Authorization", format!("Bearer {}", token))
-            .json(&payload)
+            .json(&body)
             .send()
             .await
             .map_err(|e| anyhow::anyhow!("Network: {}", e))?

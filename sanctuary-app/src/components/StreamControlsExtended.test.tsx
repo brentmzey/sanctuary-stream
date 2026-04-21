@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { StreamControlsExtended } from './StreamControlsExtended';
 import * as pbLib from '../lib/pocketbase';
 import { StreamRecord } from '../lib/pocketbase';
+import { CommandAction, StreamStatus } from '@shared/schema';
 
 // Mock the pocketbase library
 vi.mock('../lib/pocketbase', () => ({
@@ -14,7 +15,7 @@ vi.mock('../lib/pocketbase', () => ({
 describe('StreamControlsExtended', () => {
   const mockStream: StreamRecord = {
     id: 'stream-123',
-    status: 'live',
+    status: StreamStatus.Live,
     heartbeat: new Date().toISOString(),
     metadata: {
       scenes: ['Scene 1', 'Scene 2'],
@@ -47,7 +48,7 @@ describe('StreamControlsExtended', () => {
     const scene2Button = screen.getByText('Scene 2');
     fireEvent.click(scene2Button);
     
-    expect(pbLib.sendCommand).toHaveBeenCalledWith('SET_SCENE', { sceneName: 'Scene 2' });
+    expect(pbLib.sendCommand).toHaveBeenCalledWith(CommandAction.SetScene, { sceneName: 'Scene 2' });
   });
 
   it('calls sendCommand when toggling mute', async () => {
@@ -61,13 +62,13 @@ describe('StreamControlsExtended', () => {
       fireEvent.click(muteButton);
     }
     
-    expect(pbLib.sendCommand).toHaveBeenCalledWith('SET_MUTE', { inputName: 'Mic/Aux', muted: true });
+    expect(pbLib.sendCommand).toHaveBeenCalledWith(CommandAction.SetMute, { inputName: 'Mic/Aux', muted: true });
   });
 
   it('renders empty states when no data available', () => {
     const emptyStream: StreamRecord = {
       id: 'empty',
-      status: 'idle',
+      status: StreamStatus.Idle,
       heartbeat: new Date().toISOString(),
       metadata: {},
       created: new Date().toISOString(),

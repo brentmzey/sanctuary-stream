@@ -291,7 +291,7 @@ kill <PID1> <PID2> <PID3>
 # Kill processes on ports
 lsof -ti:8090 | xargs kill -9  # PocketBase
 lsof -ti:5173 | xargs kill -9  # Vite
-pkill -f sanctuary-bridge      # Bridge
+pkill -f "sanctuary-cli"       # Bridge
 ```
 
 ### "tmux not found"

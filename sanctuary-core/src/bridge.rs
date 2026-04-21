@@ -1,5 +1,6 @@
+use crate::pocketbase::PBCollection;
+use crate::types::{Command, CommandAction, StreamStatus};
 use crate::drive::upload_to_drive;
-use crate::types::{Command, CommandAction};
 use chrono::Utc;
 use eventsource_client::{Client, ClientBuilder, SSE};
 use futures_util::StreamExt;
@@ -72,7 +73,7 @@ impl SanctuaryBridge {
                 "{}/api/collections/_superusers/auth-with-password",
                 self.pb_url
             ),
-            format!("{}/api/collections/users/auth-with-password", self.pb_url),
+            format!("{}/api/collections/{}/auth-with-password", self.pb_url, PBCollection::Users),
         ];
 
         let mut last_err = None;
@@ -140,7 +141,7 @@ impl SanctuaryBridge {
             while let Some(event) = stream.next().await {
                 match event {
                     Ok(SSE::Event(ev)) => {
-                        if ev.event_type == "commands" {
+                        if ev.event_type == PBCollection::Commands.to_string() {
                             if let Ok(data) = serde_json::from_str::<serde_json::Value>(&ev.data) {
                                 if data["action"] == "create" {
                                     if let Ok(record) =
@@ -190,24 +191,29 @@ impl SanctuaryBridge {
         };
 
         let result: Result<(), Box<dyn std::error::Error + Send + Sync>> = match command.action {
+            // ── Streaming ──────────────────────────────────────────────────
             CommandAction::START => obs
                 .streaming()
                 .start()
                 .await
                 .map(|_| ())
                 .map_err(|e| e.into()),
+
             CommandAction::STOP => obs
                 .streaming()
                 .stop()
                 .await
                 .map(|_| ())
                 .map_err(|e| e.into()),
+
+            // ── Recording ──────────────────────────────────────────────────
             CommandAction::RECORD_START => obs
                 .recording()
                 .start()
                 .await
                 .map(|_| ())
                 .map_err(|e| e.into()),
+
             CommandAction::RECORD_STOP => {
                 let res = obs.recording().stop().await;
                 if let Ok(path) = &res {
@@ -220,6 +226,72 @@ impl SanctuaryBridge {
                 }
                 res.map(|_| ()).map_err(|e| e.into())
             }
+
+            // ── Scene switching ─────────────────────────────────────────────
+            // Both the Production Switcher (remote/local) and direct CUT/AUTO
+            // use this. Payload: { "sceneName": "Worship Service" }
+            CommandAction::SET_SCENE => {
+                if let Some(payload) = &command.payload {
+                    let scene_name = payload["sceneName"]
+                        .as_str()
+                        .ok_or("SET_SCENE: missing sceneName in payload")?;
+                    obs.scenes()
+                        .set_current_program_scene(scene_name)
+                        .await
+                        .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                } else {
+                    Err("SET_SCENE: payload is required".into())
+                }
+            }
+
+            // ── Audio: mute toggle ──────────────────────────────────────────
+            // Payload: { "inputName": "Desktop Audio", "muted": true }
+            CommandAction::SET_MUTE => {
+                if let Some(payload) = &command.payload {
+                    let input_name = payload["inputName"]
+                        .as_str()
+                        .ok_or("SET_MUTE: missing inputName")?;
+                    let muted = payload["muted"]
+                        .as_bool()
+                        .ok_or("SET_MUTE: missing muted (bool)")?;
+                    obs.inputs()
+                        .set_muted(obws::requests::inputs::InputId::Name(input_name), muted)
+                        .await
+                        .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                } else {
+                    Err("SET_MUTE: payload is required".into())
+                }
+            }
+
+            // ── Audio: fader volume ─────────────────────────────────────────
+            // Payload: { "inputName": "Mic/Aux", "volume": 85 }   (0–100 %)
+            // OBS uses two volume representations:
+            //   - Mul (0.0–1.0) for linear volume
+            //   - dB  (−∞ to 0) for decibels
+            // We accept 0–100 from the UI and convert to mul.
+            CommandAction::SET_VOLUME => {
+                if let Some(payload) = &command.payload {
+                    let input_name = payload["inputName"]
+                        .as_str()
+                        .ok_or("SET_VOLUME: missing inputName")?;
+                    let pct = payload["volume"]
+                        .as_f64()
+                        .ok_or("SET_VOLUME: missing volume (number 0–100)")?;
+                    // Convert 0–100 % → 0.0–1.0 mul
+                    let volume_mul = (pct / 100.0).clamp(0.0, 1.0) as f32;
+                    obs.inputs()
+                        .set_volume(
+                            obws::requests::inputs::InputId::Name(input_name),
+                            obws::requests::inputs::Volume::Mul(volume_mul),
+                        )
+                        .await
+                        .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                } else {
+                    Err("SET_VOLUME: payload is required".into())
+                }
+            }
+
+            // ── Stream output settings ──────────────────────────────────────
             CommandAction::SET_STREAM_SETTINGS => {
                 if let Some(payload) = &command.payload {
                     let service = payload["service"].as_str().unwrap_or("rtmp_common");
@@ -242,18 +314,96 @@ impl SanctuaryBridge {
                     Err("Missing payload for SET_STREAM_SETTINGS".into())
                 }
             }
-            _ => {
+
+            // ── Video output settings ───────────────────────────────────────
+            // Payload: { "baseWidth": 1920, "baseHeight": 1080,
+            //            "outputWidth": 1280, "outputHeight": 720, "fps": 30 }
+            CommandAction::SET_VIDEO_SETTINGS => {
+                if let Some(payload) = &command.payload {
+                    use obws::requests::config::SetVideoSettings;
+                    let base_width = payload["baseWidth"].as_u64().unwrap_or(1920) as u32;
+                    let base_height = payload["baseHeight"].as_u64().unwrap_or(1080) as u32;
+                    let output_width = payload["outputWidth"].as_u64().unwrap_or(1280) as u32;
+                    let output_height = payload["outputHeight"].as_u64().unwrap_or(720) as u32;
+                    let fps_num = payload["fps"].as_u64().unwrap_or(30) as u32;
+
+                    obs.config()
+                        .set_video_settings(SetVideoSettings {
+                            base_width: Some(base_width),
+                            base_height: Some(base_height),
+                            output_width: Some(output_width),
+                            output_height: Some(output_height),
+                            fps_numerator: Some(fps_num),
+                            fps_denominator: Some(1),
+                        })
+                        .await
+                        .map_err(|e| e.into())
+                } else {
+                    Err("Missing payload for SET_VIDEO_SETTINGS".into())
+                }
+            }
+
+            // ── Transition restart ──────────────────────────────────────────
+            // APPLY_TRANSITION with action="restart" re-sends the current scene
+            // to trigger OBS transition animation.
+            CommandAction::APPLY_TRANSITION => {
+                if let Some(payload) = &command.payload {
+                    if payload["action"].as_str() == Some("restart") {
+                        match obs.scenes().current_program_scene().await {
+                            Ok(scene) => {
+                                let name = scene.id.name.clone();
+                                obs.scenes()
+                                    .set_current_program_scene(name.as_str())
+                                    .await
+                                    .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                            }
+                            Err(e) => Err(e.into()),
+                        }
+                    } else {
+                        info!("APPLY_TRANSITION: no-op for action={:?}", payload["action"]);
+                        Ok(())
+                    }
+                } else {
+                    Ok(())
+                }
+            }
+
+            // ── UI-only commands (no direct OBS equivalent) ─────────────────
+            // SET_OVERLAY and FADE_TO_BLACK are handled purely in the React UI.
+            // We acknowledge them here so they're marked executed=true.
+            CommandAction::SET_OVERLAY => {
+                info!(
+                    "SET_OVERLAY: acknowledged (UI-only) id={:?}",
+                    command.payload.as_ref().and_then(|p| p["overlayId"].as_u64())
+                );
+                Ok(())
+            }
+
+            CommandAction::FADE_TO_BLACK => {
+                info!(
+                    "FADE_TO_BLACK: acknowledged (UI-only) active={:?}",
+                    command.payload.as_ref().and_then(|p| p["active"].as_bool())
+                );
+                Ok(())
+            }
+
+            // ── Catch-all for currently-unimplemented variants ──────────────
+            CommandAction::SET_STREAM_ENCODER
+            | CommandAction::SET_AUDIO_SETTINGS
+            | CommandAction::UPLOAD_TO_DRIVE => {
                 warn!("Unhandled command action: {:?}", command.action);
                 Ok(())
             }
         };
 
-        let update_url = format!("{}/api/collections/commands/records/{}", pb_url, command.id);
+        // Mark command as executed (or failed) in PocketBase
+        let update_url = format!("{}/api/collections/{}/records/{}", pb_url, PBCollection::Commands, command.id);
         let token = auth_token.lock().await;
 
         let mut patch = serde_json::json!({ "executed": true });
         if let Err(ref e) = result {
-            patch["error_message"] = serde_json::json!(e.to_string());
+            let err_str = format!("{}", e);
+            patch["error_message"] = serde_json::json!(err_str);
             error!("Command execution error: {}", e);
         } else {
             info!("✅ Command executed successfully: {:?}", command.action);
@@ -269,6 +419,23 @@ impl SanctuaryBridge {
         Ok(())
     }
 
+    /// Status loop: polls OBS every 10 seconds and pushes a rich metadata
+    /// snapshot to PocketBase. All connected clients (remote tablets, phones,
+    /// desktop) receive the update via PocketBase SSE realtime.
+    ///
+    /// Published fields:
+    ///   status          – "live" | "idle" | "recording"
+    ///   heartbeat       – ISO-8601 timestamp
+    ///   metadata:
+    ///     outputActive    – bool
+    ///     outputDuration  – ms
+    ///     outputBytes     – bytes
+    ///     quality.fps     – frames/s
+    ///     quality.cpu_usage
+    ///     quality.dropped_frames
+    ///     scenes          – ["Scene 1", "Worship", ...]  ← NEW
+    ///     currentScene    – "Worship"                   ← NEW
+    ///     inputs          – [{ name, muted, volume }]   ← NEW
     fn start_status_loop(&self) {
         let http = self.http.clone();
         let pb_url = self.pb_url.clone();
@@ -285,18 +452,36 @@ impl SanctuaryBridge {
                     "heartbeat": Utc::now().to_rfc3339()
                 });
 
-                // Attempt to get OBS stats
                 let obs_guard = obs_handle.lock().await;
                 if let Some(obs) = &*obs_guard {
-                    if let Ok(stream_status) = obs.streaming().status().await {
-                        status_update["status"] =
-                            serde_json::json!(if stream_status.active { "live" } else { "idle" });
+                    // ── Stream / recording status ─────────────────────────
+                    let is_streaming = obs
+                        .streaming()
+                        .status()
+                        .await
+                        .map(|s| s.active)
+                        .unwrap_or(false);
+                    let is_recording = obs
+                        .recording()
+                        .status()
+                        .await
+                        .map(|s| s.active)
+                        .unwrap_or(false);
 
-                        let mut metadata = serde_json::json!({
-                            "outputActive": stream_status.active,
-                            "outputDuration": stream_status.duration,
-                            "outputBytes": stream_status.bytes,
-                        });
+                    status_update["status"] = serde_json::json!(
+                        if is_streaming { StreamStatus::Live }
+                        else if is_recording { StreamStatus::Recording }
+                        else { StreamStatus::Idle }
+                    );
+
+                    let mut metadata = serde_json::json!({});
+
+                    // ── Streaming output metrics ──────────────────────────
+                    if let Ok(stream_status) = obs.streaming().status().await {
+                        metadata["outputActive"] = serde_json::json!(stream_status.active);
+                        // time::Duration uses .whole_milliseconds() in obws 0.12
+                        metadata["outputDuration"] = serde_json::json!(stream_status.duration.whole_milliseconds() as u64);
+                        metadata["outputBytes"] = serde_json::json!(stream_status.bytes);
 
                         if let Ok(stats) = obs.general().stats().await {
                             metadata["quality"] = serde_json::json!({
@@ -305,12 +490,57 @@ impl SanctuaryBridge {
                                 "dropped_frames": stream_status.skipped_frames,
                             });
                         }
-                        status_update["metadata"] = metadata;
                     }
+
+                    // ── Scene list + current scene ─────────────────────────
+                    // These power the Production Switcher scene bus on all
+                    // connected remote devices.
+                    if let Ok(scene_list) = obs.scenes().list().await {
+                        let scene_names: Vec<String> = scene_list
+                            .scenes
+                            .iter()
+                            .map(|s| s.name.clone())
+                            .collect();
+                        metadata["scenes"] = serde_json::json!(scene_names);
+                        // obws 0.12 field is `current_program_scene`
+                        metadata["currentScene"] = serde_json::json!(scene_list.current_program_scene);
+                    }
+
+                    // ── Audio inputs (name + muted + volume) ──────────────
+                    // Powers the AudioMixer channel strips on all clients.
+                    if let Ok(input_list) = obs.inputs().list(None).await {
+                        let mut inputs_json = Vec::new();
+                        for input in &input_list {
+                            // obws 0.12: input.id.name, and muted() / volume()
+                            let input_id = obws::requests::inputs::InputId::Name(&input.id.name);
+                            let muted = obs
+                                .inputs()
+                                .muted(input_id)
+                                .await
+                                .unwrap_or(false);
+                            let volume_id = obws::requests::inputs::InputId::Name(&input.id.name);
+                            let volume = obs
+                                .inputs()
+                                .volume(volume_id)
+                                .await
+                                // obws 0.12 returns InputVolume { mul: f32, db: f32 }
+                                .map(|v| (v.mul as f64 * 100.0).clamp(0.0, 100.0))
+                                .unwrap_or(100.0);
+
+                            inputs_json.push(serde_json::json!({
+                                "name": input.id.name,
+                                "muted": muted,
+                                "volume": volume,
+                            }));
+                        }
+                        metadata["inputs"] = serde_json::json!(inputs_json);
+                    }
+
+                    status_update["metadata"] = metadata;
                 }
 
                 let token = auth_token.lock().await;
-                let url = format!("{}/api/collections/streams/records/{}", pb_url, stream_id);
+                let url = format!("{}/api/collections/{}/records/{}", pb_url, PBCollection::Streams, stream_id);
 
                 let _ = http
                     .patch(&url)

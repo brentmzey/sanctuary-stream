@@ -86,11 +86,91 @@ const notifySermonPublished = (e) => {
     );
 
     fireWebhook(webhookUrl, payload);
+
+    // Also send an email notification to the pastor/admin
+    try {
+        const adminEmail = $os.getenv("PB_ADMIN_EMAIL") || "brentmzey4795@gmail.com";
+        const message = new MailerMessage({
+            from: {
+                address: $app.settings().meta.senderAddress || "noreply@brentzey.com",
+                name:    $app.settings().meta.senderName || "Sanctuary Stream - Brent Zey",
+            },
+            to:      [{ address: adminEmail }],
+            subject: `📢 New Sermon Published: ${sermon.getString("title")}`,
+            html:    `<p>A new sermon has been published:</p>
+                      <ul>
+                        <li><strong>Title:</strong> ${sermon.getString("title")}</li>
+                        <li><strong>Speaker:</strong> ${sermon.getString("speaker")}</li>
+                        <li><strong>Date:</strong> ${sermon.getString("sermon_date")}</li>
+                      </ul>
+                      <p><a href="${sermon.getString("youtube_url")}">Watch on YouTube</a></p>`,
+        });
+        $app.newMailClient().send(message);
+    } catch (mailErr) {
+        $app.logger().error("notifySermonPublished: failed to send email", "error", String(mailErr));
+    }
 };
 
 // Wire the same handler to both create and update so we catch all publishing paths
 onRecordAfterCreateSuccess((e) => { notifySermonPublished(e); }, "sermons");
 onRecordAfterUpdateSuccess((e) => { notifySermonPublished(e); }, "sermons");
+
+// ---------------------------------------------------------------------------
+// Hook: Login Alert
+//
+// Sends an automated email alert to the user whenever a successful 
+// authentication event occurs (Password, OTP, or OAuth2).
+// ---------------------------------------------------------------------------
+const sendLoginAlert = (e) => {
+    const user = e.record;
+    const authMethod = e.collection.type === 'auth' ? 'account access' : 'login';
+    
+    try {
+        const message = new MailerMessage({
+            from: {
+                address: $app.settings().meta.senderAddress || "noreply@brentzey.com",
+                name:    $app.settings().meta.senderName || "Sanctuary Stream - Brent Zey",
+            },
+            to:      [{ address: user.email() }],
+            subject: `🔐 Login Alert: Sanctuary Stream`,
+            html:    `<p>Hello ${user.getString("name") || "User"},</p>
+                      <p>A new <strong>${authMethod}</strong> was detected for your Sanctuary Stream account at <strong>${new Date().toLocaleString()}</strong>.</p>
+                      <p>If this was not you, please reset your password immediately or contact support.</p>
+                      <hr />
+                      <p><small>This is an automated security notification.</small></p>`,
+        });
+        $app.newMailClient().send(message);
+        $app.logger().info("login alert email sent", "user_id", user.id, "email", user.email());
+    } catch (err) {
+        $app.logger().error("login alert email failed", "user_id", user.id, "error", String(err));
+    }
+};
+
+onRecordAuthWithPasswordSuccess((e) => { sendLoginAlert(e); }, "users");
+onRecordAuthWithOTPSuccess((e) => { sendLoginAlert(e); }, "users");
+onRecordAuthWithOAuth2Success((e) => { sendLoginAlert(e); }, "users");
+
+// ---------------------------------------------------------------------------
+// Hook: Auto-send verification email for new users
+//
+// When a new user is created (e.g., by an admin), we trigger a verification
+// email automatically so they can set up their password or confirm their identity.
+// ---------------------------------------------------------------------------
+onRecordAfterCreateSuccess((e) => {
+    const user = e.record;
+    
+    // Check if the user is already verified (unlikely for new records)
+    if (user.getBool("verified")) {
+        return;
+    }
+
+    try {
+        $app.newMailClient().sendVerification(user);
+        $app.logger().info("auto-verification email sent", "user_id", user.id, "email", user.email());
+    } catch (err) {
+        $app.logger().error("auto-verification email failed", "user_id", user.id, "error", String(err));
+    }
+}, "users");
 
 // ---------------------------------------------------------------------------
 // Hook 3: Log new commands as they come in

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { sendCommand } from '../lib/pocketbase';
+import { CommandAction } from '@shared/schema';
 
 interface ControlButtonsProps {
   isLive: boolean;
@@ -8,9 +9,9 @@ interface ControlButtonsProps {
 }
 
 export function ControlButtons({ isLive, isRecording, disabled }: ControlButtonsProps) {
-  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [loadingAction, setLoadingAction] = useState<CommandAction | null>(null);
 
-  const handleCommand = async (action: 'START' | 'STOP' | 'RECORD_START' | 'RECORD_STOP') => {
+  const handleCommand = async (action: CommandAction) => {
     setLoadingAction(action);
     try {
       await sendCommand(action);
@@ -37,11 +38,11 @@ export function ControlButtons({ isLive, isRecording, disabled }: ControlButtons
 
         {!isLive ? (
           <button
-            onClick={() => handleCommand('START')}
+            onClick={() => handleCommand(CommandAction.Start)}
             disabled={disabled || loadingAction !== null}
             className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all duration-200 flex items-center justify-center gap-3 group"
           >
-            {loadingAction === 'START' ? (
+            {loadingAction === CommandAction.Start ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 group-hover:scale-110 transition-transform">
@@ -52,11 +53,11 @@ export function ControlButtons({ isLive, isRecording, disabled }: ControlButtons
           </button>
         ) : (
           <button
-            onClick={() => handleCommand('STOP')}
+            onClick={() => handleCommand(CommandAction.Stop)}
             disabled={disabled || loadingAction !== null}
             className="w-full py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-3 group"
           >
-            {loadingAction === 'STOP' ? (
+            {loadingAction === CommandAction.Stop ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 group-hover:scale-110 transition-transform">
@@ -82,11 +83,11 @@ export function ControlButtons({ isLive, isRecording, disabled }: ControlButtons
 
         {!isRecording ? (
           <button
-            onClick={() => handleCommand('RECORD_START')}
+            onClick={() => handleCommand(CommandAction.RecordStart)}
             disabled={disabled || loadingAction !== null}
             className="w-full py-4 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-rose-600/20 transition-all duration-200 flex items-center justify-center gap-3 group"
           >
-            {loadingAction === 'RECORD_START' ? (
+            {loadingAction === CommandAction.RecordStart ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             ) : (
               <div className="w-4 h-4 rounded-full bg-white group-hover:scale-125 transition-transform"></div>
@@ -95,11 +96,11 @@ export function ControlButtons({ isLive, isRecording, disabled }: ControlButtons
           </button>
         ) : (
           <button
-            onClick={() => handleCommand('RECORD_STOP')}
+            onClick={() => handleCommand(CommandAction.RecordStop)}
             disabled={disabled || loadingAction !== null}
             className="w-full py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-3 group"
           >
-            {loadingAction === 'RECORD_STOP' ? (
+            {loadingAction === CommandAction.RecordStop ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 group-hover:scale-110 transition-transform">

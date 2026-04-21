@@ -39,11 +39,19 @@ print_step() {
 # Check prerequisites
 print_step "🔍 Step 1: Checking Prerequisites"
 
-command -v node >/dev/null 2>&1
-print_status $? "Node.js installed"
+if command -v bun >/dev/null 2>&1; then
+    echo -e "${GREEN}✅ Bun $(bun -v) (Fast runtime detected)${NC}"
+    JS_RUNTIME="bun"
+else
+    command -v node >/dev/null 2>&1
+    print_status $? "Node.js installed"
+    JS_RUNTIME="npm"
+fi
 
-command -v npm >/dev/null 2>&1
-print_status $? "npm installed"
+if [[ "$JS_RUNTIME" == "npm" ]]; then
+    command -v npm >/dev/null 2>&1
+    print_status $? "npm installed"
+fi
 
 command -v cargo >/dev/null 2>&1
 print_status $? "Rust/Cargo installed"
@@ -55,7 +63,7 @@ if [ -d "node_modules" ]; then
     print_status 0 "Root dependencies installed"
 else
     echo -e "${YELLOW}⚠️  Installing root dependencies...${NC}"
-    npm install
+    $JS_RUNTIME install
     print_status $? "Root dependencies installed"
 fi
 
@@ -63,7 +71,7 @@ if [ -d "sanctuary-app/node_modules" ]; then
     print_status 0 "Frontend dependencies installed"
 else
     echo -e "${YELLOW}⚠️  Installing frontend dependencies...${NC}"
-    cd sanctuary-app && npm install && cd ..
+    cd sanctuary-app && $JS_RUNTIME install && cd ..
     print_status $? "Frontend dependencies installed"
 fi
 
@@ -72,7 +80,7 @@ print_step "🔍 Step 3: Type Checking (Frontend)"
 
 echo "Checking frontend types..."
 cd sanctuary-app
-npm run typecheck >/dev/null 2>&1
+$JS_RUNTIME run typecheck >/dev/null 2>&1
 print_status $? "Frontend type checking passed"
 cd ..
 
@@ -81,7 +89,7 @@ print_step "🔨 Step 4: Building Frontend"
 
 echo "Building frontend..."
 cd sanctuary-app
-npm run build >/dev/null 2>&1
+$JS_RUNTIME run build >/dev/null 2>&1
 print_status $? "Frontend build successful"
 cd ..
 
@@ -89,7 +97,11 @@ cd ..
 print_step "🧹 Step 5: Linting"
 
 echo "Linting all JS/TS workspaces..."
-npx eslint . --ext .ts,.tsx --ignore-path .eslintignore >/dev/null 2>&1
+if [[ "$JS_RUNTIME" == "bun" ]]; then
+    bun run lint >/dev/null 2>&1
+else
+    npx eslint . --ext .ts,.tsx --ignore-path .eslintignore >/dev/null 2>&1
+fi
 print_status $? "JS/TS Linting passed"
 
 echo "Checking Rust formatting..."
@@ -108,25 +120,19 @@ echo "Running all tests (Rust + TS)..."
 if command -v just >/dev/null 2>&1; then
     just test-all >/dev/null 2>&1
 else
-    npm test >/dev/null 2>&1
+    $JS_RUNTIME run test >/dev/null 2>&1
 fi
 print_status $? "All tests passed"
 
-# Building
-print_step "🔨 Step 6: Building Production Artifacts"
-
-echo "Building frontend..."
-cd sanctuary-app
-npm run build >/dev/null 2>&1
-print_status $? "Frontend build successful"
-cd ..
+# Building Rust CLI
+print_step "🔨 Step 7: Building Rust CLI"
 
 echo "Building Rust CLI..."
 cargo build --release --package sanctuary-cli >/dev/null 2>&1
 print_status $? "Rust CLI build successful"
 
 # Verify migrations
-print_step "📋 Step 7: Verifying Database Migrations"
+print_step "📋 Step 8: Verifying Database Migrations"
 
 MIGRATION_DIR="pocketbase/local/pb_migrations"
 if [ -d "$MIGRATION_DIR" ]; then

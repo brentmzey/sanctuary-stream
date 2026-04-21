@@ -28,16 +28,16 @@ kill_port() {
 echo "🧹 Cleaning up existing processes..."
 kill_port 8090  # PocketBase
 kill_port 5173  # Vite
-pkill -f "sanctuary-bridge" 2>/dev/null || true
+pkill -f "sanctuary-cli.*bridge" 2>/dev/null || true
 
 echo ""
 
 # Check prerequisites
 echo "🔍 Checking prerequisites..."
 
-if ! command -v node &> /dev/null; then
-    echo "❌ Node.js is not installed"
-    echo "   Install from: https://nodejs.org"
+if ! command -v bun &> /dev/null; then
+    echo "❌ Bun is not installed"
+    echo "   Install from: https://bun.sh"
     exit 1
 fi
 
@@ -80,10 +80,10 @@ done
 
 echo ""
 
-# Start Bridge
-echo "⚙️  Starting Sanctuary Bridge..."
-cd "$PROJECT_ROOT/sanctuary-bridge"
-npm start > "$PROJECT_ROOT/logs/bridge.log" 2>&1 &
+# Start Bridge (Rust)
+echo "⚙️  Starting Sanctuary Bridge (Rust)..."
+cd "$PROJECT_ROOT"
+cargo run -p sanctuary-cli -- bridge > "$PROJECT_ROOT/logs/bridge.log" 2>&1 &
 BRIDGE_PID=$!
 echo "   PID: $BRIDGE_PID"
 echo "   Logs: logs/bridge.log"
@@ -97,7 +97,7 @@ echo ""
 # Start Web App
 echo "🌐 Starting Web App..."
 cd "$PROJECT_ROOT/sanctuary-app"
-npm run dev > "$PROJECT_ROOT/logs/app.log" 2>&1 &
+bun run dev > "$PROJECT_ROOT/logs/app.log" 2>&1 &
 APP_PID=$!
 echo "   PID: $APP_PID"
 echo "   URL: http://localhost:5173"
@@ -146,8 +146,8 @@ cat > "$PROJECT_ROOT/scripts/stop-dev.sh" << EOF
 echo "⏹️  Stopping Sanctuary Stream services..."
 kill $POCKETBASE_PID $BRIDGE_PID $APP_PID 2>/dev/null || true
 pkill -f "pocketbase serve" 2>/dev/null || true
-pkill -f "sanctuary-bridge" 2>/dev/null || true
-pkill -f "vite" 2>/dev/null || true
+pkill -f "sanctuary-cli.*bridge" 2>/dev/null || true
+pkill -f "vite.*sanctuary" 2>/dev/null || true
 echo "✅ All services stopped"
 EOF
 chmod +x "$PROJECT_ROOT/scripts/stop-dev.sh"

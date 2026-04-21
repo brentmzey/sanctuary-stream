@@ -54,7 +54,6 @@ pipeline {
                 sh '''
                     npm install
                     cd sanctuary-app && npm install
-                    cd ../sanctuary-bridge && npm install
                 '''
             }
         }

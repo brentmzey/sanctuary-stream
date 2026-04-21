@@ -51,6 +51,11 @@ pub enum CommandAction {
     SET_AUDIO_SETTINGS,
     SET_SCENE,
     SET_MUTE,
+    SET_VOLUME,
+    SET_OVERLAY,
+    FADE_TO_BLACK,
+    APPLY_TRANSITION,
+    UPLOAD_TO_DRIVE,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -91,7 +96,7 @@ pub struct Command {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
-pub enum StreamStatusValue {
+pub enum StreamStatus {
     Idle,
     Live,
     Recording,
@@ -101,7 +106,7 @@ pub enum StreamStatusValue {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Stream {
     pub id: Id,
-    pub status: StreamStatusValue,
+    pub status: StreamStatus,
     pub heartbeat: String,
     pub youtube_url: Option<String>,
     pub scene_name: Option<String>,

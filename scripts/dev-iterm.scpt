@@ -22,21 +22,21 @@ tell application "iTerm"
         set name to "🗄️  PocketBase"
     end tell
     
-    -- Tab 2: Bridge
+    -- Tab 2: Bridge (Rust)
     tell newWindow
         set bridgeTab to (create tab with default profile)
         tell current session of bridgeTab
-            write text "cd ~/sanctuary-stream/sanctuary-bridge"
+            write text "cd ~/sanctuary-stream"
             write text "clear"
-            write text "echo '⚙️  Sanctuary Bridge'"
+            write text "echo '⚙️  Sanctuary Bridge (Rust)'"
             write text "echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'"
             write text "echo 'Connects to: OBS WebSocket (ws://127.0.0.1:4455)'"
             write text "echo 'Connects to: PocketBase (http://127.0.0.1:8090)'"
             write text "echo ''"
             write text "echo 'Waiting for PocketBase to start...'"
             write text "sleep 3"
-            write text "echo 'Starting Bridge...'"
-            write text "npm start"
+            write text "echo 'Starting Rust Bridge...'"
+            write text "cargo run -p sanctuary-cli -- bridge"
             
             set name to "⚙️  Bridge"
         end tell
@@ -73,20 +73,19 @@ tell application "iTerm"
             write text "echo '  npm run build              # Build everything'"
             write text "echo '  npm test                   # Run tests'"
             write text "echo '  npm run build:app          # Build web app only'"
-            write text "echo '  npm run build:bridge       # Build bridge only'"
+            write text "echo '  cargo build -p sanctuary-cli # Build Rust bridge'"
             write text "echo ''"
             write text "echo '🔍 Health Checks:'"
             write text "echo '  curl http://127.0.0.1:8090/api/health    # PocketBase'"
             write text "echo '  curl http://localhost:5173               # Web App'"
             write text "echo ''"
             write text "echo '📝 Logs:'"
-            write text "echo '  tail -f dev-full.log                     # All logs'"
-            write text "echo '  tail -f sanctuary-bridge/logs/*.log      # Bridge logs'"
+            write text "echo '  tail -f logs/*.log                       # All logs'"
             write text "echo ''"
             write text "echo '⏹️  To stop all services:'"
             write text "echo '  pkill -f pocketbase'"
-            write text "echo '  pkill -f \"node.*sanctuary-bridge\"'"
-            write text "echo '  pkill -f \"vite\"'"
+            write text "echo '  pkill -f \"sanctuary-cli.*bridge\"'"
+            write text "echo '  pkill -f \"vite.*sanctuary\"'"
             write text "echo ''"
             
             set name to "📊 Logs"

@@ -13,6 +13,7 @@ import {
   UserRecord
 } from './pocketbase';
 import { invoke } from '@tauri-apps/api/tauri';
+import { CommandAction, StreamStatus } from '@shared/schema';
 
 vi.mock('@tauri-apps/api/tauri', () => ({
   invoke: vi.fn(),
@@ -75,8 +76,8 @@ describe('pocketbase lib', () => {
   describe('sendCommand', () => {
     it('uses Rust invoke if no payload is provided', async () => {
       vi.mocked(invoke).mockResolvedValue('corr-id');
-      await sendCommand('START').unsafeRunAsync();
-      expect(invoke).toHaveBeenCalledWith('send_command', { action: 'START' });
+      await sendCommand(CommandAction.Start).unsafeRunAsync();
+      expect(invoke).toHaveBeenCalledWith('send_command', { action: CommandAction.Start });
     });
 
     it('falls back to JS SDK if Rust fails', async () => {
@@ -86,10 +87,10 @@ describe('pocketbase lib', () => {
       const mockCreate = vi.fn().mockResolvedValue({ id: 'cmd-1' });
       pb.collection = vi.fn().mockReturnValue({ create: mockCreate });
 
-      await sendCommand('START').unsafeRunAsync();
+      await sendCommand(CommandAction.Start).unsafeRunAsync();
       
       expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
-        action: 'START',
+        action: CommandAction.Start,
         created_by: 'user-123'
       }));
     });
@@ -115,19 +116,19 @@ describe('pocketbase lib', () => {
 
   describe('getStreamStatus', () => {
     it('uses Rust invoke first', async () => {
-      vi.mocked(invoke).mockResolvedValue({ status: 'live' });
+      vi.mocked(invoke).mockResolvedValue({ status: StreamStatus.Live });
       const status = await getStreamStatus('stream-1').unsafeRunAsync();
-      expect(status).toEqual({ status: 'live' });
+      expect(status).toEqual({ status: StreamStatus.Live });
       expect(invoke).toHaveBeenCalledWith('get_stream_status');
     });
 
     it('falls back to JS SDK on failure', async () => {
       vi.mocked(invoke).mockRejectedValue(new Error('Rust error'));
-      const mockGetOne = vi.fn().mockResolvedValue({ status: 'recording' });
+      const mockGetOne = vi.fn().mockResolvedValue({ status: StreamStatus.Recording });
       pb.collection = vi.fn().mockReturnValue({ getOne: mockGetOne });
-
+      
       const status = await getStreamStatus('stream-1').unsafeRunAsync();
-      expect(status).toEqual({ status: 'recording' });
+      expect(status).toEqual({ status: StreamStatus.Recording });
       expect(mockGetOne).toHaveBeenCalledWith('stream-1');
     });
   });

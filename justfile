@@ -2,7 +2,7 @@
 # Modern command runner for development and building
 
 # Default version to bump if not provided
-version := "0.3.3"
+version := "0.4.86"
 
 # Initialize the development environment
 setup:

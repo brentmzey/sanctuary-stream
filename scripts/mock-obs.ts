@@ -102,6 +102,49 @@ function handleRequest(ws: WebSocket, msg: ObsRequest) {
       };
       break;
 
+    case 'GetSceneList':
+      responseData = {
+        currentProgramSceneName: 'Wide Shot',
+        currentPreviewSceneName: 'Pulpit Zoom',
+        scenes: [
+          { sceneName: 'Wide Shot', sceneIndex: 0 },
+          { sceneName: 'Pulpit Zoom', sceneIndex: 1 },
+          { sceneName: 'Liturgy Overlay', sceneIndex: 2 },
+          { sceneName: 'Worship Band', sceneIndex: 3 }
+        ]
+      };
+      break;
+
+    case 'SetCurrentProgramScene':
+      console.log(`🎬 Switching to scene: ${msg.d.sceneName}`);
+      break;
+
+    case 'GetInputList':
+      responseData = {
+        inputs: [
+          { inputName: 'Desktop Audio', inputKind: 'wasapi_output_capture' },
+          { inputName: 'Mic/Aux', inputKind: 'wasapi_input_capture' },
+          { inputName: 'Pulpit Mic', inputKind: 'wasapi_input_capture' }
+        ]
+      };
+      break;
+
+    case 'GetInputMuted':
+      responseData = { inputMuted: false };
+      break;
+
+    case 'SetInputMuted':
+      console.log(`🔇 Input ${msg.d.inputName} muted: ${msg.d.inputMuted}`);
+      break;
+
+    case 'GetInputVolume':
+      responseData = { inputVolumeMul: 0.82, inputVolumeDb: -3.0 };
+      break;
+
+    case 'SetInputVolume':
+      console.log(`🔊 Input ${msg.d.inputName} volume: ${msg.d.inputVolumeMul}`);
+      break;
+
     case 'StartStream':
       if (isStreaming) {
         success = false;

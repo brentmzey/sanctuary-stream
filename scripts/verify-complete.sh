@@ -57,7 +57,8 @@ section "1. Repository Structure"
 [ -f "CONTRIBUTING.md" ] && check "CONTRIBUTING.md exists" || check "CONTRIBUTING.md missing"
 [ -d "docs" ] && check "docs/ directory exists" || check "docs/ directory missing"
 [ -d "sanctuary-app" ] && check "sanctuary-app/ exists" || check "sanctuary-app/ missing"
-[ -d "sanctuary-bridge" ] && check "sanctuary-bridge/ exists" || check "sanctuary-bridge/ missing"
+[ -d "sanctuary-cli-rs" ] && check "sanctuary-cli-rs/ (Rust bridge) exists" || check "sanctuary-cli-rs/ missing"
+[ -d "sanctuary-core" ] && check "sanctuary-core/ exists" || check "sanctuary-core/ missing"
 [ -d "pocketbase" ] && check "pocketbase/ exists" || check "pocketbase/ missing"
 [ -d "scripts" ] && check "scripts/ exists" || check "scripts/ missing"
 [ -d "shared" ] && check "shared/ exists" || check "shared/ missing"
@@ -142,19 +143,13 @@ section "4. TypeScript & Build Configuration"
 
 [ -f "tsconfig.json" ] && check "Root tsconfig.json exists" || check "Root tsconfig.json missing"
 [ -f "sanctuary-app/tsconfig.json" ] && check "App tsconfig.json exists" || check "App tsconfig.json missing"
-[ -f "sanctuary-bridge/tsconfig.json" ] && check "Bridge tsconfig.json exists" || check "Bridge tsconfig.json missing"
+[ -f "sanctuary-cli-rs/Cargo.toml" ] && check "Rust bridge Cargo.toml exists" || check "Rust bridge Cargo.toml missing"
 
 # Check strict mode
 if grep -q '"strict": true' sanctuary-app/tsconfig.json 2>/dev/null; then
   check "TypeScript strict mode enabled (app)"
 else
   warn "TypeScript strict mode not enabled (app)"
-fi
-
-if grep -q '"strict": true' sanctuary-bridge/tsconfig.json 2>/dev/null; then
-  check "TypeScript strict mode enabled (bridge)"
-else
-  warn "TypeScript strict mode not enabled (bridge)"
 fi
 
 # ============================================
@@ -235,7 +230,6 @@ section "8. Environment Configuration"
 
 [ -f ".env.example" ] && check ".env.example exists" || warn ".env.example missing"
 [ -f "sanctuary-app/.env.example" ] && check "App .env.example exists" || warn "App .env.example missing"
-[ -f "sanctuary-bridge/.env.example" ] && check "Bridge .env.example exists" || warn "Bridge .env.example missing"
 
 if [ -f ".env.example" ]; then
   if grep -q "PB_URL" ".env.example"; then

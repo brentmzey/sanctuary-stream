@@ -5,6 +5,7 @@ import { useStream } from './lib/hooks';
 import { ThemeProvider } from './lib/ThemeContext';
 import { none, some } from '@shared/option';
 import { UserRecord } from './lib/pocketbase';
+import { StreamStatus } from '@shared/schema';
 
 vi.mock('./lib/pocketbase', () => ({
   pb: {
@@ -64,7 +65,7 @@ describe('App', () => {
     mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
-      stream: some({ id: 'test-stream', status: 'idle', heartbeat: '', created: '', updated: '' }),
+      stream: some({ id: 'test-stream', status: StreamStatus.Idle, heartbeat: '', created: '', updated: '' }),
       loading: false,
       error: none()
     });
@@ -81,7 +82,7 @@ describe('App', () => {
     mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
-      stream: some({ id: 'test-stream', status: 'idle', heartbeat: '', created: '', updated: '' }),
+      stream: some({ id: 'test-stream', status: StreamStatus.Idle, heartbeat: '', created: '', updated: '' }),
       loading: false,
       error: none()
     });
@@ -132,7 +133,7 @@ describe('App', () => {
     mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
-      stream: some({ id: 'new-stream-id', status: 'idle', heartbeat: '', created: '', updated: '' }),
+      stream: some({ id: 'new-stream-id', status: StreamStatus.Idle, heartbeat: '', created: '', updated: '' }),
       loading: false,
       error: none()
     });
@@ -151,7 +152,7 @@ describe('App', () => {
     mockModel = { role: 'admin', name: 'Admin User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
-      stream: some({ id: 'test-stream', status: 'live', heartbeat: '', created: '', updated: '' }),
+      stream: some({ id: 'test-stream', status: StreamStatus.Live, heartbeat: '', created: '', updated: '' }),
       loading: false,
       error: none()
     });
@@ -178,7 +179,7 @@ describe('App', () => {
     mockModel = { role: 'tech', name: 'Tech User' } as UserRecord;
 
     vi.mocked(useStream).mockReturnValue({
-      stream: some({ id: 'test-stream', status: 'live', heartbeat: '', created: '', updated: '' }),
+      stream: some({ id: 'test-stream', status: StreamStatus.Live, heartbeat: '', created: '', updated: '' }),
       loading: false,
       error: none()
     });
@@ -211,7 +212,7 @@ describe('App', () => {
 
     vi.mocked(useStream).mockReturnValue({
       stream: some({ 
-        id: 'test-stream', status: 'live', heartbeat: '', created: '', updated: '', youtube_url: 'http://youtube.com/watch',
+        id: 'test-stream', status: StreamStatus.Live, heartbeat: '', created: '', updated: '', youtube_url: 'http://youtube.com/watch',
         metadata: { outputActive: true, outputDuration: 5000, outputBytes: 2048000 }
       }),
       loading: false,

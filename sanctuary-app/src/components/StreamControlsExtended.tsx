@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { sendCommand, StreamRecord, StreamInput } from '../lib/pocketbase';
+import { CommandAction } from '@shared/schema';
 
 interface StreamControlsExtendedProps {
   stream: StreamRecord;
@@ -12,7 +13,7 @@ export function StreamControlsExtended({ stream, disabled }: StreamControlsExten
   const handleSceneChange = async (sceneName: string) => {
     setLoadingAction(`SCENE_${sceneName}`);
     try {
-      await sendCommand('SET_SCENE', { sceneName }).unsafeRunAsync();
+      await sendCommand(CommandAction.SetScene, { sceneName }).unsafeRunAsync();
     } finally {
       setLoadingAction(null);
     }
@@ -21,7 +22,7 @@ export function StreamControlsExtended({ stream, disabled }: StreamControlsExten
   const handleMuteToggle = async (inputName: string, currentMuted: boolean) => {
     setLoadingAction(`MUTE_${inputName}`);
     try {
-      await sendCommand('SET_MUTE', { inputName, muted: !currentMuted }).unsafeRunAsync();
+      await sendCommand(CommandAction.SetMute, { inputName, muted: !currentMuted }).unsafeRunAsync();
     } finally {
       setLoadingAction(null);
     }

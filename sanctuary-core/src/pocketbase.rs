@@ -3,6 +3,32 @@ use anyhow::{anyhow, Result};
 use reqwest::{Client as HttpClient, RequestBuilder};
 use serde::Deserialize;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PBCollection {
+    Users,
+    Commands,
+    Streams,
+    Announcements,
+    Sermons,
+    Resources,
+    Recordings,
+}
+
+impl std::fmt::Display for PBCollection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            PBCollection::Users => "users",
+            PBCollection::Commands => "commands",
+            PBCollection::Streams => "streams",
+            PBCollection::Announcements => "announcements",
+            PBCollection::Sermons => "sermons",
+            PBCollection::Resources => "resources",
+            PBCollection::Recordings => "recordings",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 /// A functional, immutable-first PocketBase client.
 #[derive(Clone)]
 pub struct PocketBaseClient {
@@ -48,7 +74,7 @@ impl PocketBaseClient {
     /// Pure transformation: List records using monadic chaining.
     pub async fn list<T: for<'de> Deserialize<'de>>(
         &self,
-        collection: &str,
+        collection: PBCollection,
         page: u32,
         per_page: u32,
         filter: Option<String>,
@@ -79,7 +105,7 @@ impl PocketBaseClient {
     /// Monadic Get One: Chains Result transformations.
     pub async fn get_one<T: for<'de> Deserialize<'de>>(
         &self,
-        collection: &str,
+        collection: PBCollection,
         id: &str,
     ) -> Result<T> {
         let url = format!(
@@ -100,7 +126,7 @@ impl PocketBaseClient {
     }
 
     pub async fn login(&self, email: &str, password: &str) -> Result<(String, User)> {
-        let url = format!("{}/api/collections/users/auth-with-password", self.base_url);
+        let url = format!("{}/api/collections/{}/auth-with-password", self.base_url, PBCollection::Users);
 
         let resp = self
             .http

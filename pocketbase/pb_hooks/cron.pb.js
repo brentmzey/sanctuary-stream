@@ -102,6 +102,25 @@ cronAdd("detect_stale_streams", "*/5 * * * *", () => {
                 "last_heartbeat", stream.get("heartbeat"),
                 "threshold", thresholdStr
             );
+
+            // Send email notification to admin
+            try {
+                const adminEmail = $os.getenv("PB_ADMIN_EMAIL") || "brentmzey4795@gmail.com";
+                const message = new MailerMessage({
+                    from: {
+                        address: $app.settings().meta.senderAddress || "noreply@sanctuary-stream.local",
+                        name:    $app.settings().meta.senderName || "Sanctuary Stream",
+                    },
+                    to:      [{ address: adminEmail }],
+                    subject: `⚠️ Stream Error Detected: ${stream.id}`,
+                    html:    `<p>Stream <strong>${stream.id}</strong> has been marked as <strong>error</strong> because it missed its heartbeat for more than 2 minutes.</p>
+                              <p>Last heartbeat: ${stream.get("heartbeat")}</p>
+                              <p>Threshold was: ${thresholdStr}</p>`,
+                });
+                $app.newMailClient().send(message);
+            } catch (mailErr) {
+                $app.logger().error("detect_stale_streams: failed to send email", "error", String(mailErr));
+            }
         }
     } catch (err) {
         $app.logger().error("detect_stale_streams: failed", "error", String(err));

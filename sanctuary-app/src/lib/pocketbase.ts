@@ -10,6 +10,13 @@ import {
   AnnouncementRow, AnnouncementBuilder, 
   ResourceRow, ResourceBuilder, BaseRow 
 } from '@shared/models';
+import { 
+    PBCollection, 
+    Field, 
+    StreamStatus, 
+    UserRole, 
+    CommandAction 
+} from '@shared/schema';
 import { RecordModel } from 'pocketbase';
 
 export type SermonRecord = SermonRow;
@@ -86,8 +93,8 @@ export function getCurrentContext(): UserContext {
   if (!model) return createPublicContext();
   
   const token = pb.authStore.token;
-  if (model.role === 'admin') return createAdminContext(model.id, token);
-  return createUserContext(model.id, model.role as 'pastor' | 'tech', token);
+  if (model.role === UserRole.Admin) return createAdminContext(model.id, token);
+  return createUserContext(model.id, model.role as UserRole.Pastor | UserRole.Tech, token);
 }
 
 // ============================================================================
@@ -96,9 +103,9 @@ export function getCurrentContext(): UserContext {
 
 export function getAnnouncements(): AsyncIO<AnnouncementRow[]> {
   return new AsyncIO(async () => {
-    const records = await pb.collection('announcements').getList<AnnouncementRow>(1, 50, {
-      filter: 'expires_at = "" || expires_at > @now',
-      sort: '-priority,-created',
+    const records = await pb.collection(PBCollection.Announcements).getList<AnnouncementRow>(1, 50, {
+      filter: `${Field.Announcement.ExpiresAt} = "" || ${Field.Announcement.ExpiresAt} > @now`,
+      sort: `-${Field.Announcement.Priority},-${Field.Base.Created}`,
     });
 
     // Decompress bodies on the fly
@@ -120,8 +127,8 @@ export function getAnnouncementsResult(): AsyncResult<AnnouncementRow[], Error> 
 
 export function getSermons(limit = 10): AsyncIO<SermonRow[]> {
   return new AsyncIO(async () => {
-    const records = await pb.collection('sermons').getList<SermonRow>(1, limit, {
-      sort: '-sermon_date',
+    const records = await pb.collection(PBCollection.Sermons).getList<SermonRow>(1, limit, {
+      sort: `-${Field.Sermon.SermonDate}`,
     });
 
     return await Promise.all(records.items.map(async (row: SermonRow) => {
@@ -142,9 +149,9 @@ export function getSermonsResult(limit = 10): AsyncResult<SermonRow[], Error> {
 
 export function getResources(category?: string): AsyncIO<ResourceRow[]> {
   return new AsyncIO(async () => {
-    const records = await pb.collection('resources').getList<ResourceRow>(1, 50, {
-      filter: category ? `category = '${category}'` : '',
-      sort: '-created',
+    const records = await pb.collection(PBCollection.Resources).getList<ResourceRow>(1, 50, {
+      filter: category ? `${Field.Resource.Category} = '${category}'` : '',
+      sort: `-${Field.Base.Created}`,
     });
 
     return await Promise.all(records.items.map(async (row: ResourceRow) => {
@@ -160,9 +167,9 @@ export function getResources(category?: string): AsyncIO<ResourceRow[]> {
 
 export function getRecordings(streamId?: string): AsyncIO<RecordingRecord[]> {
   return new AsyncIO(async () => {
-    const records = await pb.collection('sermons').getList<RecordingRecord>(1, 50, {
-      filter: streamId ? `stream_id = "${streamId}"` : '', // Assuming stream_id exists or filtering by logic
-      sort: '-created',
+    const records = await pb.collection(PBCollection.Sermons).getList<RecordingRecord>(1, 50, {
+      filter: streamId ? `${Field.Sermon.StreamId} = "${streamId}"` : '',
+      sort: `-${Field.Base.Created}`,
     });
     return records.items;
   });
@@ -189,19 +196,6 @@ export function getSermonsIO(limit = 10): AsyncIO<SermonRow[]> {
 // ============================================================================
 // CORE SYSTEM SERVICES (COMMANDS & STREAMS)
 // ============================================================================
-
-export type CommandAction = 
-  | 'START' 
-  | 'STOP' 
-  | 'RECORD_START' 
-  | 'RECORD_STOP' 
-  | 'SET_STREAM_SETTINGS'
-  | 'SET_VIDEO_SETTINGS'
-  | 'SET_STREAM_ENCODER'
-  | 'SET_AUDIO_SETTINGS'
-  | 'SET_SCENE'
-  | 'SET_MUTE'
-  | 'UPLOAD_TO_DRIVE';
 
 export interface CommandRecord {
   id: string;
@@ -232,7 +226,7 @@ export interface StreamMetadata {
 
 export interface StreamRecord {
   id: string;
-  status: 'live' | 'idle' | 'recording' | 'error';
+  status: StreamStatus;
   heartbeat: string;
   youtube_url?: string;
   metadata?: StreamMetadata;
@@ -244,7 +238,8 @@ export interface UserRecord {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'pastor' | 'tech';
+  role: UserRole;
+  verified: boolean;
   created: string;
   updated: string;
 }
@@ -252,19 +247,21 @@ export interface UserRecord {
 export function sendCommand(action: CommandAction, payload?: Record<string, unknown>): AsyncIO<CommandRecord | void> {
   return new AsyncIO(async () => {
     try {
-        await invoke('send_command', { action });
+        // Local Tauri IPC path — now correctly forwards payload so
+        // SET_SCENE, SET_MUTE, SET_VOLUME etc. carry their arguments.
+        await invoke('send_command', { action, payload: payload ?? null });
         return;
     } catch (rustError) {
         console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
         const user = pb.authStore.model;
         if (!user) throw new Error('Not authenticated');
         
-        return await pb.collection('commands').create<CommandRecord>({
-          action,
-          executed: false,
-          correlation_id: crypto.randomUUID(),
-          created_by: user.id,
-          payload: payload || undefined
+        return await pb.collection(PBCollection.Commands).create<CommandRecord>({
+          [Field.Command.Action]: action,
+          [Field.Command.Executed]: false,
+          [Field.Command.CorrelationId]: crypto.randomUUID(),
+          [Field.Command.CreatedBy]: user.id,
+          [Field.Command.Payload]: payload || undefined
         });
     }
   });
@@ -276,25 +273,33 @@ export function getStreamStatus(streamId: string): AsyncIO<StreamRecord> {
       return await invoke<StreamRecord>('get_stream_status');
     } catch (rustError) {
       console.warn('Rust invoke failed, falling back to JS SDK:', rustError);
-      return await pb.collection('streams').getOne<StreamRecord>(streamId);
+      return await pb.collection(PBCollection.Streams).getOne<StreamRecord>(streamId);
     }
   });
 }
 
 export function subscribeToStream(streamId: string, callback: (record: StreamRecord) => void) {
-  pb.collection('streams').subscribe<StreamRecord>(streamId, (e) => {
+  pb.collection(PBCollection.Streams).subscribe<StreamRecord>(streamId, (e) => {
     callback(e.record);
   });
 }
 
 export function unsubscribeFromStream(streamId: string) {
-  pb.collection('streams').unsubscribe(streamId);
+  pb.collection(PBCollection.Streams).unsubscribe(streamId);
 }
 
 export async function loginToPocketBase(email: string, password: string): Promise<UserRecord> {
     const auth = await invoke<{ token: string, user: UserRecord }>('discover_and_login', { email, password });
     pb.authStore.save(auth.token, auth.user as unknown as RecordModel);
     return auth.user;
+}
+
+/** Monadic version of the login process for functional composition */
+export function loginToPocketBaseResult(email: string, password: string): AsyncResult<UserRecord, Error> {
+  return fromPromise(
+    () => loginToPocketBase(email, password),
+    (e) => new Error(`Authentication Protocol Failure: ${e instanceof Error ? e.message : String(e)}`)
+  );
 }
 
 export async function getFileUrl(collectionId: string, recordId: string, fileName: string): Promise<string> {

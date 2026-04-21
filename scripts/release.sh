@@ -93,9 +93,22 @@ update_version() {
 
 update_version "package.json" "$VERSION"
 update_version "sanctuary-app/package.json" "$VERSION"
-update_version "sanctuary-bridge/package.json" "$VERSION"
 update_version "sanctuary-cli/package.json" "$VERSION"
 update_version "sanctuary-app/src-tauri/tauri.conf.json" "$VERSION"
+
+# Update Rust crate versions
+for cargo_file in sanctuary-core/Cargo.toml sanctuary-cli-rs/Cargo.toml sanctuary-app/src-tauri/Cargo.toml; do
+    if [ -f "$cargo_file" ]; then
+        sed -i.bak "s/^version = \".*\"/version = \"$VERSION\"/" "$cargo_file" && rm -f "${cargo_file}.bak"
+        log_success "Updated $cargo_file"
+    fi
+done
+
+# Update build.gradle
+if [ -f "build.gradle" ]; then
+    sed -i.bak "s/^version '.*'/version '$VERSION'/" "build.gradle" && rm -f "build.gradle.bak"
+    log_success "Updated build.gradle"
+fi
 
 # Update package-lock.json
 log_step "Updating package-lock.json..."

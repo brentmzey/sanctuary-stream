@@ -4,9 +4,11 @@
 echo "🏛️  Sanctuary Stream - Starting..."
 echo ""
 
-# Kill old processes
-pkill -9 pocketbase 2>/dev/null || true
-pkill -9 node 2>/dev/null || true  
+# Kill old processes (targeted to Sanctuary only)
+pkill -f "pocketbase serve" 2>/dev/null || true
+pkill -f "sanctuary-cli.*bridge" 2>/dev/null || true
+pkill -f "vite.*sanctuary" 2>/dev/null || true
+pkill -f "mock-obs" 2>/dev/null || true
 sleep 2
 
 # Create logs directory

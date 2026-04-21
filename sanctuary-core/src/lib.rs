@@ -7,5 +7,5 @@ pub mod types;
 
 pub use bridge::SanctuaryBridge;
 pub use drive::upload_to_drive;
-pub use pocketbase::PocketBaseClient;
+pub use pocketbase::{PBCollection, PocketBaseClient};
 pub use types::*;

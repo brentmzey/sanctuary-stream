@@ -7,10 +7,7 @@
 // PocketBase Collections
 // ============================================================================
 
-/**
- * User roles in the system
- */
-export type UserRole = 'admin' | 'pastor' | 'tech';
+import { UserRole, CommandAction, StreamStatus, Priority } from './schema';
 
 /**
  * User record from PocketBase auth collection
@@ -24,21 +21,6 @@ export interface User {
   updated: string;
   verified: boolean;
 }
-
-/**
- * Stream command actions
- */
-export type CommandAction = 
-  | 'START' 
-  | 'STOP' 
-  | 'RECORD_START' 
-  | 'RECORD_STOP'
-  | 'SET_STREAM_SETTINGS'
-  | 'SET_VIDEO_SETTINGS'
-  | 'SET_STREAM_ENCODER'
-  | 'SET_AUDIO_SETTINGS'
-  | 'SET_SCENE'
-  | 'SET_MUTE';
 
 /**
  * Metadata for OBS stream state
@@ -78,11 +60,6 @@ export interface Command {
 }
 
 /**
- * Stream status values
- */
-export type StreamStatus = 'idle' | 'live' | 'recording' | 'error';
-
-/**
  * Stream record for monitoring OBS state
  */
 export interface Stream {
@@ -104,17 +81,16 @@ export interface Stream {
 
 /**
  * A sermon record — the primary content type for Sunday messages and teachings.
- * `published: false` means it's a draft; only admins/pastors can see drafts via direct ID lookup.
  */
 export interface Sermon {
   id: string;
   title: string;
   body: string | null;
-  sermon_date: string;       // ISO date string, e.g. "2026-02-22 00:00:00.000Z"
+  sermon_date: string;       // ISO date string
   youtube_url: string | null;
-  tags: string[] | null;     // JSON array of topic tags
+  tags: string[] | null;
   published: boolean;
-  thumbnail: string | null;  // PocketBase file token — use pb.files.getUrl() to resolve
+  thumbnail: string | null;
   speaker: string | null;
   created: string;
   updated: string;
@@ -122,15 +98,14 @@ export interface Sermon {
 
 /**
  * An announcement — time-boxed church-wide notice.
- * `expires_at: null` means it never auto-hides.
  */
 export interface Announcement {
   id: string;
   title: string;
   body: string | null;
-  published_at: string | null;  // When to start showing it
-  expires_at: string | null;    // When to stop showing it
-  priority: 'low' | 'normal' | 'high';
+  published_at: string | null;
+  expires_at: string | null;
+  priority: Priority;
   published: boolean;
   created: string;
   updated: string;
@@ -138,14 +113,13 @@ export interface Announcement {
 
 /**
  * A free resource — PDF, guide, link, or any shareable content.
- * Either `file` or `url` (or both) should be populated at the app layer.
  */
 export interface Resource {
   id: string;
   title: string;
   description: string | null;
-  file: string | null;   // PocketBase file token
-  url: string | null;    // External link
+  file: string | null;
+  url: string | null;
   category: 'essay' | 'article' | 'free';
   published: boolean;
   created: string;

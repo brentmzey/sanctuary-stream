@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { sendCommand } from '../lib/pocketbase';
+import { CommandAction } from '@shared/schema';
 
 export function StreamSettings() {
   const [service, setService] = useState('YouTube - RTMPS');
@@ -19,7 +20,7 @@ export function StreamSettings() {
     setMessage(null);
 
     try {
-      await sendCommand('SET_STREAM_SETTINGS', {
+      await sendCommand(CommandAction.SetStreamSettings, {
         service,
         server,
         key

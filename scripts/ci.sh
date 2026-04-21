@@ -27,8 +27,8 @@ cd sanctuary-app/src-tauri && cargo test --bin sanctuary-stream && cd ../..
 echo "📦 Checking Frontend build..."
 cd sanctuary-app && npm run build && cd ..
 
-# 6. Build Check (Bridge)
-echo "📦 Checking Bridge build..."
-cd sanctuary-bridge && npm run build && cd ..
+# 6. Build Check (Rust Bridge/CLI)
+echo "🦀 Checking Rust bridge build..."
+cargo build --package sanctuary-cli
 
 echo "✅ Local CI passed successfully!"

@@ -1,36 +1,37 @@
 import React from 'react';
 import type { StreamRecord } from '../lib/pocketbase';
+import { StreamStatus as PBStreamStatus } from '@shared/schema';
 
 interface StreamStatusProps {
   stream: StreamRecord;
 }
 
 export const StreamStatus: React.FC<StreamStatusProps> = ({ stream }) => {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: PBStreamStatus) => {
     switch (status) {
-      case 'live':
+      case PBStreamStatus.Live:
         return 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';
-      case 'recording':
+      case PBStreamStatus.Recording:
         return 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)]';
-      case 'error':
+      case PBStreamStatus.Error:
         return 'bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]';
       default:
         return 'bg-slate-500';
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: PBStreamStatus) => {
     switch (status) {
-      case 'live':
+      case PBStreamStatus.Live:
         return 'Streaming Live';
-      case 'recording':
+      case PBStreamStatus.Recording:
         return 'Recording Session';
-      case 'idle':
+      case PBStreamStatus.Idle:
         return 'System Ready';
-      case 'error':
+      case PBStreamStatus.Error:
         return 'Connection Error';
       default:
-        return status.toUpperCase();
+        return String(status);
     }
   };
 

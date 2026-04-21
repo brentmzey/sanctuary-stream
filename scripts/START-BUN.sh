@@ -17,7 +17,7 @@ mkdir -p logs
 # Start PocketBase
 echo "🗄️  Starting PocketBase..."
 cd pocketbase
-pocketbase serve --http=127.0.0.1:8090 --migrationsDir=local/pb_migrations > ../logs/pocketbase.log 2>&1 &
+./local/pocketbase serve --http=127.0.0.1:8090 --migrationsDir=local/pb_migrations > ../logs/pocketbase.log 2>&1 &
 PB_PID=$!
 cd ..
 
@@ -38,7 +38,7 @@ export PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL="sanctuary123456"
 
 # Create superuser (backend)
 cd pocketbase
-pocketbase superuser upsert $PB_ADMIN_EMAIL_LOCAL $PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL > /dev/null 2>&1
+./local/pocketbase superuser upsert $PB_ADMIN_EMAIL_LOCAL $PB_SANCTUARY_STREAM_ADMIN_PASSWORD_LOCAL > /dev/null 2>&1
 cd ..
 
 # Run schema initialization to create app users

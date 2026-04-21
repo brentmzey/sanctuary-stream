@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StreamStatus } from './StreamStatus';
 import type { StreamRecord } from '../lib/pocketbase';
+import { StreamStatus as PBStreamStatus } from '@shared/schema';
 
 describe('StreamStatus', () => {
   const mockStream: StreamRecord = {
     id: 'stream-123',
-    status: 'idle',
+    status: PBStreamStatus.Idle,
     heartbeat: new Date().toISOString(),
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
@@ -18,17 +19,17 @@ describe('StreamStatus', () => {
   });
 
   it('renders "Streaming Live" when status is live', () => {
-    render(<StreamStatus stream={{ ...mockStream, status: 'live' }} />);
+    render(<StreamStatus stream={{ ...mockStream, status: PBStreamStatus.Live }} />);
     expect(screen.getByText(/Streaming Live/i)).toBeDefined();
   });
 
   it('renders "Recording Session" when status is recording', () => {
-    render(<StreamStatus stream={{ ...mockStream, status: 'recording' }} />);
+    render(<StreamStatus stream={{ ...mockStream, status: PBStreamStatus.Recording }} />);
     expect(screen.getByText(/Recording Session/i)).toBeDefined();
   });
 
   it('renders "Connection Error" when status is error', () => {
-    render(<StreamStatus stream={{ ...mockStream, status: 'error' }} />);
+    render(<StreamStatus stream={{ ...mockStream, status: PBStreamStatus.Error }} />);
     expect(screen.getByText(/Connection Error/i)).toBeDefined();
   });
 
