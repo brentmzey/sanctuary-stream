@@ -126,7 +126,11 @@ impl PocketBaseClient {
     }
 
     pub async fn login(&self, email: &str, password: &str) -> Result<(String, User)> {
-        let url = format!("{}/api/collections/{}/auth-with-password", self.base_url, PBCollection::Users);
+        let url = format!(
+            "{}/api/collections/{}/auth-with-password",
+            self.base_url,
+            PBCollection::Users
+        );
 
         let resp = self
             .http

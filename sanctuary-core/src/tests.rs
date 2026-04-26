@@ -32,10 +32,7 @@ fn test_command_record_deserialization() {
 
 #[test]
 fn test_set_scene_action_parses() {
-    let record = make_command(
-        "SET_SCENE",
-        Some(json!({ "sceneName": "Worship Service" })),
-    );
+    let record = make_command("SET_SCENE", Some(json!({ "sceneName": "Worship Service" })));
     assert_eq!(record.action, CommandAction::SET_SCENE);
     let scene_name = record
         .payload

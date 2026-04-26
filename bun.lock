@@ -12,6 +12,7 @@
       },
       "devDependencies": {
         "@playwright/test": "^1.58.2",
+        "@tauri-apps/cli-darwin-x64": "^2.10.1",
         "@types/node": "^25.2.2",
         "@types/ws": "^8.18.1",
         "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -32,7 +33,7 @@
     },
     "sanctuary-app": {
       "name": "sanctuary-app",
-      "version": "0.4.5",
+      "version": "0.4.86",
       "dependencies": {
         "@tauri-apps/api": "^1.5.3",
         "fflate": "^0.8.2",
@@ -72,7 +73,7 @@
     },
     "sanctuary-cli": {
       "name": "sanctuary-cli",
-      "version": "0.4.5",
+      "version": "0.4.86",
       "dependencies": {
         "commander": "^13.1.0",
         "dotenv": "^17.2.3",
@@ -329,6 +330,8 @@
     "@tauri-apps/cli": ["@tauri-apps/cli@1.6.3", "", { "dependencies": { "semver": ">=7.5.2" }, "optionalDependencies": { "@tauri-apps/cli-darwin-arm64": "1.6.3" }, "bin": { "tauri": "tauri.js" } }, ""],
 
     "@tauri-apps/cli-darwin-arm64": ["@tauri-apps/cli-darwin-arm64@1.6.3", "", { "os": "darwin", "cpu": "arm64" }, ""],
+
+    "@tauri-apps/cli-darwin-x64": ["@tauri-apps/cli-darwin-x64@2.10.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-V/irQVvjPMGOTQqNj55PnQPVuH4VJP8vZCN7ajnj+ZS8Kom1tEM2hR3qbbIRoS3dBKs5mbG8yg1WC+97dq17Pw=="],
 
     "@testing-library/dom": ["@testing-library/dom@10.4.1", "", { "dependencies": { "@babel/code-frame": "^7.10.4", "@babel/runtime": "^7.12.5", "@types/aria-query": "^5.0.1", "aria-query": "5.3.0", "dom-accessibility-api": "^0.5.9", "lz-string": "^1.5.0", "picocolors": "1.1.1", "pretty-format": "^27.0.2" } }, ""],
 

@@ -1,6 +1,6 @@
+use crate::drive::upload_to_drive;
 use crate::pocketbase::PBCollection;
 use crate::types::{Command, CommandAction, StreamStatus};
-use crate::drive::upload_to_drive;
 use chrono::Utc;
 use eventsource_client::{Client, ClientBuilder, SSE};
 use futures_util::StreamExt;
@@ -73,7 +73,11 @@ impl SanctuaryBridge {
                 "{}/api/collections/_superusers/auth-with-password",
                 self.pb_url
             ),
-            format!("{}/api/collections/{}/auth-with-password", self.pb_url, PBCollection::Users),
+            format!(
+                "{}/api/collections/{}/auth-with-password",
+                self.pb_url,
+                PBCollection::Users
+            ),
         ];
 
         let mut last_err = None;
@@ -140,27 +144,25 @@ impl SanctuaryBridge {
         tokio::spawn(async move {
             while let Some(event) = stream.next().await {
                 match event {
-                    Ok(SSE::Event(ev)) => {
-                        if ev.event_type == PBCollection::Commands.to_string() {
-                            if let Ok(data) = serde_json::from_str::<serde_json::Value>(&ev.data) {
-                                if data["action"] == "create" {
-                                    if let Ok(record) =
-                                        serde_json::from_value::<Command>(data["record"].clone())
-                                    {
-                                        if !record.executed {
-                                            let obs = obs_handle.clone();
-                                            let h = http.clone();
-                                            let u = pb_url.clone();
-                                            let t = auth_token.clone();
-                                            tokio::spawn(async move {
-                                                if let Err(e) =
-                                                    Self::execute_command(record, obs, h, u, t)
-                                                        .await
-                                                {
-                                                    error!("Command execution failed: {}", e);
-                                                }
-                                            });
-                                        }
+                    Ok(SSE::Event(ev)) if ev.event_type == PBCollection::Commands.to_string() => {
+                        if let Ok(data) = serde_json::from_str::<serde_json::Value>(&ev.data) {
+                            if data["action"] == "create" {
+                                if let Ok(record) =
+                                    serde_json::from_value::<Command>(data["record"].clone())
+                                {
+                                    if !record.executed {
+                                        let obs = obs_handle.clone();
+                                        let h = http.clone();
+                                        let u = pb_url.clone();
+                                        let t = auth_token.clone();
+                                        tokio::spawn(async move {
+                                            if let Err(e) =
+                                                Self::execute_command(record, obs, h, u, t)
+                                                    .await
+                                            {
+                                                error!("Command execution failed: {}", e);
+                                            }
+                                        });
                                     }
                                 }
                             }
@@ -238,7 +240,11 @@ impl SanctuaryBridge {
                     obs.scenes()
                         .set_current_program_scene(scene_name)
                         .await
-                        .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                        .map_err(
+                            |e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> {
+                                e.into()
+                            },
+                        )
                 } else {
                     Err("SET_SCENE: payload is required".into())
                 }
@@ -257,7 +263,11 @@ impl SanctuaryBridge {
                     obs.inputs()
                         .set_muted(obws::requests::inputs::InputId::Name(input_name), muted)
                         .await
-                        .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                        .map_err(
+                            |e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> {
+                                e.into()
+                            },
+                        )
                 } else {
                     Err("SET_MUTE: payload is required".into())
                 }
@@ -285,7 +295,11 @@ impl SanctuaryBridge {
                             obws::requests::inputs::Volume::Mul(volume_mul),
                         )
                         .await
-                        .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                        .map_err(
+                            |e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> {
+                                e.into()
+                            },
+                        )
                 } else {
                     Err("SET_VOLUME: payload is required".into())
                 }
@@ -355,7 +369,11 @@ impl SanctuaryBridge {
                                 obs.scenes()
                                     .set_current_program_scene(name.as_str())
                                     .await
-                                    .map_err(|e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+                                    .map_err(
+                                    |e: obws::Error| -> Box<dyn std::error::Error + Send + Sync> {
+                                        e.into()
+                                    },
+                                )
                             }
                             Err(e) => Err(e.into()),
                         }
@@ -374,7 +392,10 @@ impl SanctuaryBridge {
             CommandAction::SET_OVERLAY => {
                 info!(
                     "SET_OVERLAY: acknowledged (UI-only) id={:?}",
-                    command.payload.as_ref().and_then(|p| p["overlayId"].as_u64())
+                    command
+                        .payload
+                        .as_ref()
+                        .and_then(|p| p["overlayId"].as_u64())
                 );
                 Ok(())
             }
@@ -397,7 +418,12 @@ impl SanctuaryBridge {
         };
 
         // Mark command as executed (or failed) in PocketBase
-        let update_url = format!("{}/api/collections/{}/records/{}", pb_url, PBCollection::Commands, command.id);
+        let update_url = format!(
+            "{}/api/collections/{}/records/{}",
+            pb_url,
+            PBCollection::Commands,
+            command.id
+        );
         let token = auth_token.lock().await;
 
         let mut patch = serde_json::json!({ "executed": true });
@@ -468,11 +494,13 @@ impl SanctuaryBridge {
                         .map(|s| s.active)
                         .unwrap_or(false);
 
-                    status_update["status"] = serde_json::json!(
-                        if is_streaming { StreamStatus::Live }
-                        else if is_recording { StreamStatus::Recording }
-                        else { StreamStatus::Idle }
-                    );
+                    status_update["status"] = serde_json::json!(if is_streaming {
+                        StreamStatus::Live
+                    } else if is_recording {
+                        StreamStatus::Recording
+                    } else {
+                        StreamStatus::Idle
+                    });
 
                     let mut metadata = serde_json::json!({});
 
@@ -480,7 +508,8 @@ impl SanctuaryBridge {
                     if let Ok(stream_status) = obs.streaming().status().await {
                         metadata["outputActive"] = serde_json::json!(stream_status.active);
                         // time::Duration uses .whole_milliseconds() in obws 0.12
-                        metadata["outputDuration"] = serde_json::json!(stream_status.duration.whole_milliseconds() as u64);
+                        metadata["outputDuration"] =
+                            serde_json::json!(stream_status.duration.whole_milliseconds() as u64);
                         metadata["outputBytes"] = serde_json::json!(stream_status.bytes);
 
                         if let Ok(stats) = obs.general().stats().await {
@@ -496,14 +525,12 @@ impl SanctuaryBridge {
                     // These power the Production Switcher scene bus on all
                     // connected remote devices.
                     if let Ok(scene_list) = obs.scenes().list().await {
-                        let scene_names: Vec<String> = scene_list
-                            .scenes
-                            .iter()
-                            .map(|s| s.name.clone())
-                            .collect();
+                        let scene_names: Vec<String> =
+                            scene_list.scenes.iter().map(|s| s.name.clone()).collect();
                         metadata["scenes"] = serde_json::json!(scene_names);
                         // obws 0.12 field is `current_program_scene`
-                        metadata["currentScene"] = serde_json::json!(scene_list.current_program_scene);
+                        metadata["currentScene"] =
+                            serde_json::json!(scene_list.current_program_scene);
                     }
 
                     // ── Audio inputs (name + muted + volume) ──────────────
@@ -513,11 +540,7 @@ impl SanctuaryBridge {
                         for input in &input_list {
                             // obws 0.12: input.id.name, and muted() / volume()
                             let input_id = obws::requests::inputs::InputId::Name(&input.id.name);
-                            let muted = obs
-                                .inputs()
-                                .muted(input_id)
-                                .await
-                                .unwrap_or(false);
+                            let muted = obs.inputs().muted(input_id).await.unwrap_or(false);
                             let volume_id = obws::requests::inputs::InputId::Name(&input.id.name);
                             let volume = obs
                                 .inputs()
@@ -540,7 +563,12 @@ impl SanctuaryBridge {
                 }
 
                 let token = auth_token.lock().await;
-                let url = format!("{}/api/collections/{}/records/{}", pb_url, PBCollection::Streams, stream_id);
+                let url = format!(
+                    "{}/api/collections/{}/records/{}",
+                    pb_url,
+                    PBCollection::Streams,
+                    stream_id
+                );
 
                 let _ = http
                     .patch(&url)

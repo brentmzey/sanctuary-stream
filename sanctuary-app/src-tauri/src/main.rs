@@ -2,8 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use sanctuary_core::{
-    Announcement, PBCollection, PocketBaseClient, Resource, SanctuaryBridge, Sermon, StreamMetadata,
-    StreamStatus as StreamStatusEnum, User,
+    Announcement, PBCollection, PocketBaseClient, Resource, SanctuaryBridge, Sermon,
+    StreamMetadata, StreamStatus as StreamStatusEnum, User,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
