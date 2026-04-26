@@ -5,6 +5,12 @@ The project follows **RC-based release naming** (x.xx.xx-RCx) until ready for fu
 
 ---
 
+## [Unreleased]
+### 🔧 Fixed
+- **Core:** Resolved Rust formatting issues (`cargo fmt`) that prevented automated setups from completing successfully.
+- **Core:** Fixed a `clippy` `collapsible-match` warning in `sanctuary-core/src/bridge.rs` during setup pipeline linting.
+
+
 ## [0.3.1] - 2026-03-14
 ### ✨ Added
 - **Test Coverage:** Achieved 99.5% line coverage for `sanctuary-bridge` and 95.5% for `sanctuary-app`.
